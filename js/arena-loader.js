@@ -101,26 +101,30 @@ const ArenaLoader = (function() {
 
   // ── Public API ─────────────────────────────────
   async function getAllImages() {
-    const cached = getCached();
-    if (cached && cached.arena) return cached;
+    // Use cached raw data if available, but always reshuffle
+    let raw = getCached();
 
-    // Fetch both sources in parallel
-    const [arenaImages, cosmosImages] = await Promise.all([
-      fetchArenaImages().catch(err => {
-        console.warn('[Loader] Are.na error:', err.message);
-        return [];
-      }),
-      fetchCosmosImages(),
-    ]);
+    if (!raw || !raw.arena) {
+      const [arenaImages, cosmosImages] = await Promise.all([
+        fetchArenaImages().catch(err => {
+          console.warn('[Loader] Are.na error:', err.message);
+          return [];
+        }),
+        fetchCosmosImages(),
+      ]);
 
-    const result = {
-      arena: shuffle(arenaImages),
-      cosmos: shuffle(cosmosImages),
-    };
+      raw = { arena: arenaImages, cosmos: cosmosImages };
 
-    if (result.arena.length > 0 || result.cosmos.length > 0) {
-      setCache(result);
+      if (raw.arena.length > 0 || raw.cosmos.length > 0) {
+        setCache(raw);
+      }
     }
+
+    // Always reshuffle so every page load shows a different mix
+    const result = {
+      arena: shuffle(raw.arena),
+      cosmos: shuffle(raw.cosmos),
+    };
 
     console.log(`[Loader] ${result.arena.length} Are.na + ${result.cosmos.length} Cosmos`);
     return result;
