@@ -74,6 +74,35 @@ gsap.to('#hero', {
 });
 
 // ============================================
+// RING IMAGE PREVIEW (hover overlay)
+// ============================================
+var ringPreview = document.createElement('div');
+ringPreview.className = 'ring-preview';
+ringPreview.innerHTML = '<img />';
+document.body.appendChild(ringPreview);
+
+function showRingPreview(src, rect) {
+  var img = ringPreview.querySelector('img');
+  img.src = src;
+  // Position near the hovered image, centered
+  var size = 200;
+  var x = rect.left + rect.width / 2 - size / 2;
+  var y = rect.top + rect.height / 2 - size / 2;
+  // Keep on screen
+  x = Math.max(10, Math.min(window.innerWidth - size - 10, x));
+  y = Math.max(10, Math.min(window.innerHeight - size - 10, y));
+  ringPreview.style.left = x + 'px';
+  ringPreview.style.top = y + 'px';
+  ringPreview.style.width = size + 'px';
+  ringPreview.style.height = size + 'px';
+  ringPreview.classList.add('visible');
+}
+
+function hideRingPreview() {
+  ringPreview.classList.remove('visible');
+}
+
+// ============================================
 // SATURN — Dual Inspiration Rings
 // ============================================
 function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
@@ -103,17 +132,18 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
 
     wrapper.appendChild(imgEl);
 
-    // Hover lock — prevent container swap and pause orbit while hovered
+    // Hover — show enlarged preview outside the 3D context
     var hovered = false;
     wrapper.addEventListener('mouseenter', function() {
       hovered = true;
       if (tween) tween.pause();
-      wrapper.style.setProperty('z-index', '9999', 'important');
+      var rect = imgEl.getBoundingClientRect();
+      showRingPreview(imgEl.src, rect);
     });
     wrapper.addEventListener('mouseleave', function() {
       hovered = false;
       if (tween) tween.resume();
-      wrapper.style.removeProperty('z-index');
+      hideRingPreview();
     });
 
     if (angle >= 0 && angle < 180) {
@@ -147,7 +177,7 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
 // Load and build both rings
 ArenaLoader.getAllImages().then(function(data) {
   var containerW = document.getElementById('saturn').offsetWidth || 800;
-  var MAX_PER_RING = 60;
+  var MAX_PER_RING = 80;
 
   // Inner ring — Are.na (closer to outer, smaller thumbnails, faster)
   buildRing(

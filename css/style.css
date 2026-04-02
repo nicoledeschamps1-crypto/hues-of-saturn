@@ -239,23 +239,31 @@ body {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.ring-image:hover {
-  z-index: 9999 !important;
-  opacity: 1 !important;
-  transform:
-    rotate(calc(var(--angle) * 1deg))
-    translateX(calc(var(--radius) * 1px))
-    rotate(calc(var(--angle) * -1deg))
-    rotateX(-72deg)
-    translateZ(150px);
+.ring-image { cursor: pointer; }
+
+/* Preview overlay — lives outside 3D context */
+.ring-preview {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.7), 0 16px 60px rgba(0,0,0,0.8);
 }
 
-.ring-image:hover img {
-  transform: scale(5);
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.8), 0 12px 50px rgba(0,0,0,0.9);
-  cursor: pointer;
-  border-radius: 4px;
-  position: relative;
+.ring-preview.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ring-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* Fallback ring line when no images loaded yet */

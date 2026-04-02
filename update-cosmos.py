@@ -58,31 +58,48 @@ def extract_images(html):
     return urls
 
 
+def add_images(html, source_name, all_images, seen_globally):
+    """Extract images from HTML and add new ones to the list."""
+    cdn_urls = extract_images(html)
+    count = 0
+    for u in cdn_urls:
+        if u not in seen_globally:
+            seen_globally.add(u)
+            all_images.append({
+                "src": u + "?format=webp&w=400",
+                "collection": source_name,
+            })
+            count += 1
+    return count, len(cdn_urls)
+
+
 def main():
+    all_images = []
+    seen_globally = set()
+
+    # 1. Scrape Elements page (all individual saves)
+    print(f"Fetching elements from {BASE_URL} ...")
+    try:
+        elements_html = fetch_page(BASE_URL)
+        new, total = add_images(elements_html, "elements", all_images, seen_globally)
+        print(f"  elements: {new} new images ({total} total on page)\n")
+    except Exception as e:
+        print(f"  elements: ERROR {e}\n")
+    time.sleep(0.5)
+
+    # 2. Scrape each collection
     print(f"Fetching collections from {BASE_URL}/collections ...")
     collections_html = fetch_page(f"{BASE_URL}/collections")
     slugs = extract_collections(collections_html)
     print(f"Found {len(slugs)} collections: {', '.join(slugs)}\n")
-
-    all_images = []
-    seen_globally = set()
 
     for slug in slugs:
         url = f"{BASE_URL}/{slug}"
         print(f"  {slug} ...", end=" ", flush=True)
         try:
             html = fetch_page(url)
-            cdn_urls = extract_images(html)
-            count = 0
-            for u in cdn_urls:
-                if u not in seen_globally:
-                    seen_globally.add(u)
-                    all_images.append({
-                        "src": u + "?format=webp&w=400",
-                        "collection": slug,
-                    })
-                    count += 1
-            print(f"{count} new images ({len(cdn_urls)} total on page)")
+            new, total = add_images(html, slug, all_images, seen_globally)
+            print(f"{new} new images ({total} total on page)")
         except Exception as e:
             print(f"ERROR: {e}")
         time.sleep(0.5)
@@ -91,7 +108,7 @@ def main():
         "username": USERNAME,
         "profile": f"https://www.cosmos.so/{USERNAME}",
         "updated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "collections": slugs,
+        "collections": ["elements"] + slugs,
         "total": len(all_images),
         "images": all_images,
     }
