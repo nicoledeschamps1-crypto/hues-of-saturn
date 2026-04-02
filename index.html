@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUES OF SATURN</title>
+  <meta name="description" content="Hues of Saturn — a creative universe by Nicole Deschamps">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
+  <link rel="stylesheet" href="css/style.css?v=20260402g">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <a href="#gallery-section" class="sr-only">Skip to gallery</a>
+
+  <!-- ============================================ -->
+  <!-- SECTION 1: HERO — SATURN + INSPIRATION RING -->
+  <!-- ============================================ -->
+  <section id="hero" class="hero">
+    <div class="stars" id="stars"></div>
+    <div class="sparkles" id="sparkles"></div>
+
+    <div class="saturn-container" id="saturn">
+      <div class="saturn-glow"></div>
+      <div class="saturn-body">
+        <img src="assets/saturn-face-transparent.png" alt="Hues of Saturn" />
+        <div class="saturn-highlight"></div>
+        <div class="saturn-shadow"></div>
+      </div>
+      <!-- Inner ring — Are.na -->
+      <div class="saturn-ring-back ring-arena" id="arenaRingBack"></div>
+      <div class="saturn-ring-front ring-arena" id="arenaRingFront"></div>
+      <!-- Outer ring — Cosmos -->
+      <div class="saturn-ring-back ring-cosmos" id="cosmosRingBack"></div>
+      <div class="saturn-ring-front ring-cosmos" id="cosmosRingFront"></div>
+    </div>
+
+    <div class="hero-title">
+      <h1 class="title-main">Hues of</h1>
+      <h1 class="title-main title-saturn">Saturn</h1>
+    </div>
+
+    <p class="orbit-label">in my orbit</p>
+
+    <div class="scroll-hint" id="scrollHint">
+      <span>scroll down</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECTION 2: THE CRACK — DOCTOR WHO TEAR       -->
+  <!-- ============================================ -->
+  <section id="crack-section" class="crack-section">
+    <div class="crack-container">
+      <!-- The dark surface -->
+      <div class="crack-surface" id="crackSurface">
+        <div class="surface-text">
+          <span class="surface-label">GET A LOOK INSIDE</span>
+        </div>
+      </div>
+
+      <!-- SVG crack -->
+      <svg class="crack-svg" id="crackSvg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="6" result="blur1"/>
+            <feFlood flood-color="hsl(230, 85%, 65%)" flood-opacity="0.8" result="color"/>
+            <feComposite in="color" in2="blur1" operator="in" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="glow-strong">
+            <feGaussianBlur stdDeviation="25" result="blur1"/>
+            <feFlood flood-color="hsl(245, 80%, 55%)" flood-opacity="0.6" result="color1"/>
+            <feComposite in="color1" in2="blur1" operator="in" result="layer1"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur2"/>
+            <feFlood flood-color="hsl(220, 90%, 85%)" flood-opacity="0.4" result="color2"/>
+            <feComposite in="color2" in2="blur2" operator="in" result="layer2"/>
+            <feMerge>
+              <feMergeNode in="layer1"/>
+              <feMergeNode in="layer2"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="glow-branch">
+            <feGaussianBlur stdDeviation="4" result="blur1"/>
+            <feFlood flood-color="hsl(235, 80%, 60%)" flood-opacity="0.6" result="color"/>
+            <feComposite in="color" in2="blur1" operator="in" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <!-- Glow layers -->
+        <path id="crackGlow" class="crack-glow" d="M960,540 L960,540" filter="url(#glow-strong)" />
+        <path id="crackLine" class="crack-line" d="M960,540 L960,540" filter="url(#glow)" />
+        <!-- Branch crack -->
+        <path id="branchGlow" class="branch-glow" d="M960,540 L960,540" filter="url(#glow-branch)" />
+        <path id="branchLine" class="branch-line" d="M960,540 L960,540" filter="url(#glow-branch)" />
+      </svg>
+
+      <!-- Cosmic void revealed through crack -->
+      <div class="crack-reveals" id="crackReveals">
+        <div class="cosmic-void">
+          <div class="void-stars" id="voidStars"></div>
+          <div class="void-nebula"></div>
+          <div class="void-nebula void-nebula-2"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECTION 3: ART GALLERY — WALK THROUGH        -->
+  <!-- ============================================ -->
+  <section id="gallery-section" class="gallery-section">
+    <div class="gallery-intro" id="galleryIntro">
+      <h2 class="gallery-title">THE GALLERY</h2>
+      <p class="gallery-subtitle">Scroll to walk through</p>
+    </div>
+
+    <div class="gallery-scroll-container" id="galleryScroll">
+      <div class="hallway-viewport" id="hallwayViewport">
+        <div class="hallway-perspective" id="hallwayPerspective">
+          <!-- Perspective lines -->
+          <svg class="hallway-lines" viewBox="0 0 1440 810" preserveAspectRatio="xMidYMid slice">
+            <line x1="0" y1="0" x2="619" y2="316" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/>
+            <line x1="1440" y1="0" x2="821" y2="316" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/>
+            <line x1="0" y1="810" x2="619" y2="494" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/>
+            <line x1="1440" y1="810" x2="821" y2="494" stroke="rgba(0,0,0,0.12)" stroke-width="1.5"/>
+            <line x1="619" y1="316" x2="619" y2="494" stroke="rgba(0,0,0,0.15)" stroke-width="1.5"/>
+            <line x1="821" y1="316" x2="821" y2="494" stroke="rgba(0,0,0,0.15)" stroke-width="1.5"/>
+            <line x1="619" y1="316" x2="821" y2="316" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+            <line x1="619" y1="494" x2="821" y2="494" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+          </svg>
+
+          <!-- Wall surfaces -->
+          <div class="wall-surface-left"></div>
+          <div class="wall-surface-right"></div>
+          <div class="hallway-floor"></div>
+          <div class="hallway-ceiling"></div>
+          <div class="vanishing-rect"></div>
+
+          <!-- Crown molding -->
+          <div class="molding crown-left-main"></div>
+          <div class="molding crown-left-shadow"></div>
+          <div class="molding crown-left-highlight"></div>
+          <div class="molding crown-right-main"></div>
+          <div class="molding crown-right-shadow"></div>
+          <div class="molding crown-right-highlight"></div>
+          <div class="molding crown-back"></div>
+          <!-- Baseboard -->
+          <div class="molding base-left-main"></div>
+          <div class="molding base-left-shadow"></div>
+          <div class="molding base-left-highlight"></div>
+          <div class="molding base-right-main"></div>
+          <div class="molding base-right-shadow"></div>
+          <div class="molding base-right-highlight"></div>
+          <div class="molding base-back"></div>
+
+          <!-- Art walls — JS populates from GALLERY_ART -->
+          <div class="hallway-wall-left" id="wallLeft"></div>
+          <div class="hallway-wall-right" id="wallRight"></div>
+
+          <!-- Door at vanishing point -->
+          <div class="hallway-door" id="hallwayDoor" role="button" tabindex="0" aria-label="Enter contact section">
+            <div class="door-frame">
+              <div class="door-panel" id="doorPanel">
+                <div class="door-handle"></div>
+              </div>
+              <div class="door-light"></div>
+            </div>
+            <div class="door-label">Enter</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Art viewer overlay -->
+    <div class="art-viewer" id="artViewer" role="dialog" aria-modal="true" aria-label="Artwork viewer">
+      <div class="art-viewer-backdrop"></div>
+      <div class="art-viewer-content">
+        <div class="art-viewer-media" id="artViewerMedia"></div>
+        <div class="art-viewer-info" id="artViewerInfo">
+          <h3 class="viewer-title"></h3>
+          <p class="viewer-medium"></p>
+          <p class="viewer-description"></p>
+        </div>
+      </div>
+      <button class="art-viewer-close" id="artViewerClose" aria-label="Close artwork viewer">&times;</button>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- SECTION 4: CONTACT                           -->
+  <!-- ============================================ -->
+  <section id="contact-section" class="contact-section" style="display:none;">
+    <div class="contact-container">
+      <div class="contact-door-reveal">
+        <div class="contact-light"></div>
+      </div>
+      <div class="contact-content">
+        <h2 class="contact-title">LET'S CONNECT</h2>
+        <p class="contact-subtitle">You've reached the end of the hall.</p>
+        <div class="contact-links">
+          <a href="mailto:hello@example.com" class="contact-link">
+            <span class="contact-link-icon">&#9993;</span>
+            <span>Email</span>
+          </a>
+          <a href="javascript:void(0)" class="contact-link">
+            <span class="contact-link-icon">&#9734;</span>
+            <span>Instagram</span>
+          </a>
+          <a href="javascript:void(0)" class="contact-link">
+            <span class="contact-link-icon">&#9830;</span>
+            <span>Are.na</span>
+          </a>
+        </div>
+        <button class="back-to-gallery" id="backToGallery">Back to Gallery</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+  <script src="js/arena-loader.js?v=20260402g"></script>
+  <script src="js/gallery-data.js?v=20260402g"></script>
+  <script src="js/main.js?v=20260402g"></script>
+</body>
+</html>
