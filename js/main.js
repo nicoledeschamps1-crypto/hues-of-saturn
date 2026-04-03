@@ -134,13 +134,20 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
     var mediaEl;
     if (img.isVideo) {
       mediaEl = document.createElement('video');
-      mediaEl.src = img.src;
       mediaEl.muted = true;
       mediaEl.loop = true;
       mediaEl.playsInline = true;
       mediaEl.autoplay = true;
+      mediaEl.preload = 'metadata';
       mediaEl.setAttribute('playsinline', '');
+      mediaEl.setAttribute('muted', '');
       mediaEl.onerror = function() { wrapper.style.display = 'none'; };
+      // Set src after attributes so autoplay policy is satisfied
+      mediaEl.src = img.src;
+      // Force play after DOM insertion (autoplay can fail for dynamically added videos)
+      mediaEl.addEventListener('loadeddata', function() {
+        mediaEl.play().catch(function() {});
+      }, { once: true });
     } else {
       mediaEl = document.createElement('img');
       mediaEl.src = img.src;
