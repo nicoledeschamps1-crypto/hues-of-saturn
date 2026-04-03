@@ -13,6 +13,9 @@ if ('scrollRestoration' in history) {
 }
 window.scrollTo(0, 0);
 
+// ── Utility ──────────────────────────────────
+function lerp(a, b, t) { return a + (b - a) * t; }
+
 // ── Accessibility ──────────────────────────────
 var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -483,39 +486,6 @@ document.querySelectorAll('.floor-btn, .door-btn, .alarm-btn').forEach(function(
   });
 });
 
-// ── Floating elevator nav ────────────────────
-var elevatorNav = document.getElementById('elevatorNav');
-
-// Show nav after scrolling past the hero
-ScrollTrigger.create({
-  trigger: '#elevator-section',
-  start: 'top 90%',
-  onEnter: function() { elevatorNav.classList.add('visible'); },
-  onLeaveBack: function() { elevatorNav.classList.remove('visible'); },
-});
-
-// Nav button clicks
-document.querySelectorAll('.nav-floor-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    var target = btn.dataset.nav;
-
-    // Update active state
-    document.querySelectorAll('.nav-floor-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-
-    if (target === 'hero') {
-      gsap.to(window, { scrollTo: 0, duration: 1, ease: 'power2.inOut' });
-    } else {
-      // All floors go through the elevator
-      gsap.to(window, {
-        scrollTo: '#elevator-section',
-        duration: 1,
-        ease: 'power2.inOut',
-        onComplete: function() { pressFloor(target); }
-      });
-    }
-  });
-});
 
 // ============================================
 // GALLERY (inside elevator — walk-through hallway)
@@ -736,40 +706,52 @@ function buildFloorWords(container, copy) {
 aboutWords = buildFloorWords(aboutText, ABOUT_COPY);
 connectWords = buildFloorWords(connectText, CONNECT_COPY);
 
-// ── Sun + Moon orb system (Pretext-inspired) ──
-var SUN_RADIUS = 75;
-var MOON_RADIUS = 50;
+// ── Sun + Moon orb system (cinematic upgrade) ──
+var SUN_RADIUS = 100;
+var MOON_RADIUS = 80;
+var ECLIPSE_RANGE = 200;
 
 var sunEl = behindAbout ? behindAbout.querySelector('.orb-sun') : null;
 var moonEl = behindAbout ? behindAbout.querySelector('.orb-moon') : null;
-var aboutMouseX = -9999, aboutMouseY = -9999;
-var aboutOrbRAF = null;
+var lightcastEl = behindAbout ? behindAbout.querySelector('.about-lightcast') : null;
+
+// Mouse target (raw) vs moon position (interpolated)
+var mouseTargetX = -9999, mouseTargetY = -9999;
+var moonX = -9999, moonY = -9999;
+var eclipseRatio = 0;
 
 // Sun state
 var sunX = 0, sunY = 0, sunVX = 0.35, sunVY = 0.25;
 var sunDragging = false, sunDragOffX = 0, sunDragOffY = 0;
+var sunPrevX = 0, sunPrevY = 0;
 
 if (behindAbout && sunEl) {
   var pw = behindAbout.offsetWidth || 800;
   var ph = behindAbout.offsetHeight || 600;
   sunX = 0.55 * pw;
   sunY = 0.30 * ph;
+  sunPrevX = sunX;
+  sunPrevY = sunY;
   sunEl.style.left = sunX + 'px';
   sunEl.style.top = sunY + 'px';
 
-  // Drag handlers for sun
+  // Drag handlers — track velocity from actual drag
   sunEl.addEventListener('pointerdown', function(e) {
     sunDragging = true;
     sunEl.classList.add('dragging');
     var rect = sunEl.getBoundingClientRect();
     sunDragOffX = e.clientX - rect.left - rect.width / 2;
     sunDragOffY = e.clientY - rect.top - rect.height / 2;
+    sunPrevX = sunX;
+    sunPrevY = sunY;
     sunEl.setPointerCapture(e.pointerId);
     e.preventDefault();
   });
 
   sunEl.addEventListener('pointermove', function(e) {
     if (!sunDragging) return;
+    sunPrevX = sunX;
+    sunPrevY = sunY;
     var pr = behindAbout.getBoundingClientRect();
     sunX = e.clientX - pr.left - sunDragOffX - sunEl.offsetWidth / 2;
     sunY = e.clientY - pr.top - sunDragOffY - sunEl.offsetHeight / 2;
@@ -780,117 +762,202 @@ if (behindAbout && sunEl) {
   sunEl.addEventListener('pointerup', function() {
     sunDragging = false;
     sunEl.classList.remove('dragging');
-    sunVX = (Math.random() - 0.5) * 0.7;
-    sunVY = (Math.random() - 0.5) * 0.7;
+    // Derive velocity from drag direction
+    sunVX = (sunX - sunPrevX) * 0.3;
+    sunVY = (sunY - sunPrevY) * 0.3;
+    // Clamp speed
+    var spd = Math.sqrt(sunVX * sunVX + sunVY * sunVY);
+    if (spd > 2) { sunVX *= 2 / spd; sunVY *= 2 / spd; }
+    if (spd < 0.2) { sunVX = (Math.random() - 0.5) * 0.5; sunVY = (Math.random() - 0.5) * 0.5; }
   });
 }
 
 if (behindAbout) {
-  // Mouse tracking — move moon orb to cursor
+  // Track raw mouse target — moon lerps toward it in RAF
   behindAbout.addEventListener('mousemove', function(e) {
-    aboutMouseX = e.clientX;
-    aboutMouseY = e.clientY;
-    if (moonEl) {
-      var pr = behindAbout.getBoundingClientRect();
-      moonEl.style.left = (e.clientX - pr.left - moonEl.offsetWidth / 2) + 'px';
-      moonEl.style.top = (e.clientY - pr.top - moonEl.offsetHeight / 2) + 'px';
-    }
+    mouseTargetX = e.clientX;
+    mouseTargetY = e.clientY;
     var hint = behindAbout.querySelector('.about-hint');
     if (hint) hint.style.opacity = '0';
   });
 
   behindAbout.addEventListener('mouseleave', function() {
-    aboutMouseX = -9999;
-    aboutMouseY = -9999;
+    mouseTargetX = -9999;
+    mouseTargetY = -9999;
   });
 }
 
-// Physics + text displacement loop
+// Main physics + rendering loop
 function orbPhysicsLoop() {
-  aboutOrbRAF = requestAnimationFrame(orbPhysicsLoop);
+  requestAnimationFrame(orbPhysicsLoop);
   if (!aboutActive) return;
 
-  // Float the sun
+  var pw = behindAbout.offsetWidth;
+  var ph = behindAbout.offsetHeight;
+
+  // ── Sun physics ──
   if (sunEl && !sunDragging) {
-    var pw = behindAbout.offsetWidth;
-    var ph = behindAbout.offsetHeight;
     var ew = sunEl.offsetWidth;
     var eh = sunEl.offsetHeight;
+
+    // Gravitational pull toward moon when nearby
+    if (moonX > -9000) {
+      var pr0 = behindAbout.getBoundingClientRect();
+      var smx = moonX - pr0.left, smy = moonY - pr0.top;
+      var gdx = smx - (sunX + ew / 2), gdy = smy - (sunY + eh / 2);
+      var gDist = Math.sqrt(gdx * gdx + gdy * gdy);
+      if (gDist < 300 && gDist > 10) {
+        var gForce = 0.015 * (1 - gDist / 300);
+        sunVX += (gdx / gDist) * gForce;
+        sunVY += (gdy / gDist) * gForce;
+      }
+    }
 
     sunX += sunVX;
     sunY += sunVY;
 
-    if (sunX <= 0) { sunVX = Math.abs(sunVX); sunX = 0; }
-    if (sunX >= pw - ew) { sunVX = -Math.abs(sunVX); sunX = pw - ew; }
-    if (sunY <= 0) { sunVY = Math.abs(sunVY); sunY = 0; }
-    if (sunY >= ph - eh) { sunVY = -Math.abs(sunVY); sunY = ph - eh; }
+    // Bounce with damping
+    if (sunX <= 0) { sunVX = Math.abs(sunVX) * 0.9; sunX = 0; }
+    if (sunX >= pw - ew) { sunVX = -Math.abs(sunVX) * 0.9; sunX = pw - ew; }
+    if (sunY <= 0) { sunVY = Math.abs(sunVY) * 0.9; sunY = 0; }
+    if (sunY >= ph - eh) { sunVY = -Math.abs(sunVY) * 0.9; sunY = ph - eh; }
 
     sunEl.style.left = sunX + 'px';
     sunEl.style.top = sunY + 'px';
   }
 
-  // Build displacement centers
-  var pr = behindAbout.getBoundingClientRect();
-  var centers = [];
-  var sunCX = -9999, sunCY = -9999;
-
-  if (sunEl) {
-    sunCX = pr.left + sunX + sunEl.offsetWidth / 2;
-    sunCY = pr.top + sunY + sunEl.offsetHeight / 2;
-    centers.push({ cx: sunCX, cy: sunCY, r: SUN_RADIUS + 30 });
-  }
-  if (aboutMouseX > -9999) {
-    centers.push({ cx: aboutMouseX, cy: aboutMouseY, r: MOON_RADIUS + 25 });
-  }
-
-  // Eclipse detection — moon overlaps sun
-  if (sunEl && aboutMouseX > -9999) {
-    var edx = aboutMouseX - sunCX;
-    var edy = aboutMouseY - sunCY;
-    var eDist = Math.sqrt(edx * edx + edy * edy);
-    if (eDist < SUN_RADIUS + 10) {
-      if (!sunEl.classList.contains('eclipse')) sunEl.classList.add('eclipse');
+  // ── Moon inertia — lerp toward cursor ──
+  if (mouseTargetX > -9000) {
+    if (moonX < -9000) {
+      moonX = mouseTargetX;
+      moonY = mouseTargetY;
     } else {
-      if (sunEl.classList.contains('eclipse')) sunEl.classList.remove('eclipse');
+      moonX = lerp(moonX, mouseTargetX, 0.12);
+      moonY = lerp(moonY, mouseTargetY, 0.12);
     }
-  } else if (sunEl) {
-    sunEl.classList.remove('eclipse');
+    if (moonEl) {
+      var pr1 = behindAbout.getBoundingClientRect();
+      moonEl.style.left = (moonX - pr1.left - moonEl.offsetWidth / 2) + 'px';
+      moonEl.style.top = (moonY - pr1.top - moonEl.offsetHeight / 2) + 'px';
+    }
+  } else {
+    moonX = -9999;
+    moonY = -9999;
   }
 
-  displaceWords(aboutWords, centers);
+  // ── Continuous eclipse ratio (0..1) ──
+  var pr = behindAbout.getBoundingClientRect();
+  var sunCX = pr.left + sunX + (sunEl ? sunEl.offsetWidth / 2 : 0);
+  var sunCY = pr.top + sunY + (sunEl ? sunEl.offsetHeight / 2 : 0);
+  var targetEclipse = 0;
+
+  if (sunEl && moonX > -9000) {
+    var edx = moonX - sunCX, edy = moonY - sunCY;
+    var eDist = Math.sqrt(edx * edx + edy * edy);
+    if (eDist < ECLIPSE_RANGE) {
+      targetEclipse = Math.max(0, Math.min(1, 1 - eDist / ECLIPSE_RANGE));
+      targetEclipse = targetEclipse * targetEclipse;
+    }
+  }
+  eclipseRatio = lerp(eclipseRatio, targetEclipse, 0.08);
+  if (eclipseRatio < 0.005) eclipseRatio = 0;
+
+  // Apply eclipse as CSS custom property
+  if (sunEl) {
+    sunEl.style.setProperty('--eclipse', eclipseRatio.toFixed(3));
+  }
+  if (behindAbout) {
+    behindAbout.style.setProperty('--eclipse', eclipseRatio.toFixed(3));
+  }
+
+  // ── Dynamic light cast positions ──
+  if (lightcastEl) {
+    var sunPctX = ((sunX + (sunEl ? sunEl.offsetWidth / 2 : 0)) / pw * 100).toFixed(1);
+    var sunPctY = ((sunY + (sunEl ? sunEl.offsetHeight / 2 : 0)) / ph * 100).toFixed(1);
+    lightcastEl.style.setProperty('--sun-x', sunPctX + '%');
+    lightcastEl.style.setProperty('--sun-y', sunPctY + '%');
+    if (moonX > -9000) {
+      var moonPctX = ((moonX - pr.left) / pw * 100).toFixed(1);
+      var moonPctY = ((moonY - pr.top) / ph * 100).toFixed(1);
+      lightcastEl.style.setProperty('--moon-x', moonPctX + '%');
+      lightcastEl.style.setProperty('--moon-y', moonPctY + '%');
+    } else {
+      lightcastEl.style.setProperty('--moon-x', '-100%');
+      lightcastEl.style.setProperty('--moon-y', '-100%');
+    }
+  }
+
+  // ── Text displacement with differentiated reactions ──
+  var sunCenter = { cx: sunCX, cy: sunCY, r: SUN_RADIUS + 30, type: 'sun' };
+  var moonCenter = moonX > -9000 ? { cx: moonX, cy: moonY, r: MOON_RADIUS + 25, type: 'moon' } : null;
+  displaceAboutWords(aboutWords, sunCenter, moonCenter, eclipseRatio);
 }
 orbPhysicsLoop();
 
-function displaceWords(words, centers) {
+function displaceAboutWords(words, sun, moon, eclipse) {
   for (var i = 0; i < words.length; i++) {
     var span = words[i];
     var rect = span.getBoundingClientRect();
     var wcx = rect.left + rect.width / 2;
     var wcy = rect.top + rect.height / 2;
     var totalTX = 0, totalTY = 0, minOpacity = 1;
+    var warmth = 0, chill = 0, totalRot = 0;
 
-    for (var j = 0; j < centers.length; j++) {
-      var c = centers[j];
-      var dx = wcx - c.cx, dy = wcy - c.cy;
-      var dist2 = dx * dx + dy * dy;
-      var r2 = c.r * c.r;
-      if (dist2 < r2) {
-        var dist = Math.sqrt(dist2) || 1;
-        var force = 1 - dist / c.r;
-        force = force * force * force;
-        var pushDist = force * 80;
-        totalTX += (dx / dist) * pushDist;
-        totalTY += (dy / dist) * pushDist;
-        minOpacity = Math.min(minOpacity, 0.2 + (1 - force) * 0.8);
+    // Sun push — warm glow effect
+    if (sun) {
+      var sdx = wcx - sun.cx, sdy = wcy - sun.cy;
+      var sd2 = sdx * sdx + sdy * sdy;
+      var sr2 = sun.r * sun.r;
+      if (sd2 < sr2) {
+        var sd = Math.sqrt(sd2) || 1;
+        var sf = 1 - sd / sun.r;
+        sf = sf * sf;
+        var sp = sf * 120;
+        totalTX += (sdx / sd) * sp;
+        totalTY += (sdy / sd) * sp;
+        minOpacity = Math.min(minOpacity, 0.15 + (1 - sf) * 0.85);
+        warmth = Math.max(warmth, sf);
+        totalRot += sf * 4 * (sdx > 0 ? 1 : -1);
+      }
+    }
+
+    // Moon push — cool dim effect
+    if (moon) {
+      var mdx = wcx - moon.cx, mdy = wcy - moon.cy;
+      var md2 = mdx * mdx + mdy * mdy;
+      var mr2 = moon.r * moon.r;
+      if (md2 < mr2) {
+        var md = Math.sqrt(md2) || 1;
+        var mf = 1 - md / moon.r;
+        mf = mf * mf;
+        var mp = mf * 100;
+        totalTX += (mdx / md) * mp;
+        totalTY += (mdy / md) * mp;
+        minOpacity = Math.min(minOpacity, 0.1 + (1 - mf) * 0.9);
+        chill = Math.max(chill, mf);
+        totalRot += mf * -3 * (mdx > 0 ? 1 : -1);
       }
     }
 
     if (totalTX !== 0 || totalTY !== 0) {
-      span.style.transform = 'translate(' + totalTX.toFixed(1) + 'px,' + totalTY.toFixed(1) + 'px)';
+      // Warm words glow amber near sun, cool words dim near moon
+      var color = '';
+      if (warmth > 0.1) {
+        color = 'rgba(220,190,130,' + (0.6 + warmth * 0.4).toFixed(2) + ')';
+      } else if (chill > 0.1) {
+        color = 'rgba(180,185,200,' + (0.5 + chill * 0.3).toFixed(2) + ')';
+      }
+      span.style.transform = 'translate(' + totalTX.toFixed(1) + 'px,' + totalTY.toFixed(1) + 'px) rotate(' + totalRot.toFixed(1) + 'deg)';
       span.style.opacity = minOpacity.toFixed(2);
+      if (color) {
+        span.style.color = color;
+      } else {
+        span.style.color = '';
+      }
     } else {
       if (span.style.transform) span.style.transform = '';
       if (span.style.opacity) span.style.opacity = '';
+      if (span.style.color) span.style.color = '';
     }
   }
 }
@@ -907,7 +974,7 @@ if (behindConnect) {
   behindConnect.addEventListener('mouseleave', function() {
     connectMouseX = -9999;
     connectMouseY = -9999;
-    connectWords.forEach(function(s) { s.style.transform = ''; s.style.opacity = ''; });
+    connectWords.forEach(function(s) { s.style.transform = ''; s.style.opacity = ''; s.style.color = ''; });
   });
 }
 
@@ -915,7 +982,8 @@ function connectLoop() {
   requestAnimationFrame(connectLoop);
   if (!connectActive) return;
   if (connectMouseX < -9000) return;
-  displaceWords(connectWords, [{ cx: connectMouseX, cy: connectMouseY, r: 80 }]);
+  var cMoon = { cx: connectMouseX, cy: connectMouseY, r: 80, type: 'moon' };
+  displaceAboutWords(connectWords, null, cMoon, 0);
 }
 connectLoop();
 

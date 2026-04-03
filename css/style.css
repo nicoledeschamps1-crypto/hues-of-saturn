@@ -1674,61 +1674,6 @@ body {
   margin: 2px 0;
 }
 
-/* ── Floating Elevator Nav ──────────────────── */
-.elevator-nav {
-  position: fixed;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 10px 6px;
-  background: rgba(20, 20, 24, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 24px;
-  opacity: 0;
-  transition: opacity 0.4s;
-}
-
-.elevator-nav.visible {
-  opacity: 1;
-}
-
-.nav-floor-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.4);
-  font-family: 'Inter', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: all 0.2s;
-}
-
-.nav-floor-btn:hover {
-  border-color: rgba(255, 255, 255, 0.25);
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.nav-floor-btn.active {
-  border-color: rgba(200, 180, 100, 0.4);
-  color: rgba(255, 255, 255, 0.95);
-  background: rgba(200, 180, 100, 0.15);
-  box-shadow: 0 0 8px rgba(200, 180, 100, 0.15);
-}
-
 /* ============================================ */
 /* ABOUT FLOOR — Interactive Text Flow          */
 /* ============================================ */
@@ -1739,10 +1684,53 @@ body {
   overflow: hidden;
   cursor: default;
   background: radial-gradient(ellipse at 50% 40%, #0f0f14 0%, #0a0a0c 100%);
+  --eclipse: 0;
 }
 
 .behind-about.active {
   display: block;
+}
+
+/* Dynamic ambient light cast from orbs */
+.about-lightcast {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(circle at var(--sun-x, 50%) var(--sun-y, 50%),
+      rgba(196, 163, 90, calc(0.08 * (1 - var(--eclipse)))) 0%,
+      transparent 35%),
+    radial-gradient(circle at var(--moon-x, -100%) var(--moon-y, -100%),
+      rgba(200, 200, 215, 0.04) 0%,
+      transparent 25%);
+}
+
+/* Film grain overlay */
+.about-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  mix-blend-mode: overlay;
+  animation: grain-drift 8s steps(10) infinite;
+}
+
+@keyframes grain-drift {
+  0% { transform: translate(0, 0); }
+  10% { transform: translate(-5%, -10%); }
+  20% { transform: translate(-15%, 5%); }
+  30% { transform: translate(7%, -8%); }
+  40% { transform: translate(-5%, 15%); }
+  50% { transform: translate(-15%, -5%); }
+  60% { transform: translate(15%, 0%); }
+  70% { transform: translate(0%, 10%); }
+  80% { transform: translate(3%, -15%); }
+  90% { transform: translate(-10%, 5%); }
+  100% { transform: translate(0, 0); }
 }
 
 .about-inner {
@@ -1771,7 +1759,9 @@ body {
 /* Each word is a span that can be displaced */
 .about-text .w {
   display: inline-block;
-  transition: transform 0.12s ease-out, opacity 0.12s ease-out;
+  transition: transform 0.12s ease-out,
+              opacity 0.15s ease-out,
+              color 0.35s ease-out;
   will-change: transform;
   cursor: default;
 }
@@ -1819,7 +1809,7 @@ body {
   cursor: grabbing;
 }
 
-/* Moon orb — follows cursor, no pointer-events */
+/* Moon — crescent with crater texture, follows cursor */
 .orb-moon {
   pointer-events: none;
   z-index: 12;
@@ -1827,32 +1817,119 @@ body {
   transition: opacity 0.4s;
   width: 100px;
   height: 100px;
-  background: radial-gradient(circle at 35% 35%,
-    rgba(220, 215, 230, 0.38),
-    rgba(200, 195, 215, 0.14) 55%,
-    transparent 72%
-  );
-  box-shadow:
-    0 0 50px 12px rgba(210, 205, 225, 0.16),
-    0 0 100px 35px rgba(200, 195, 215, 0.06);
 }
 
 .behind-about.active .orb-moon {
   opacity: 1;
 }
 
-/* Sun — warm amber */
+/* Lit face with crater texture */
+.orb-moon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 28% 32%, rgba(200, 195, 185, 0.12) 0%, transparent 18%),
+    radial-gradient(circle at 55% 60%, rgba(180, 175, 165, 0.10) 0%, transparent 14%),
+    radial-gradient(circle at 68% 28%, rgba(190, 185, 175, 0.08) 0%, transparent 10%),
+    radial-gradient(circle at 40% 70%, rgba(185, 180, 170, 0.09) 0%, transparent 12%),
+    radial-gradient(circle at 38% 38%,
+      rgba(230, 225, 215, 0.42),
+      rgba(210, 205, 195, 0.20) 50%,
+      transparent 72%
+    );
+  box-shadow:
+    0 0 40px 10px rgba(220, 215, 205, 0.15),
+    0 0 80px 30px rgba(210, 205, 195, 0.06);
+}
+
+/* Dark mask — creates crescent */
+.orb-moon::after {
+  content: '';
+  position: absolute;
+  width: 82%;
+  height: 82%;
+  border-radius: 50%;
+  top: 4%;
+  left: 22%;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(10, 10, 12, 0.97) 0%,
+    rgba(10, 10, 12, 0.92) 70%,
+    rgba(10, 10, 12, 0.80) 100%
+  );
+}
+
+/* ── Layered sun — driven by --eclipse (0..1) ── */
 .orb-sun {
   width: 150px;
   height: 150px;
-  background: radial-gradient(circle at 35% 35%,
-    rgba(196, 163, 90, 0.38),
-    rgba(196, 163, 90, 0.14) 55%,
-    transparent 72%
+  background: none;
+  box-shadow: none;
+}
+
+/* Molten core — dense bright center */
+.orb-sun .orb-core {
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 40%,
+    rgba(255, 240, 200, 0.55),
+    rgba(220, 180, 80, 0.35) 50%,
+    rgba(196, 140, 50, 0.15) 80%,
+    transparent 100%
   );
+  opacity: calc(1 - var(--eclipse) * 0.8);
+  transition: opacity 0.3s;
+  animation: core-pulse 6s ease-in-out infinite;
+}
+
+@keyframes core-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* Inner bloom — warm mid glow */
+.orb-sun .orb-bloom {
+  position: absolute;
+  inset: 5%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%,
+    rgba(196, 163, 90, 0.32),
+    rgba(196, 163, 90, 0.10) 60%,
+    transparent 80%
+  );
+  opacity: calc(1 - var(--eclipse) * 0.7);
+  transition: opacity 0.3s;
+}
+
+/* Outer haze — large diffuse warmth */
+.orb-sun .orb-haze {
+  position: absolute;
+  inset: -40%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 45% 45%,
+    rgba(196, 163, 90, 0.12),
+    rgba(196, 140, 50, 0.05) 50%,
+    transparent 70%
+  );
+  opacity: calc(1 - var(--eclipse) * 0.5);
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+/* Corona — revealed by eclipse */
+.orb-sun .orb-corona {
+  position: absolute;
+  inset: -25%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 200, 80, calc(var(--eclipse) * 0.45));
   box-shadow:
-    0 0 60px 15px rgba(196, 163, 90, 0.18),
-    0 0 120px 40px rgba(196, 163, 90, 0.07);
+    0 0 calc(var(--eclipse) * 50px) rgba(255, 200, 80, calc(var(--eclipse) * 0.25)),
+    0 0 calc(var(--eclipse) * 100px) rgba(255, 180, 60, calc(var(--eclipse) * 0.12)),
+    0 0 calc(var(--eclipse) * 160px) rgba(255, 160, 40, calc(var(--eclipse) * 0.06));
+  pointer-events: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 /* Hint text */

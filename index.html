@@ -121,7 +121,14 @@
 
         <!-- About floor -->
         <div class="behind-about" id="behindAbout">
-          <div class="orb orb-sun" data-orb="sun"></div>
+          <div class="about-lightcast" id="aboutLightcast"></div>
+          <div class="about-grain"></div>
+          <div class="orb orb-sun" data-orb="sun">
+            <div class="orb-core"></div>
+            <div class="orb-bloom"></div>
+            <div class="orb-haze"></div>
+            <div class="orb-corona"></div>
+          </div>
           <div class="orb orb-moon" data-orb="moon"></div>
           <div class="about-inner">
             <div class="about-text" id="aboutText"></div>
@@ -219,14 +226,6 @@
     <button class="art-viewer-close" id="artViewerClose" aria-label="Close artwork viewer">&times;</button>
   </div>
 
-  <!-- Floating elevator panel — always accessible -->
-  <nav class="elevator-nav" id="elevatorNav" aria-label="Floor navigation">
-    <button class="nav-floor-btn" data-nav="hero" aria-label="Lobby">&#9733;</button>
-    <button class="nav-floor-btn" data-nav="gallery" aria-label="Gallery">1</button>
-    <button class="nav-floor-btn" data-nav="hod" aria-label="Hues of Dispositions">2</button>
-    <button class="nav-floor-btn" data-nav="about" aria-label="About">3</button>
-    <button class="nav-floor-btn" data-nav="contact" aria-label="Connect">4</button>
-  </nav>
 
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
