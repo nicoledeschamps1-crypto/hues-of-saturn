@@ -2104,31 +2104,197 @@ body {
 /* ============================================ */
 /* RESPONSIVE                                   */
 /* ============================================ */
-@media (max-width: 768px) {
-  .hero-title { padding: 40px 30px; }
-  .title-main { font-size: clamp(2.5rem, 12vw, 5rem); }
-  .saturn-container { width: 110vw; height: 110vw; top: -25%; right: -25%; }
+
+/* ── Mobile Bottom Nav ─────────────────────── */
+.mobile-floor-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  background: rgba(10, 10, 12, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 8px 16px env(safe-area-inset-bottom, 8px);
+  justify-content: space-around;
+}
+
+.mobile-floor-nav button {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.mobile-floor-nav button.active {
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── 1024px — Tablet ───────────────────────── */
+@media (max-width: 1024px) {
+  .saturn-container {
+    width: 85vw;
+    height: 85vw;
+  }
+
+  .elevator-wall {
+    width: 10%;
+  }
+
+  .elevator-frame {
+    inset: 4% 10%;
+  }
+
+  .orb-sun {
+    width: 130px;
+    height: 130px;
+  }
+
+  .orb-moon {
+    width: 85px;
+    height: 85px;
+  }
+
   .art-viewer-media img,
-  .art-viewer-media video { max-width: 90vw; max-height: 60vh; }
-  .art-viewer-content { max-width: 95vw; }
+  .art-viewer-media video {
+    max-width: 90vw;
+    max-height: 65vh;
+  }
 }
 
-@media (max-width: 480px) {
-  .hero-title { padding: 30px 20px; }
-  .surface-label { letter-spacing: 0.15em; }
+/* ── 767px — Large Phones ──────────────────── */
+@media (max-width: 767px) {
+  /* Hero */
+  .hero-title {
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    padding: 30px 24px;
+  }
 
-}
+  .title-main {
+    font-size: clamp(2rem, 10vw, 4rem);
+  }
 
-/* ── Reduced Motion ─────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .star, .sparkle, .void-star { animation: none; opacity: 0.5; }
-  .saturn-container { animation: none; }
-  .scroll-hint { animation: none; opacity: 0.5; }
-}
+  .saturn-container {
+    width: 95vw;
+    height: 95vw;
+  }
 
-/* Mobile flat gallery fallback */
-@media (max-width: 600px) {
-  .hallway-perspective { transform-style: flat; }
+  /* Constellations — scale down 35% */
+  .c-cancer {
+    width: 65px;
+  }
+
+  .c-capricorn {
+    width: 72px;
+  }
+
+  .c-libra {
+    width: 55px;
+  }
+
+  /* Elevator walls — narrower */
+  .elevator-wall-left,
+  .elevator-wall-right {
+    width: 6%;
+  }
+
+  .elevator-frame {
+    inset: 4% 6%;
+  }
+
+  .wall-handrail {
+    display: none;
+  }
+
+  /* Button panel — reposition to bottom center */
+  .button-panel {
+    bottom: 10px;
+    right: 50%;
+    top: auto;
+    transform: translateX(50%);
+    width: auto;
+    flex-direction: row;
+  }
+
+  .panel-surface {
+    flex-direction: row;
+    width: auto;
+    padding: 10px 14px;
+    gap: 6px;
+  }
+
+  .panel-divider {
+    width: 1px;
+    height: 26px;
+    margin: 0 2px;
+  }
+
+  .panel-door-row {
+    flex-direction: row;
+  }
+
+  .floor-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .door-btn,
+  .alarm-btn {
+    min-height: 44px;
+  }
+
+  /* About page */
+  .about-inner {
+    justify-content: flex-start;
+    padding-top: 60px;
+  }
+
+  .orb-sun {
+    width: 110px;
+    height: 110px;
+  }
+
+  .orb-moon {
+    width: 75px;
+    height: 75px;
+  }
+
+  /* Disable grain for performance */
+  .about-grain {
+    display: none;
+  }
+
+  /* Connect page */
+  .connect-text {
+    font-size: clamp(1.1rem, 2.4vw, 1.5rem);
+  }
+
+  .connect-links a {
+    font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  }
+
+  /* Gallery — flat layout (no 3D perspective) */
+  .gallery-hallway {
+    perspective: none;
+    overflow-y: auto;
+  }
+
+  .hallway-perspective {
+    transform-style: flat;
+  }
+
   .art-frame {
     position: relative !important;
     transform: none !important;
@@ -2136,8 +2302,233 @@ body {
     left: auto !important;
     margin: 20px auto;
   }
-  .gallery-hallway { perspective: none; overflow-y: auto; }
-  .hallway-ceiling, .hallway-floor,
-  .wall-surface-left, .wall-surface-right { display: none; }
-  .gallery-scroll-hint { display: none; }
+
+  .hallway-ceiling,
+  .hallway-floor,
+  .wall-surface-left,
+  .wall-surface-right {
+    display: none;
+  }
+
+  .gallery-hallway::before {
+    display: none;
+  }
+
+  .gallery-scroll-hint {
+    display: none;
+  }
+
+  /* Art viewer */
+  .art-viewer-media img,
+  .art-viewer-media video {
+    max-width: 95vw;
+    max-height: 55vh;
+  }
+
+  .art-viewer-content {
+    max-width: 98vw;
+  }
+
+  /* Mobile bottom nav */
+  .mobile-floor-nav {
+    display: flex;
+  }
+}
+
+/* ── 599px — Standard Phones ───────────────── */
+@media (max-width: 599px) {
+  .hero-title {
+    padding: 24px 16px;
+    padding-top: env(safe-area-inset-top, 24px);
+  }
+
+  .saturn-container {
+    width: 100vw;
+    height: 100vw;
+  }
+
+  .orbit-label {
+    display: none;
+  }
+
+  .scroll-hint {
+    font-size: 9px;
+  }
+
+  .floor-indicator {
+    top: env(safe-area-inset-top, 10px);
+  }
+
+  /* Elevator walls — minimal */
+  .elevator-wall-left,
+  .elevator-wall-right {
+    width: 4%;
+  }
+
+  .elevator-frame {
+    inset: 4% 4%;
+  }
+
+  .elevator-ceiling {
+    height: 3%;
+  }
+
+  .elevator-floor-surface {
+    height: 2%;
+  }
+
+  /* About page */
+  .about-inner {
+    padding: 40px 20px;
+  }
+
+  .about-text {
+    font-size: clamp(0.9rem, 1.6vw, 1rem);
+    line-height: 1.7;
+  }
+
+  .orb-sun {
+    width: 90px;
+    height: 90px;
+  }
+
+  .orb-moon {
+    display: none;
+  }
+
+  /* Performance: disable haze + lightcast */
+  .orb-sun .orb-haze {
+    display: none;
+  }
+
+  .about-lightcast {
+    display: none;
+  }
+
+  /* Connect page */
+  .connect-text {
+    font-size: clamp(1rem, 5vw, 1.3rem);
+  }
+
+  .connect-links {
+    gap: 22px;
+  }
+
+  .connect-links a {
+    font-size: clamp(0.85rem, 4vw, 1.05rem);
+    padding: 8px 0;
+  }
+
+  /* Gallery art frames */
+  .art-frame {
+    width: 85vw !important;
+    max-width: 340px;
+  }
+}
+
+/* ── 429px — Small Phones ──────────────────── */
+@media (max-width: 429px) {
+  .constellation {
+    display: none;
+  }
+
+  .title-main {
+    font-size: clamp(1.8rem, 9vw, 3rem);
+  }
+
+  .connect-links a {
+    padding: 10px 0;
+  }
+}
+
+/* ── Touch Devices ─────────────────────────── */
+@media (hover: none) {
+  .connect-links a:hover {
+    letter-spacing: 0.02em;
+  }
+
+  .ring-image:hover {
+    transform:
+      rotate(calc(var(--angle) * 1deg))
+      translateX(calc(var(--radius) * 1px))
+      rotate(calc(var(--angle) * -1deg))
+      rotateX(-72deg);
+  }
+
+  .ring-image img:hover,
+  .ring-image video:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Elevator buttons — neutralize hover, use :active instead */
+  .floor-btn:hover {
+    background:
+      linear-gradient(180deg,
+        hsl(220, 3%, 28%) 0%,
+        hsl(220, 3%, 20%) 50%,
+        hsl(220, 3%, 16%) 100%
+      );
+    color: rgba(255, 255, 255, 0.5);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .floor-btn:hover .btn-num { color: rgba(255, 255, 255, 0.6); }
+  .floor-btn:hover .btn-label { color: rgba(255, 255, 255, 0.35); }
+
+  .floor-btn:active {
+    background:
+      linear-gradient(180deg,
+        hsl(220, 3%, 34%) 0%,
+        hsl(220, 3%, 26%) 50%,
+        hsl(220, 3%, 22%) 100%
+      );
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 0 10px rgba(200, 200, 220, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    transform: translateY(1px);
+  }
+
+  .floor-btn:active .btn-num { color: rgba(255, 255, 255, 0.9); }
+  .floor-btn:active .btn-label { color: rgba(255, 255, 255, 0.55); }
+
+  .door-btn:hover {
+    background: linear-gradient(180deg, hsl(220, 3%, 26%) 0%, hsl(220, 3%, 18%) 100%);
+    color: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .door-btn:active {
+    background: linear-gradient(180deg, hsl(220, 3%, 32%) 0%, hsl(220, 3%, 24%) 100%);
+    color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4), 0 0 8px rgba(200, 200, 220, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: translateY(1px);
+  }
+
+  .alarm-btn:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .alarm-btn:active {
+    animation: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 14px rgba(255, 60, 60, 0.15);
+    transform: translateY(1px);
+  }
+}
+
+/* ── Reduced Motion ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .star, .sparkle, .void-star { animation: none; opacity: 0.5; }
+  .saturn-container { animation: none; }
+  .scroll-hint { animation: none; opacity: 0.5; }
+  .constellation { animation: none; opacity: 1; }
+  .about-grain { animation: none; }
+  .orb-sun .orb-core { animation: none; }
+  .alarm-btn { animation: none; }
 }

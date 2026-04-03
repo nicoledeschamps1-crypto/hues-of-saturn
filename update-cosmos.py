@@ -21,6 +21,12 @@ OUTPUT_FILE = "cosmos-data.json"
 # These appear on every page and aren't content
 SKIP_URLS = set()
 
+# Keywords in page HTML that suggest Pinterest-sourced content
+PINTEREST_MARKERS = [
+    'pinterest.com', 'pinimg.com', 'pin.it',
+    '"pinterest"', "'pinterest'", 'data-pin',
+]
+
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -62,18 +68,37 @@ def extract_images(html):
     return urls
 
 
+def is_pinterest_context(html, cdn_url):
+    """Check if a CDN URL appears near Pinterest markers in the HTML."""
+    # Find the position of this URL in the HTML
+    pos = html.find(cdn_url)
+    if pos == -1:
+        return False
+    # Check a window around the URL for Pinterest markers
+    window = html[max(0, pos - 500):pos + 500].lower()
+    return any(marker in window for marker in PINTEREST_MARKERS)
+
+
 def add_images(html, source_name, all_images, seen_globally):
     """Extract images from HTML and add new ones to the list."""
     cdn_urls = extract_images(html)
     count = 0
+    skipped_pin = 0
     for u in cdn_urls:
         if u not in seen_globally:
+            # Skip images that appear near Pinterest references
+            if is_pinterest_context(html, u):
+                seen_globally.add(u)
+                skipped_pin += 1
+                continue
             seen_globally.add(u)
             all_images.append({
                 "src": u + "?format=webp&w=400",
                 "collection": source_name,
             })
             count += 1
+    if skipped_pin:
+        print(f"  (skipped {skipped_pin} Pinterest-sourced)")
     return count, len(cdn_urls)
 
 
