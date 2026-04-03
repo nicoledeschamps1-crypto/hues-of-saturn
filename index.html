@@ -6,13 +6,13 @@
   <title>HUES OF SATURN</title>
   <meta name="description" content="Hues of Saturn — a creative universe by Nicole Deschamps">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20260403u">
+  <link rel="stylesheet" href="css/style.css?v=20260403z">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-  <a href="#gallery-section" class="sr-only">Skip to gallery</a>
+  <a href="#elevator-section" class="sr-only">Skip to main content</a>
 
   <!-- ============================================ -->
   <!-- SECTION 1: HERO — SATURN + INSPIRATION RING -->
@@ -20,6 +20,36 @@
   <section id="hero" class="hero">
     <div class="stars" id="stars"></div>
     <div class="sparkles" id="sparkles"></div>
+    <div class="constellations">
+      <!-- Cancer (accurate: inverted Y shape) -->
+      <svg class="constellation c-cancer" viewBox="0 0 100 80">
+        <circle cx="20" cy="25" r="1.3"/><circle cx="35" cy="35" r="1.5"/>
+        <circle cx="55" cy="40" r="1.8"/><circle cx="75" cy="35" r="1.5"/>
+        <circle cx="45" cy="60" r="1.3"/>
+        <line x1="20" y1="25" x2="35" y2="35"/><line x1="35" y1="35" x2="55" y2="40"/>
+        <line x1="55" y1="40" x2="75" y2="35"/><line x1="55" y1="40" x2="45" y2="60"/>
+      </svg>
+      <!-- Capricorn (accurate: triangular tail shape) -->
+      <svg class="constellation c-capricorn" viewBox="0 0 110 80">
+        <circle cx="10" cy="30" r="1.3"/><circle cx="28" cy="20" r="1.5"/>
+        <circle cx="50" cy="15" r="1.4"/><circle cx="70" cy="25" r="1.3"/>
+        <circle cx="85" cy="40" r="1.5"/><circle cx="95" cy="60" r="1.3"/>
+        <circle cx="70" cy="65" r="1.4"/><circle cx="50" cy="55" r="1.3"/>
+        <line x1="10" y1="30" x2="28" y2="20"/><line x1="28" y1="20" x2="50" y2="15"/>
+        <line x1="50" y1="15" x2="70" y2="25"/><line x1="70" y1="25" x2="85" y2="40"/>
+        <line x1="85" y1="40" x2="95" y2="60"/><line x1="95" y1="60" x2="70" y2="65"/>
+        <line x1="70" y1="65" x2="50" y2="55"/><line x1="50" y1="55" x2="50" y2="15"/>
+      </svg>
+      <!-- Libra (accurate: scales shape) -->
+      <svg class="constellation c-libra" viewBox="0 0 90 70">
+        <circle cx="45" cy="60" r="1.5"/><circle cx="25" cy="40" r="1.4"/>
+        <circle cx="65" cy="40" r="1.4"/><circle cx="15" cy="15" r="1.3"/>
+        <circle cx="75" cy="15" r="1.3"/>
+        <line x1="45" y1="60" x2="25" y2="40"/><line x1="45" y1="60" x2="65" y2="40"/>
+        <line x1="25" y1="40" x2="15" y2="15"/><line x1="65" y1="40" x2="75" y2="15"/>
+        <line x1="25" y1="40" x2="65" y2="40"/>
+      </svg>
+    </div>
 
     <div class="saturn-container" id="saturn">
       <div class="saturn-glow"></div>
@@ -77,7 +107,7 @@
       </div>
 
       <!-- Floor indicator display -->
-      <div class="floor-indicator" id="floorIndicator">
+      <div class="floor-indicator" id="floorIndicator" aria-live="polite" aria-atomic="true">
         <span class="indicator-arrow" id="indicatorArrow"></span>
         <span class="indicator-floor">★</span>
       </div>
@@ -89,17 +119,40 @@
           <p class="behind-subtitle">thoughts pending...</p>
         </div>
 
+        <!-- About floor -->
+        <div class="behind-about" id="behindAbout">
+          <div class="orb orb-sun" data-orb="sun"></div>
+          <div class="orb orb-moon" data-orb="moon"></div>
+          <div class="about-inner">
+            <div class="about-text" id="aboutText"></div>
+          </div>
+          <div class="about-hint">drag the orbs</div>
+        </div>
+
+        <!-- Connect floor -->
+        <div class="behind-about behind-connect" id="behindConnect">
+          <div class="about-inner">
+            <div class="about-text" id="connectText"></div>
+            <div class="about-socials">
+              <a href="https://instagram.com/huesofsaturn" target="_blank" rel="noopener">hues of saturn</a>
+              <a href="https://x.com/huesofsaturn" target="_blank" rel="noopener">x</a>
+              <a href="https://instagram.com/planetarydispositions" target="_blank" rel="noopener">@planetarydispositions</a>
+              <a href="mailto:nicole.deschamps1@gmail.com">email</a>
+            </div>
+          </div>
+          <div class="about-hint">move your cursor through the text</div>
+        </div>
+
         <!-- Gallery floor -->
         <div class="behind-gallery" id="behindGallery">
           <div class="gallery-hallway" id="galleryHallway">
-            <div class="hallway-perspective" id="hallwayInner">
-              <div class="wall-surface-left"></div>
-              <div class="wall-surface-right"></div>
-              <div class="hallway-floor"></div>
-              <div class="hallway-ceiling"></div>
-              <div class="hallway-wall-left" id="wallLeft"></div>
-              <div class="hallway-wall-right" id="wallRight"></div>
-            </div>
+            <!-- Perspective structure (positioned relative to hallway) -->
+            <div class="hallway-ceiling"></div>
+            <div class="wall-surface-left"></div>
+            <div class="wall-surface-right"></div>
+            <div class="hallway-floor"></div>
+            <!-- Scrollable art frames -->
+            <div class="hallway-perspective" id="hallwayInner"></div>
             <div class="gallery-scroll-hint">scroll to walk</div>
           </div>
         </div>
@@ -179,8 +232,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js" crossorigin="anonymous"></script>
-  <script src="js/arena-loader.js?v=20260403u"></script>
-  <script src="js/gallery-data.js?v=20260403u"></script>
-  <script src="js/main.js?v=20260403u"></script>
+  <script src="js/arena-loader.js?v=20260403x"></script>
+  <script src="js/gallery-data.js?v=20260403x"></script>
+  <script src="js/main.js?v=20260403z"></script>
 </body>
 </html>

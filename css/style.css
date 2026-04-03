@@ -43,6 +43,16 @@ body {
   cursor: default;
 }
 
+/* Lock page scroll when elevator doors are open */
+.elevator-section.doors-open {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
 .sr-only {
   position: absolute;
   left: -9999px;
@@ -93,6 +103,40 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 1;
+}
+
+/* Constellations — very faint star-line patterns */
+.constellations {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.constellation {
+  position: absolute;
+  opacity: 0;
+  animation: constellation-fade 4s ease-in forwards;
+  will-change: opacity;
+}
+
+.constellation circle {
+  fill: rgba(255, 255, 255, 0.85);
+}
+
+.constellation line {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 0.8;
+}
+
+/* Placement — in clear sky areas away from the rings */
+.c-cancer       { top: 3%;  left: 30%;  width: 100px; animation-delay: 3s; }
+.c-capricorn    { top: 3%;  right: 10%; width: 110px; animation-delay: 5s; }
+.c-libra        { bottom: 8%; left: 10%; width: 85px; animation-delay: 7s; }
+
+@keyframes constellation-fade {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 .sparkle {
@@ -230,7 +274,6 @@ body {
   overflow: visible;
   opacity: var(--img-opacity);
   backface-visibility: hidden;
-  will-change: transform, --angle;
   transition: opacity 0.3s;
 }
 
@@ -273,18 +316,19 @@ body {
   display: block;
 }
 
-/* Fallback ring line when no images loaded yet */
-.saturn-ring-fallback {
+/* Fallback rings when data fails to load */
+.saturn-container.rings-failed .saturn-ring-back::after {
+  content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  border: 2px solid rgba(120, 60, 130, 0.3);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotateX(75deg);
+  border: 1px solid rgba(120, 60, 130, 0.25);
   border-radius: 50%;
   pointer-events: none;
 }
+.saturn-container.rings-failed .ring-art::after { width: 84%; height: 84%; }
+.saturn-container.rings-failed .ring-arena::after { width: 114%; height: 114%; }
+.saturn-container.rings-failed .ring-cosmos::after { width: 144%; height: 144%; }
 
 /* ── Hero Title ─────────────────────────────── */
 .hero-title {
@@ -809,188 +853,227 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
-  /* Warm moody background — fades to darkness at the end */
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 40%,
-      hsl(28, 20%, 22%) 0%,
-      hsl(22, 15%, 14%) 50%,
-      hsl(18, 12%, 8%) 100%
-    );
+  background: #e8e4de;
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
 }
 
-/* Perspective walls drawn with CSS gradients */
+/* Back wall (vanishing point) */
 .gallery-hallway::before {
+  content: '';
+  position: absolute;
+  top: 39%;
+  left: 43%;
+  width: 14%;
+  height: 22%;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(255, 245, 225, 0.3) 0%, transparent 70%),
+    #d5d0c8;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ambient light overlay — warm glow from above */
+.gallery-hallway::after {
   content: '';
   position: absolute;
   inset: 0;
   background:
-    /* Left wall — warm beige, perspective trapezoid */
-    linear-gradient(to right,
-      hsl(30, 25%, 35%) 0%,
-      hsl(28, 20%, 28%) 18%,
-      transparent 18.5%
-    ),
-    /* Right wall */
-    linear-gradient(to left,
-      hsl(30, 22%, 33%) 0%,
-      hsl(28, 18%, 26%) 18%,
-      transparent 18.5%
-    );
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Crown molding — top strips */
-.gallery-hallway::after {
-  content: '';
-  position: absolute;
-  top: 12%;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg,
-    rgba(220, 190, 150, 0.25) 0%,
-    rgba(220, 190, 150, 0.08) 20%,
-    transparent 25%,
-    transparent 75%,
-    rgba(220, 190, 150, 0.08) 80%,
-    rgba(220, 190, 150, 0.25) 100%
-  );
-  z-index: 1;
+    /* Central overhead warm glow */
+    radial-gradient(ellipse 50% 35% at 50% 8%, rgba(255, 240, 210, 0.25) 0%, transparent 100%),
+    /* Soft left wall wash */
+    radial-gradient(ellipse 30% 50% at 15% 40%, rgba(255, 245, 220, 0.12) 0%, transparent 100%),
+    /* Soft right wall wash */
+    radial-gradient(ellipse 30% 50% at 85% 40%, rgba(255, 245, 220, 0.12) 0%, transparent 100%),
+    /* Subtle vignette for depth */
+    radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.08) 100%);
+  z-index: 4;
   pointer-events: none;
 }
 
-/* Polished floor */
-.gallery-hallway .hallway-floor {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 22%;
-  background: linear-gradient(180deg,
-    hsl(20, 10%, 10%) 0%,
-    hsl(20, 8%, 7%) 100%
-  );
-  z-index: 0;
-  /* Floor reflection shine */
-  box-shadow: inset 0 1px 0 rgba(200, 170, 130, 0.06);
-}
-
-/* Ceiling */
+/* ── Perspective corridor structure ─────────── */
 .gallery-hallway .hallway-ceiling {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  height: 12%;
-  background: hsl(25, 12%, 15%);
-  z-index: 0;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  height: 50%;
+  z-index: 1;
+  background:
+    /* Track light spots along ceiling */
+    radial-gradient(ellipse 8% 18% at 25% 60%, rgba(255, 248, 230, 0.35) 0%, transparent 100%),
+    radial-gradient(ellipse 8% 18% at 50% 80%, rgba(255, 248, 230, 0.25) 0%, transparent 100%),
+    radial-gradient(ellipse 8% 18% at 75% 60%, rgba(255, 248, 230, 0.35) 0%, transparent 100%),
+    /* Depth: darker toward edges where ceiling recedes */
+    linear-gradient(to right, rgba(0,0,0,0.06) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.06) 100%),
+    linear-gradient(to bottom, #f2ede7 0%, #e4dfd7 50%, #d8d3cb 100%);
+  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
+  pointer-events: none;
 }
 
-/* Hide unused wall divs */
-.gallery-hallway .wall-surface-left,
-.gallery-hallway .wall-surface-right,
-.gallery-hallway .hallway-wall-left,
-.gallery-hallway .hallway-wall-right {
-  display: none;
+/* Crown molding shadow — where ceiling meets walls */
+.gallery-hallway .hallway-ceiling::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Left molding shadow line */
+    linear-gradient(to right,
+      rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 1.5%, transparent 4%
+    ),
+    /* Right molding shadow line */
+    linear-gradient(to left,
+      rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 1.5%, transparent 4%
+    ),
+    /* Bottom edge shadow — where ceiling meets back wall */
+    linear-gradient(to top,
+      rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.04) 3%, transparent 8%
+    );
+  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
+  pointer-events: none;
 }
 
-/* Hallway perspective container — scrolls horizontally */
+/* Track lighting rail */
+.gallery-hallway .hallway-ceiling::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    /* Center track rail */
+    linear-gradient(to bottom,
+      transparent 70%,
+      rgba(0,0,0,0.04) 72%,
+      rgba(0,0,0,0.08) 74%,
+      rgba(0,0,0,0.04) 76%,
+      transparent 78%
+    ),
+    /* Track rail highlight */
+    linear-gradient(to bottom,
+      transparent 69%,
+      rgba(255,255,255,0.12) 70%,
+      transparent 71%
+    );
+  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
+  pointer-events: none;
+}
+
+.gallery-hallway .wall-surface-left {
+  position: absolute;
+  inset: 0;
+  background:
+    /* Light wash from ceiling spots */
+    radial-gradient(ellipse 60% 25% at 20% 15%, rgba(255, 248, 230, 0.2) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 25% at 35% 25%, rgba(255, 248, 230, 0.12) 0%, transparent 100%),
+    /* Shadow at top edge (ceiling junction) */
+    linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 8%),
+    /* Shadow at bottom edge (floor junction) */
+    linear-gradient(to top, rgba(0,0,0,0.06) 0%, transparent 6%),
+    /* Subtle vertical depth — darker toward the vanishing point */
+    linear-gradient(to right, #e2ddd5 0%, #dbd6ce 50%, #ccc7bf 100%);
+  clip-path: polygon(0% 0%, 43% 39%, 43% 61%, 0% 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.gallery-hallway .wall-surface-right {
+  position: absolute;
+  inset: 0;
+  background:
+    /* Light wash from ceiling spots */
+    radial-gradient(ellipse 60% 25% at 80% 15%, rgba(255, 248, 230, 0.2) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 25% at 65% 25%, rgba(255, 248, 230, 0.12) 0%, transparent 100%),
+    /* Shadow at top edge (ceiling junction) */
+    linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 8%),
+    /* Shadow at bottom edge (floor junction) */
+    linear-gradient(to top, rgba(0,0,0,0.06) 0%, transparent 6%),
+    /* Subtle vertical depth — darker toward the vanishing point */
+    linear-gradient(to left, #e2ddd5 0%, #dbd6ce 50%, #ccc7bf 100%);
+  clip-path: polygon(100% 0%, 57% 39%, 57% 61%, 100% 100%);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.gallery-hallway .hallway-floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  z-index: 1;
+  background:
+    /* Light reflections on polished floor */
+    radial-gradient(ellipse 20% 30% at 25% 20%, rgba(255, 250, 235, 0.08) 0%, transparent 100%),
+    radial-gradient(ellipse 20% 30% at 75% 20%, rgba(255, 250, 235, 0.08) 0%, transparent 100%),
+    linear-gradient(to top, #c0bab0 0%, #d2cdc5 50%, #ddd8d0 100%);
+  clip-path: polygon(0% 100%, 100% 100%, 57% 0%, 43% 0%);
+  pointer-events: none;
+}
+
+/* 3D walk-through container */
 .gallery-hallway .hallway-perspective {
   position: absolute;
-  top: 12%;
-  bottom: 22%;
-  left: 0;
-  display: flex;
-  align-items: center;
-  gap: clamp(30px, 5vw, 60px);
-  padding: 0 clamp(50px, 8vw, 120px);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  z-index: 2;
+  inset: 0;
+  transform-style: preserve-3d;
+  z-index: 3;
+  pointer-events: none;
 }
-.gallery-hallway .hallway-perspective::-webkit-scrollbar { display: none; }
 
-/* Art frames */
+/* Art frames — positioned in 3D on walls */
 .art-frame {
-  flex-shrink: 0;
+  position: absolute;
   cursor: pointer;
-  transition: transform 0.3s ease;
-  position: relative;
+  pointer-events: all;
+  transition: filter 0.3s ease;
 }
 
 .art-frame:hover {
-  transform: translateY(-6px) scale(1.03);
+  filter: brightness(1.08);
 }
 
 .frame-border {
-  background: white;
-  padding: clamp(6px, 1vw, 12px);
+  padding: 4px;
+  background: #1a1a1a;
   box-shadow:
-    0 6px 24px rgba(0, 0, 0, 0.4),
-    0 2px 6px rgba(0, 0, 0, 0.2),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+    0 4px 20px rgba(0, 0, 0, 0.25),
+    0 1px 4px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.3s ease;
+  overflow: hidden;
 }
 
 .art-frame:hover .frame-border {
   box-shadow:
-    0 10px 36px rgba(0, 0, 0, 0.5),
-    0 4px 10px rgba(0, 0, 0, 0.25),
-    0 0 40px rgba(255, 240, 210, 0.06),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    0 0 40px rgba(0, 0, 0, 0.1);
 }
 
 .art-media {
   display: block;
-  height: clamp(160px, 38vh, 340px);
-  width: auto;
-  max-width: clamp(160px, 30vw, 400px);
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .art-label {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(7px, 0.8vw, 10px);
-  font-weight: 400;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: rgba(220, 200, 170, 0.4);
-  text-align: center;
-  margin-top: 8px;
-}
-
-/* Spotlight glow above each piece */
-.art-frame::before {
-  content: '';
   position: absolute;
-  top: -40px;
+  bottom: -18px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  height: 40px;
-  background: radial-gradient(ellipse 80% 100% at 50% 100%,
-    rgba(255, 240, 210, 0.1) 0%,
-    transparent 100%
-  );
-  pointer-events: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.55rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-/* Spotlight on the frame itself */
-.art-frame::after {
-  content: '';
-  position: absolute;
-  inset: -20px;
-  background: radial-gradient(ellipse at 50% 30%,
-    rgba(255, 240, 210, 0.04) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: -1;
+.art-frame:hover .art-label {
+  opacity: 1;
 }
 
 /* Gallery scroll hint */
@@ -1004,7 +1087,7 @@ body {
   font-size: 10px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: rgba(200, 180, 150, 0.3);
+  color: rgba(0, 0, 0, 0.35);
   pointer-events: none;
   animation: hint-fade 3s ease-in-out infinite;
 }
@@ -1646,362 +1729,145 @@ body {
 }
 
 /* ============================================ */
-/* SECTION 3: GALLERY                           */
+/* ABOUT FLOOR — Interactive Text Flow          */
 /* ============================================ */
-.gallery-section {
-  position: relative;
-  width: 100%;
-  height: 400vh;
-  background: #e8e4de;
-}
-
-.gallery-intro {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  z-index: 10;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.gallery-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.2rem, 2.5vw, 2rem);
-  font-weight: 900;
-  letter-spacing: 0.2em;
-  color: #222;
-}
-
-.gallery-subtitle {
-  font-size: 0.7rem;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.55);
-}
-
-/* Scroll container */
-.gallery-scroll-container {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
+.behind-about {
+  position: absolute;
+  inset: 0;
+  display: none;
   overflow: hidden;
+  cursor: default;
+  background: radial-gradient(ellipse at 50% 40%, #0f0f14 0%, #0a0a0c 100%);
 }
 
-.hallway-viewport {
-  width: 100%;
-  height: 100%;
-  perspective: 1200px;
-  perspective-origin: 50% 50%;
-}
-
-.hallway-perspective {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-}
-
-/* Perspective lines SVG */
-.hallway-lines {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* Back wall */
-.vanishing-rect {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 14vw;
-  height: 18vh;
-  transform: translate(-50%, -50%);
-  background: #d5d0c8;
-  border: 1px solid rgba(0,0,0,0.08);
-  z-index: 2;
-}
-
-/* Art container layers */
-.hallway-wall-left,
-.hallway-wall-right {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-}
-
-/* Floor */
-.hallway-floor {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  z-index: 1;
-  background: linear-gradient(to top, #c4beb4 0%, #d5d0c8 60%, #ddd8d0 100%);
-  clip-path: polygon(0% 100%, 100% 100%, 57% 0%, 43% 0%);
-}
-
-/* Ceiling */
-.hallway-ceiling {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  z-index: 1;
-  background: linear-gradient(to bottom, #f0ece6 0%, #e0dbd3 60%, #d8d3cb 100%);
-  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
-}
-
-/* Walls */
-.wall-surface-left {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, #ddd8d0 0%, #d8d3cb 60%, #d0cbc3 100%);
-  clip-path: polygon(0% 0%, 43% 39%, 43% 61%, 0% 100%);
-  z-index: 2;
-}
-
-.wall-surface-right {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to left, #ddd8d0 0%, #d8d3cb 60%, #d0cbc3 100%);
-  clip-path: polygon(100% 0%, 57% 39%, 57% 61%, 100% 100%);
-  z-index: 2;
-}
-
-/* ── Molding ────────────────────────────────── */
-.molding {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-}
-
-.crown-left-main     { background: #8a7e6e; clip-path: polygon(0% 0.4%, 43% 39.2%, 43% 39.9%, 0% 1.8%); }
-.crown-left-shadow   { background: rgba(0,0,0,0.3); clip-path: polygon(0% 1.8%, 43% 39.9%, 43% 40.2%, 0% 2.2%); }
-.crown-left-highlight{ background: rgba(255,255,255,0.35); clip-path: polygon(0% 0.1%, 43% 39.05%, 43% 39.2%, 0% 0.4%); }
-.crown-right-main    { background: #8a7e6e; clip-path: polygon(100% 0.4%, 57% 39.2%, 57% 39.9%, 100% 1.8%); }
-.crown-right-shadow  { background: rgba(0,0,0,0.3); clip-path: polygon(100% 1.8%, 57% 39.9%, 57% 40.2%, 100% 2.2%); }
-.crown-right-highlight{ background: rgba(255,255,255,0.35); clip-path: polygon(100% 0.1%, 57% 39.05%, 57% 39.2%, 100% 0.4%); }
-.crown-back          { background: #8a7e6e; clip-path: polygon(43% 39.2%, 57% 39.2%, 57% 39.9%, 43% 39.9%); }
-.base-left-main      { background: #7a7060; clip-path: polygon(0% 98.2%, 43% 60.1%, 43% 60.8%, 0% 99.6%); }
-.base-left-shadow    { background: rgba(0,0,0,0.3); clip-path: polygon(0% 97.8%, 43% 59.8%, 43% 60.1%, 0% 98.2%); }
-.base-left-highlight { background: rgba(255,255,255,0.25); clip-path: polygon(0% 99.6%, 43% 60.8%, 43% 60.95%, 0% 99.9%); }
-.base-right-main     { background: #7a7060; clip-path: polygon(100% 98.2%, 57% 60.1%, 57% 60.8%, 100% 99.6%); }
-.base-right-shadow   { background: rgba(0,0,0,0.3); clip-path: polygon(100% 97.8%, 57% 59.8%, 57% 60.1%, 100% 98.2%); }
-.base-right-highlight{ background: rgba(255,255,255,0.25); clip-path: polygon(100% 99.6%, 57% 60.8%, 57% 60.95%, 100% 99.9%); }
-.base-back           { background: #7a7060; clip-path: polygon(43% 60.1%, 57% 60.1%, 57% 60.8%, 43% 60.8%); }
-
-/* ── Art Frames ─────────────────────────────── */
-.art-frame {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  transition: filter 0.3s ease;
-  pointer-events: all;
-}
-
-.art-frame:hover {
-  filter: brightness(1.08);
-}
-
-.art-frame:hover .frame-border {
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.35),
-    0 0 40px rgba(0, 0, 0, 0.1);
-}
-
-.frame-border {
-  padding: 4px;
-  background: #1a1a1a;
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.25),
-    0 1px 4px rgba(0, 0, 0, 0.15);
-  transition: box-shadow 0.3s ease;
-  overflow: hidden;
-}
-
-.art-media {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.behind-about.active {
   display: block;
 }
 
-.video-indicator {
+.about-inner {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  background: rgba(0,0,0,0.6);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: #fff;
-  pointer-events: none;
-}
-
-.art-label {
-  position: absolute;
-  bottom: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.5);
-  opacity: 0;
-  transition: opacity 0.3s;
-  white-space: nowrap;
-  font-family: 'Inter', sans-serif;
-}
-
-.art-frame:hover .art-label {
-  opacity: 1;
-}
-
-/* ── Door ───────────────────────────────────── */
-.hallway-door {
-  position: absolute;
-  top: calc(50% + 9vh);
-  left: 50%;
-  transform: translate(-50%, -100%);
-  z-index: 5;
+  inset: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  cursor: pointer;
+  justify-content: center;
+  padding: clamp(30px, 4vw, 50px) clamp(40px, 6vw, 80px);
+  overflow-y: auto;
 }
 
-.door-frame {
-  position: relative;
-  width: 5vw;
-  height: 8.5vw;
-  min-width: 42px;
-  min-height: 70px;
-  max-width: 72px;
-  max-height: 120px;
-  overflow: hidden;
-  transition: all 0.5s ease;
-  border-radius: 6px 6px 0 0;
-  border-top: 4px solid #3d2b1a;
-  border-left: 4px solid #3d2b1a;
-  border-right: 4px solid #3d2b1a;
-  border-bottom: 2px solid #3d2b1a;
-  background:
-    repeating-linear-gradient(180deg, rgba(60, 35, 15, 0.15) 0px, transparent 2px, transparent 6px),
-    linear-gradient(180deg, #5c3d22 0%, #4a3018 40%, #3d2515 70%, #2e1a0d 100%);
-  box-shadow:
-    0 2px 12px rgba(0,0,0,0.35),
-    inset 0 0 20px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.05);
+.about-text {
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  font-weight: 400;
+  line-height: 1.9;
+  color: #e8e4dc;
+  max-width: 640px;
+  width: 100%;
+  text-align: left;
 }
 
-.hallway-door:hover .door-frame {
-  box-shadow:
-    0 0 30px rgba(0, 0, 0, 0.3),
-    0 0 60px rgba(201, 168, 76, 0.12),
-    inset 0 0 15px rgba(0,0,0,0.2);
+/* Each word is a span that can be displaced */
+.about-text .w {
+  display: inline-block;
+  transition: transform 0.12s ease-out, opacity 0.12s ease-out;
+  will-change: transform;
+  cursor: default;
 }
 
-.door-panel {
-  position: absolute;
-  inset: 0;
-  background:
-    repeating-linear-gradient(180deg, rgba(80, 50, 20, 0.1) 0px, transparent 1px, transparent 4px),
-    linear-gradient(180deg, #5a3a20 0%, #4a2e16 50%, #3a2210 100%);
-  transition: transform 0.8s ease;
-  transform-origin: left center;
+/* Social links */
+.about-socials {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.door-panel::before {
-  content: '';
-  position: absolute;
-  top: 10%;
-  left: 12%;
-  width: 76%;
-  height: 35%;
-  border: 1.5px solid rgba(0,0,0,0.25);
-  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.02) 100%);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
-}
-
-.door-panel::after {
-  content: '';
-  position: absolute;
-  top: 52%;
-  left: 12%;
-  width: 76%;
-  height: 38%;
-  border: 1.5px solid rgba(0,0,0,0.25);
-  background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.02) 100%);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
-}
-
-.hallway-door:hover .door-panel {
-  transform: perspective(200px) rotateY(-18deg);
-}
-
-.door-handle {
-  position: absolute;
-  right: 15%;
-  top: 48%;
-  transform: translateY(-50%);
-  width: 5px;
-  height: 12px;
-  background: linear-gradient(180deg, #d4a84c, #a67c30);
-  border-radius: 2px;
-  box-shadow: 0 0 6px rgba(201, 168, 76, 0.6), 0 1px 2px rgba(0,0,0,0.4);
-}
-
-.door-handle::after {
-  content: '';
-  position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 3px;
-  height: 5px;
-  background: #1a1008;
-  border-radius: 50% 50% 1px 1px;
-  border: 0.5px solid rgba(201, 168, 76, 0.3);
-}
-
-.door-light {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, rgba(255, 220, 150, 0.15) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-.hallway-door:hover .door-light { opacity: 1; }
-
-.door-label {
-  margin-top: 5px;
-  font-size: 0.625rem;
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.6);
-  font-style: italic;
+.about-socials a {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
   transition: color 0.3s;
 }
 
-.hallway-door:hover .door-label { color: rgba(80, 50, 20, 0.7); }
+.about-socials a:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ── Pretext-style floating orbs ── */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 10;
+  cursor: grab;
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.orb.dragging {
+  cursor: grabbing;
+}
+
+/* Moon orb — follows cursor, no pointer-events */
+.orb-moon {
+  pointer-events: none;
+  z-index: 12;
+  opacity: 0;
+  transition: opacity 0.4s;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at 35% 35%,
+    rgba(220, 215, 230, 0.38),
+    rgba(200, 195, 215, 0.14) 55%,
+    transparent 72%
+  );
+  box-shadow:
+    0 0 50px 12px rgba(210, 205, 225, 0.16),
+    0 0 100px 35px rgba(200, 195, 215, 0.06);
+}
+
+.behind-about.active .orb-moon {
+  opacity: 1;
+}
+
+/* Sun — warm amber */
+.orb-sun {
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle at 35% 35%,
+    rgba(196, 163, 90, 0.38),
+    rgba(196, 163, 90, 0.14) 55%,
+    transparent 72%
+  );
+  box-shadow:
+    0 0 60px 15px rgba(196, 163, 90, 0.18),
+    0 0 120px 40px rgba(196, 163, 90, 0.07);
+}
+
+/* Hint text */
+.about-hint {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
 
 /* ============================================ */
 /* ART VIEWER OVERLAY                           */
@@ -2113,105 +1979,6 @@ body {
   background: rgba(255,255,255,0.1);
 }
 
-/* ============================================ */
-/* SECTION 4: CONTACT                           */
-/* ============================================ */
-.contact-section {
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  overflow: hidden;
-}
-
-.contact-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--black);
-  position: relative;
-}
-
-.contact-door-reveal {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, rgba(201, 168, 76, 0.08) 0%, transparent 60%);
-}
-
-.contact-light {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255, 248, 231, 0.05) 0%, transparent 70%);
-  border-radius: 50%;
-  animation: contactPulse 4s ease-in-out infinite;
-}
-
-@keyframes contactPulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
-  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-}
-
-.contact-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  padding: 40px;
-}
-
-.contact-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 5vw, 4rem);
-  font-weight: 900;
-  letter-spacing: 0.2em;
-  margin-bottom: 15px;
-}
-
-.contact-subtitle {
-  font-size: 0.85rem;
-  letter-spacing: 0.3em;
-  color: rgba(255,255,255,0.4);
-  margin-bottom: 50px;
-}
-
-.contact-links {
-  display: flex;
-  gap: 30px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 50px;
-}
-
-.contact-link {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--white);
-  padding: 25px 30px;
-  border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.4s ease;
-  min-width: 120px;
-}
-
-.contact-link:hover {
-  border-color: var(--crack-blue);
-  background: rgba(100, 130, 220, 0.05);
-  transform: translateY(-5px);
-}
-
-.contact-link-icon { font-size: 1.5rem; }
-
-.contact-link span:last-child {
-  font-size: 0.75rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-}
 
 .back-to-gallery {
   background: none;
@@ -2238,8 +2005,6 @@ body {
   .hero-title { padding: 40px 30px; }
   .title-main { font-size: clamp(2.5rem, 12vw, 5rem); }
   .saturn-container { width: 110vw; height: 110vw; top: -25%; right: -25%; }
-  .contact-links { gap: 15px; }
-  .contact-link { padding: 20px; min-width: 100px; }
   .art-viewer-media img,
   .art-viewer-media video { max-width: 90vw; max-height: 60vh; }
   .art-viewer-content { max-width: 95vw; }
@@ -2248,14 +2013,28 @@ body {
 @media (max-width: 480px) {
   .hero-title { padding: 30px 20px; }
   .surface-label { letter-spacing: 0.15em; }
-  .gallery-section { height: 300vh; }
+
 }
 
 /* ── Reduced Motion ─────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .star, .sparkle, .void-star { animation: none; opacity: 0.5; }
   .saturn-container { animation: none; }
-  .saturn-ring-container { animation: none !important; }
   .scroll-hint { animation: none; opacity: 0.5; }
-  .contact-light { animation: none; }
+}
+
+/* Mobile flat gallery fallback */
+@media (max-width: 600px) {
+  .hallway-perspective { transform-style: flat; }
+  .art-frame {
+    position: relative !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    margin: 20px auto;
+  }
+  .gallery-hallway { perspective: none; overflow-y: auto; }
+  .hallway-ceiling, .hallway-floor,
+  .wall-surface-left, .wall-surface-right { display: none; }
+  .gallery-scroll-hint { display: none; }
 }
