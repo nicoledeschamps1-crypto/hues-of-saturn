@@ -616,7 +616,7 @@ buildGalleryFrames();
 if (galleryHallway) {
   var walkVelocity = 0;
   var walkMomentumRAF = null;
-  var walkFriction = 0.92;
+  var walkFriction = 0.97;
 
   function applyWalk() {
     walkZ = Math.max(0, Math.min(maxWalkZ, walkZ));
