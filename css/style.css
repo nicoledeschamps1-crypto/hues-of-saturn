@@ -1808,9 +1808,9 @@ body {
   cursor: default;
 }
 
-/* Connect page — Jacquard 24, bold layout */
+/* Connect page */
 .connect-text {
-  font-family: 'Jacquard 24', serif;
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
   font-size: clamp(1.3rem, 2.8vw, 1.8rem);
   line-height: 1.8;
   color: rgba(255, 255, 255, 0.75);
@@ -1839,7 +1839,7 @@ body {
 }
 
 .connect-links a {
-  font-family: 'Jacquard 24', serif;
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
   font-size: clamp(1rem, 2vw, 1.3rem);
   color: rgba(255, 255, 255, 0.35);
   text-decoration: none;
