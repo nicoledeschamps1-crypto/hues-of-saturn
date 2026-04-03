@@ -576,42 +576,99 @@ function buildGalleryFrames() {
 
 buildGalleryFrames();
 
-// Scroll wheel → walk through the hallway (translateZ)
+// Scroll/swipe → walk through the hallway with momentum
 if (galleryHallway) {
+  var walkVelocity = 0;
+  var walkMomentumRAF = null;
+  var walkFriction = 0.92;
+
+  function applyWalk() {
+    walkZ = Math.max(0, Math.min(maxWalkZ, walkZ));
+    hallwayInner.style.transform = 'translateZ(' + walkZ + 'px)';
+    var hint = galleryHallway.querySelector('.gallery-scroll-hint');
+    if (hint && walkZ > 30) hint.style.opacity = '0';
+  }
+
+  function momentumLoop() {
+    walkMomentumRAF = requestAnimationFrame(momentumLoop);
+    if (Math.abs(walkVelocity) < 0.3) {
+      walkVelocity = 0;
+      cancelAnimationFrame(walkMomentumRAF);
+      walkMomentumRAF = null;
+      return;
+    }
+    walkVelocity *= walkFriction;
+    walkZ += walkVelocity;
+    applyWalk();
+  }
+
+  function startMomentum() {
+    if (!walkMomentumRAF) {
+      walkMomentumRAF = requestAnimationFrame(momentumLoop);
+    }
+  }
+
+  // Desktop: wheel input feeds velocity
   galleryHallway.addEventListener('wheel', function(e) {
     if (!behindGallery.classList.contains('active')) return;
     e.preventDefault();
-
-    walkZ = Math.max(0, Math.min(maxWalkZ, walkZ + e.deltaY * 1.5));
-    hallwayInner.style.transform = 'translateZ(' + walkZ + 'px)';
-
-    // Hide hint after walking
-    var hint = galleryHallway.querySelector('.gallery-scroll-hint');
-    if (hint && walkZ > 30) hint.style.opacity = '0';
+    walkVelocity += e.deltaY * 0.4;
+    // Cap velocity
+    if (walkVelocity > 30) walkVelocity = 30;
+    if (walkVelocity < -30) walkVelocity = -30;
+    walkZ += e.deltaY * 1.2;
+    applyWalk();
+    startMomentum();
   }, { passive: false });
 
-  // Touch support for gallery walk-through
+  // Touch: swipe with momentum on release
   var touchStartY = 0;
   var touchWalkZ = 0;
   var touchMoved = false;
+  var touchPrevY = 0;
+  var touchTime = 0;
+
   galleryHallway.addEventListener('touchstart', function(e) {
     if (!behindGallery.classList.contains('active')) return;
     touchStartY = e.touches[0].clientY;
+    touchPrevY = touchStartY;
+    touchTime = Date.now();
     touchWalkZ = walkZ;
     touchMoved = false;
+    // Stop any existing momentum
+    walkVelocity = 0;
+    if (walkMomentumRAF) {
+      cancelAnimationFrame(walkMomentumRAF);
+      walkMomentumRAF = null;
+    }
   }, { passive: true });
 
   galleryHallway.addEventListener('touchmove', function(e) {
     if (!behindGallery.classList.contains('active')) return;
-    var deltaY = touchStartY - e.touches[0].clientY;
+    var currentY = e.touches[0].clientY;
+    var deltaY = touchStartY - currentY;
     if (Math.abs(deltaY) > 10) touchMoved = true;
     if (!touchMoved) return;
     e.preventDefault();
     walkZ = Math.max(0, Math.min(maxWalkZ, touchWalkZ + deltaY * 2));
-    hallwayInner.style.transform = 'translateZ(' + walkZ + 'px)';
-    var hint = galleryHallway.querySelector('.gallery-scroll-hint');
-    if (hint && walkZ > 30) hint.style.opacity = '0';
+    applyWalk();
+    // Track for velocity calculation
+    touchPrevY = currentY;
+    touchTime = Date.now();
   }, { passive: false });
+
+  galleryHallway.addEventListener('touchend', function(e) {
+    if (!touchMoved) return;
+    // Calculate fling velocity from last touch movement
+    var endY = e.changedTouches[0].clientY;
+    var dt = Math.max(1, Date.now() - touchTime);
+    var swipeSpeed = (touchPrevY - endY) / dt * 16;
+    walkVelocity = swipeSpeed * 3;
+    // Cap
+    if (walkVelocity > 25) walkVelocity = 25;
+    if (walkVelocity < -25) walkVelocity = -25;
+    if (Math.abs(walkVelocity) > 1) startMomentum();
+  }, { passive: true });
 }
 
 // Keyboard activation for gallery art frames
