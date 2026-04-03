@@ -442,8 +442,9 @@ function pressFloor(floor) {
 
 function closeDoors() {
   if (traveling) return;
+  // Keep position:fixed while doors animate shut to prevent page jump
   elevatorSection.classList.remove('doors-open');
-  elevatorSection.classList.remove('doors-closing');
+  elevatorSection.classList.add('doors-closing');
   document.querySelectorAll('.floor-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
   behindGallery.classList.remove('active');
   behindAbout.classList.remove('active');
@@ -455,7 +456,14 @@ function closeDoors() {
   walkZ = 0;
   if (hallwayInner) hallwayInner.style.transform = 'translateZ(0px)';
   activeFloor = null;
-  // Travel back to lobby after doors close (1.5s CSS animation)
+
+  function releaseElevator() {
+    // Scroll to elevator before releasing fixed position so page doesn't jump
+    window.scrollTo({ top: elevatorSection.offsetTop, behavior: 'instant' });
+    elevatorSection.classList.remove('doors-closing');
+  }
+
+  // Travel back to lobby after doors close
   if (currentFloorIndex !== 0) {
     traveling = true;
     indicatorArrow.className = 'indicator-arrow arrow-down';
@@ -471,9 +479,13 @@ function closeDoors() {
           floorIndicator.textContent = '★';
           indicatorArrow.className = 'indicator-arrow';
           traveling = false;
+          releaseElevator();
         }
       }, 500);
-    }, 1600); // wait for 1.5s door close animation to finish
+    }, 1600);
+  } else {
+    // Already at lobby — wait for door animation then release
+    setTimeout(releaseElevator, 1600);
   }
 }
 
@@ -671,7 +683,7 @@ var ABOUT_COPY = [
 ];
 
 var CONNECT_COPY = [
-  'i\'m always open to collaboration, conversation, or just hearing what moved you. whether it\'s about the art, the tools, or something entirely unrelated.. reach out.',
+  'open to collaboration, conversation, or just hearing what moved you.',
   '',
   'the best things happen when curious people find each other.',
 ];
