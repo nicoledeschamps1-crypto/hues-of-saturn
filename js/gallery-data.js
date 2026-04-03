@@ -92,4 +92,15 @@ const GALLERY_ART = [
     wall: 'right',
     position: 3,
   },
+  {
+    id: 'cyhm-overlay',
+    title: 'Can You Hear Me Over All Th',
+    medium: 'Mixed Media',
+    year: '',
+    description: '',
+    src: 'assets/art/CAN You Hear Me over all th.jpg',
+    type: 'image',
+    wall: 'left',
+    position: 4,
+  },
 ];

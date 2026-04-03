@@ -14,8 +14,12 @@ import requests
 
 USERNAME = "huesofsaturn"
 BASE_URL = f"https://www.cosmos.so/{USERNAME}"
-CDN_PATTERN = re.compile(r'https://cdn\.cosmos\.so/[a-f0-9\-]+')
+CDN_PATTERN = re.compile(r'https://cdn\.cosmos\.so/[a-f0-9\-]{20,}')
 OUTPUT_FILE = "cosmos-data.json"
+
+# URLs to skip — profile avatars, covers, UI elements
+# These appear on every page and aren't content
+SKIP_URLS = set()
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -73,12 +77,39 @@ def add_images(html, source_name, all_images, seen_globally):
     return count, len(cdn_urls)
 
 
+def find_avatar_urls():
+    """Find URLs that appear on every page — these are avatars/UI, not content."""
+    print("Identifying avatar/UI images to exclude...")
+    pages = [f"{BASE_URL}", f"{BASE_URL}/collections"]
+    url_counts = {}
+
+    for page_url in pages:
+        try:
+            html = fetch_page(page_url)
+            urls = set(CDN_PATTERN.findall(html))
+            for u in urls:
+                url_counts[u] = url_counts.get(u, 0) + 1
+        except Exception:
+            pass
+        time.sleep(0.3)
+
+    # URLs on both pages are likely avatars
+    avatars = {u for u, c in url_counts.items() if c >= 2}
+    if avatars:
+        print(f"  Excluding {len(avatars)} avatar/UI images")
+    return avatars
+
+
 def main():
     all_images = []
     seen_globally = set()
 
+    # Find and exclude avatar URLs
+    avatar_urls = find_avatar_urls()
+    seen_globally.update(avatar_urls)
+
     # 1. Scrape Elements page (all individual saves)
-    print(f"Fetching elements from {BASE_URL} ...")
+    print(f"\nFetching elements from {BASE_URL} ...")
     try:
         elements_html = fetch_page(BASE_URL)
         new, total = add_images(elements_html, "elements", all_images, seen_globally)

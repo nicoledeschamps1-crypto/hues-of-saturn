@@ -55,9 +55,7 @@ function createSparkles() {
 createStars(document.getElementById('stars'), 100, false);
 createSparkles();
 
-// Void stars (behind the crack)
-var voidStarsEl = document.getElementById('voidStars');
-if (voidStarsEl) createStars(voidStarsEl, 60, true);
+// (void stars removed — crack now uses light-through-wall approach)
 
 // ============================================
 // HERO — fade on scroll
@@ -78,12 +76,23 @@ gsap.to('#hero', {
 // ============================================
 var ringPreview = document.createElement('div');
 ringPreview.className = 'ring-preview';
-ringPreview.innerHTML = '<img />';
+ringPreview.innerHTML = '<img /><video muted loop playsinline style="display:none"></video>';
 document.body.appendChild(ringPreview);
 
-function showRingPreview(src, rect) {
+function showRingPreview(src, rect, isVideo) {
   var img = ringPreview.querySelector('img');
-  img.src = src;
+  var vid = ringPreview.querySelector('video');
+  if (isVideo) {
+    img.style.display = 'none';
+    vid.style.display = 'block';
+    vid.src = src;
+    vid.play().catch(function() {});
+  } else {
+    vid.style.display = 'none';
+    vid.pause();
+    img.style.display = 'block';
+    img.src = src;
+  }
   // Position near the hovered image, centered
   var size = 200;
   var x = rect.left + rect.width / 2 - size / 2;
@@ -123,14 +132,27 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
     wrapper.style.setProperty('--img-size', imgSize);
     wrapper.style.setProperty('--img-opacity', opacity);
 
-    var imgEl = document.createElement('img');
-    imgEl.src = img.src;
-    imgEl.alt = img.alt || 'Inspiration';
-    imgEl.loading = 'lazy';
-    imgEl.decoding = 'async';
-    imgEl.onerror = function() { wrapper.style.display = 'none'; };
+    var mediaEl;
+    if (img.isVideo) {
+      mediaEl = document.createElement('video');
+      mediaEl.src = img.src;
+      mediaEl.muted = true;
+      mediaEl.loop = true;
+      mediaEl.playsInline = true;
+      mediaEl.autoplay = true;
+      mediaEl.setAttribute('playsinline', '');
+      mediaEl.onerror = function() { wrapper.style.display = 'none'; };
+    } else {
+      mediaEl = document.createElement('img');
+      mediaEl.src = img.src;
+      mediaEl.alt = img.alt || 'Inspiration';
+      mediaEl.loading = 'lazy';
+      mediaEl.decoding = 'async';
+      mediaEl.onerror = function() { wrapper.style.display = 'none'; };
+    }
 
-    wrapper.appendChild(imgEl);
+    wrapper.appendChild(mediaEl);
+    var imgEl = mediaEl; // for hover preview compatibility
 
     // Hover — show enlarged preview outside the 3D context
     var hovered = false;
@@ -138,7 +160,7 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
       hovered = true;
       if (tween) tween.pause();
       var rect = imgEl.getBoundingClientRect();
-      showRingPreview(imgEl.src, rect);
+      showRingPreview(imgEl.src, rect, img.isVideo);
     });
     wrapper.addEventListener('mouseleave', function() {
       hovered = false;
@@ -174,285 +196,293 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
   });
 }
 
-// Load and build both rings
+// Load and build all three rings
 ArenaLoader.getAllImages().then(function(data) {
   var containerW = document.getElementById('saturn').offsetWidth || 800;
   var MAX_PER_RING = 80;
 
-  // Inner ring — Are.na (closer to outer, smaller thumbnails, faster)
+  // Innermost ring — Your art + videos
+  var artImages = GALLERY_ART.map(function(a) {
+    return { src: a.src, alt: a.title, source: 'art' };
+  });
+  // Add BlobFX videos to the orbit
+  var videoFiles = [
+    { src: 'assets/art/blob-tracking-2026-03-19_131722.mp4', alt: 'Hues of Dispositions I', source: 'art', isVideo: true },
+    { src: 'assets/art/blob-tracking-2026-03-19_175436.mp4', alt: 'Hues of Dispositions II', source: 'art', isVideo: true },
+    { src: 'assets/art/blob-tracking-2026-03-23_172251.mp4', alt: 'Hues of Dispositions III', source: 'art', isVideo: true },
+  ];
+  artImages = artImages.concat(videoFiles);
+  buildRing(
+    artImages,
+    document.getElementById('artRingBack'),
+    document.getElementById('artRingFront'),
+    containerW * 0.42,
+    [40, 60],
+    [50, 70]
+  );
+
+  // Middle ring — Are.na
   buildRing(
     data.arena.slice(0, MAX_PER_RING),
     document.getElementById('arenaRingBack'),
     document.getElementById('arenaRingFront'),
-    containerW * 0.55,    // inner radius — close to cosmos
-    [28, 50],             // slightly smaller thumbnails
-    [60, 90]              // faster orbit
+    containerW * 0.57,
+    [28, 50],
+    [60, 90]
   );
 
-  // Outer ring — Cosmos (just outside arena, larger thumbnails, slower)
+  // Outer ring — Cosmos
   buildRing(
     data.cosmos.slice(0, MAX_PER_RING),
     document.getElementById('cosmosRingBack'),
     document.getElementById('cosmosRingFront'),
-    containerW * 0.70,    // outer radius
-    [38, 68],             // larger thumbnails
-    [110, 160]            // slower orbit
+    containerW * 0.72,
+    [38, 68],
+    [110, 160]
   );
 }).catch(function() {});
 
 // ============================================
-// SECTION 2: THE CRACK
+// SECTION 2: ELEVATOR DOORS
 // ============================================
-// Jagged crack points — wider amplitude than before
-var crackPoints = [
-  [0, 520],
-  [80, 410],
-  [140, 590],
-  [250, 370],
-  [340, 570],
-  [430, 340],
-  [520, 540],
-  [640, 310],
-  [720, 560],
-  [850, 330],
-  [960, 550],
-  [1080, 300],
-  [1180, 570],
-  [1320, 320],
-  [1440, 580],
-  [1580, 340],
-  [1700, 550],
-  [1820, 370],
-  [1920, 510],
-];
+var elevatorSection = document.getElementById('elevator-section');
+var behindContent = document.querySelector('.behind-content');
+var activeFloor = null;
 
-// Branch crack — forks off at point index 7 (x=640)
-var branchPoints = [
-  [640, 310],
-  [700, 240],
-  [750, 280],
-  [810, 200],
-  [860, 250],
-];
+var behindText = document.getElementById('behindText');
+var behindGallery = document.getElementById('behindGallery');
+var floorIndicator = document.querySelector('.indicator-floor');
 
-function buildPath(points, progress) {
-  var total = points.length;
-  var active = Math.max(2, Math.ceil(total * progress));
-  var d = 'M' + points[0][0] + ',' + points[0][1];
-  for (var i = 1; i < active; i++) {
-    d += ' L' + points[i][0] + ',' + points[i][1];
-  }
-  return d;
-}
+var floorLabels = {
+  gallery: '1', hod: '2', about: '3', contact: '4', help: '?'
+};
 
-function buildCrackClipPath(progress) {
-  if (progress <= 0) return 'polygon(0 50%, 100% 50%, 100% 50%, 0 50%)';
+// Floor order for counter ticking (lobby=0)
+var floorOrder = ['★', '1', '2', '3', '4'];
+var floorToIndex = { gallery: 1, hod: 2, about: 3, contact: 4, help: 4 };
+var currentFloorIndex = 0;
+var traveling = false;
 
-  var height = progress * 50; // max 50% open
-  var top = 50 - height / 2;
-  var bottom = 50 + height / 2;
+var floorContent = {
+  hod: { title: 'HUES OF DISPOSITIONS', subtitle: 'thoughts pending...' },
+  about: { title: 'ABOUT', subtitle: 'more soon' },
+  contact: { title: 'LET\'S CONNECT', subtitle: 'nicole@huesofsaturn.com' },
+  help: { title: '?', subtitle: 'you\'re doing great' },
+};
 
-  var steps = 14;
-  var topLine = '';
-  var bottomLine = '';
+var indicatorArrow = document.getElementById('indicatorArrow');
 
-  for (var i = 0; i <= steps; i++) {
-    var t = i / steps;
-    var x = t * 100;
-    var jT = Math.sin(t * Math.PI * 5) * (height * 0.12);
-    var jB = Math.sin(t * Math.PI * 4 + 2) * (height * 0.12);
-    topLine += x + '% ' + (top + jT) + '%, ';
-    bottomLine = x + '% ' + (bottom + jB) + '%, ' + bottomLine;
-  }
+// (Sound effects removed)
 
-  return 'polygon(' + topLine + bottomLine.slice(0, -2) + ')';
-}
-
-// Crack scroll animation
-var crackTl = gsap.timeline({
-  scrollTrigger: {
-    trigger: '#crack-section',
-    start: 'top top',
-    end: 'bottom bottom',
-    scrub: 0.5,
-    onUpdate: function(self) {
-      var p = self.progress;
-      var mainPath = buildPath(crackPoints, p);
-      document.getElementById('crackGlow').setAttribute('d', mainPath);
-      document.getElementById('crackLine').setAttribute('d', mainPath);
-
-      // Branch appears after 30% progress
-      if (p > 0.3) {
-        var branchP = Math.min(1, (p - 0.3) / 0.5);
-        var bp = buildPath(branchPoints, branchP);
-        document.getElementById('branchGlow').setAttribute('d', bp);
-        document.getElementById('branchLine').setAttribute('d', bp);
-      }
-
-      document.getElementById('crackReveals').style.clipPath = buildCrackClipPath(p);
+// ── Travel sequence ──────────────────────────
+function setFloorContent(floor) {
+  if (floor === 'gallery') {
+    behindText.style.display = 'none';
+    behindGallery.classList.add('active');
+  } else {
+    behindGallery.classList.remove('active');
+    behindText.style.display = '';
+    var content = floorContent[floor];
+    if (content) {
+      behindText.querySelector('.behind-title').textContent = content.title;
+      behindText.querySelector('.behind-subtitle').textContent = content.subtitle;
     }
   }
+}
+
+function travelToFloor(floor, callback) {
+  var targetIndex = floorToIndex[floor] || 0;
+  var direction = targetIndex > currentFloorIndex ? 1 : -1;
+  var floorsToTravel = Math.abs(targetIndex - currentFloorIndex);
+  if (floorsToTravel === 0) { callback(); return; }
+
+  var travelTime = floorsToTravel * 0.7; // 0.7s per floor
+
+  // Set arrow direction
+  indicatorArrow.className = 'indicator-arrow' + (direction > 0 ? '' : ' arrow-down');
+
+  // Start shake
+  elevatorSection.classList.add('traveling');
+
+  // Tick through floors
+  var step = 0;
+  var tickInterval = setInterval(function() {
+    step++;
+    currentFloorIndex += direction;
+    floorIndicator.textContent = floorOrder[currentFloorIndex] || '?';
+
+    if (step >= floorsToTravel) {
+      clearInterval(tickInterval);
+
+      // Arrive — stop shake, ding, open
+      setTimeout(function() {
+        elevatorSection.classList.remove('traveling');
+        indicatorArrow.className = 'indicator-arrow';
+        callback();
+      }, 300);
+    }
+  }, 700);
+}
+
+function pressFloor(floor) {
+  if (traveling) return;
+  var allBtns = document.querySelectorAll('.floor-btn');
+
+  if (floor === 'close') { closeDoors(); return; }
+  if (floor === 'open' && activeFloor) {
+    elevatorSection.classList.add('doors-open');
+    return;
+  }
+  if (activeFloor === floor) { closeDoors(); return; }
+
+  traveling = true;
+
+  // Light up button
+  allBtns.forEach(function(b) { b.classList.remove('active'); });
+  var btn = document.querySelector('[data-floor="' + floor + '"]');
+  if (btn) btn.classList.add('active');
+
+  // Prepare content behind doors
+  setFloorContent(floor);
+
+  // If doors are open, close first then travel
+  if (elevatorSection.classList.contains('doors-open')) {
+    elevatorSection.classList.remove('doors-open');
+    setTimeout(function() {
+      travelToFloor(floor, function() {
+        elevatorSection.classList.add('doors-open');
+        activeFloor = floor;
+        traveling = false;
+      });
+    }, 1600); // wait for 1.5s door close animation
+  } else {
+    // Doors already closed — travel then open
+    travelToFloor(floor, function() {
+      elevatorSection.classList.add('doors-open');
+      activeFloor = floor;
+      traveling = false;
+    });
+  }
+}
+
+function closeDoors() {
+  elevatorSection.classList.remove('doors-open');
+  document.querySelectorAll('.floor-btn').forEach(function(b) { b.classList.remove('active'); });
+  behindGallery.classList.remove('active');
+  behindText.style.display = '';
+  // Travel back to lobby
+  if (currentFloorIndex !== 0) {
+    traveling = true;
+    setTimeout(function() {
+      travelToFloor({ gallery: 'gallery' }, function() { traveling = false; });
+      // Reset to lobby
+      var goLobby = setInterval(function() {
+        if (currentFloorIndex > 0) {
+          currentFloorIndex--;
+          floorIndicator.textContent = floorOrder[currentFloorIndex];
+        } else {
+          clearInterval(goLobby);
+          traveling = false;
+        }
+      }, 500);
+    }, 800);
+  }
+  floorIndicator.textContent = '★';
+  currentFloorIndex = 0;
+  activeFloor = null;
+}
+
+// Button click handlers (door panel — all button types)
+document.querySelectorAll('.floor-btn, .door-btn, .alarm-btn').forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var floor = btn.dataset.floor;
+    if (floor) pressFloor(floor);
+  });
 });
 
-crackTl
-  .to('.surface-label', { opacity: 0, duration: 0.1 }, 0)
-  .to('.crack-glow', { opacity: 0.6, duration: 0.3 }, 0.05)
-  .to('.crack-line', { opacity: 1, duration: 0.2 }, 0.05)
-  .to('.branch-glow', { opacity: 0.4, duration: 0.3 }, 0.3)
-  .to('.branch-line', { opacity: 0.7, duration: 0.3 }, 0.3)
-  .to('.crack-glow', { opacity: 0.9, duration: 0.5 }, 0.3);
+// ── Floating elevator nav ────────────────────
+var elevatorNav = document.getElementById('elevatorNav');
+var navTargets = {
+  hero: '#hero',
+  gallery: '#gallery-section',
+  hod: null,      // stays at elevator, opens doors
+  about: null,
+  contact: null,
+};
+
+// Show nav after scrolling past the hero
+ScrollTrigger.create({
+  trigger: '#elevator-section',
+  start: 'top 90%',
+  onEnter: function() { elevatorNav.classList.add('visible'); },
+  onLeaveBack: function() { elevatorNav.classList.remove('visible'); },
+});
+
+// Nav button clicks
+document.querySelectorAll('.nav-floor-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var target = btn.dataset.nav;
+
+    // Update active state
+    document.querySelectorAll('.nav-floor-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+
+    if (target === 'hero') {
+      gsap.to(window, { scrollTo: 0, duration: 1, ease: 'power2.inOut' });
+    } else {
+      // All floors go through the elevator
+      gsap.to(window, {
+        scrollTo: '#elevator-section',
+        duration: 1,
+        ease: 'power2.inOut',
+        onComplete: function() { pressFloor(target); }
+      });
+    }
+  });
+});
 
 // ============================================
-// SECTION 3: GALLERY
+// GALLERY (inside elevator — walk-through hallway)
 // ============================================
+var hallwayInner = document.getElementById('hallwayInner');
+var galleryHallway = document.getElementById('galleryHallway');
 
-// Build frames dynamically from GALLERY_ART
 function buildGalleryFrames() {
-  var leftWall = document.getElementById('wallLeft');
-  var rightWall = document.getElementById('wallRight');
-  if (!leftWall || !rightWall) return;
+  if (!hallwayInner) return;
 
   GALLERY_ART.forEach(function(art, index) {
     var frame = document.createElement('div');
     frame.className = 'art-frame';
     frame.dataset.art = index;
-    frame.dataset.type = art.type;
-    frame.dataset.wall = art.wall;
-    frame.dataset.position = art.position;
     frame.setAttribute('role', 'button');
     frame.setAttribute('tabindex', '0');
     frame.setAttribute('aria-label', 'View ' + art.title);
 
-    var inner;
-    if (art.type === 'video') {
-      inner =
-        '<div class="frame-border">' +
-          '<video class="art-media" src="' + art.src + '"' +
-          (art.poster ? ' poster="' + art.poster + '"' : '') +
-          ' muted loop playsinline preload="metadata"></video>' +
-          '<div class="video-indicator">&#9654;</div>' +
-        '</div>' +
-        '<div class="art-label">' + art.title + '</div>';
-    } else {
-      inner =
-        '<div class="frame-border">' +
-          '<img class="art-media" src="' + art.src + '" alt="' + art.title + '" loading="lazy" />' +
-        '</div>' +
-        '<div class="art-label">' + art.title + '</div>';
-    }
-    frame.innerHTML = inner;
+    frame.innerHTML =
+      '<div class="frame-border">' +
+        '<img class="art-media" src="' + art.src + '" alt="' + art.title + '" loading="lazy" />' +
+      '</div>' +
+      '<div class="art-label">' + art.title + '</div>';
 
-    if (art.wall === 'right') {
-      rightWall.appendChild(frame);
-    } else {
-      leftWall.appendChild(frame);
-    }
+    hallwayInner.appendChild(frame);
   });
 }
 
 buildGalleryFrames();
 
-// Position frames in perspective
-function positionArtFrames() {
-  var vw = window.innerWidth;
-  var vh = window.innerHeight;
+// Scroll wheel → horizontal scroll (walking through the hallway)
+if (galleryHallway) {
+  galleryHallway.addEventListener('wheel', function(e) {
+    if (!behindGallery.classList.contains('active')) return;
+    e.preventDefault();
+    hallwayInner.scrollLeft += e.deltaY;
 
-  var leftFrames = Array.from(document.querySelectorAll('#wallLeft .art-frame'));
-  var rightFrames = Array.from(document.querySelectorAll('#wallRight .art-frame'));
-
-  // Sort by position
-  leftFrames.sort(function(a, b) { return a.dataset.position - b.dataset.position; });
-  rightFrames.sort(function(a, b) { return a.dataset.position - b.dataset.position; });
-
-  function positionWall(frames, side) {
-    var total = frames.length;
-    if (total === 0) return;
-
-    frames.forEach(function(frame, i) {
-      var depth = total > 1 ? i / (total - 1) : 0;
-
-      // Size shrinks with distance
-      var fw = lerp(vw * 0.14, vw * 0.04, depth);
-      var fh = lerp(vh * 0.32, vh * 0.10, depth);
-
-      // Position converges toward vanishing point
-      var x, rotY;
-      if (side === 'left') {
-        x = lerp(vw * 0.02, vw * 0.36, depth);
-        rotY = lerp(28, 40, depth);
-      } else {
-        x = lerp(vw * 0.98 - fw, vw * 0.60, depth);
-        rotY = lerp(-28, -40, depth);
-      }
-
-      var y = vh * 0.5 - fh / 2;
-
-      frame.style.left = x + 'px';
-      frame.style.top = y + 'px';
-      frame.style.transform = 'perspective(500px) rotateY(' + rotY + 'deg)';
-      frame.style.zIndex = 10 - i;
-
-      var border = frame.querySelector('.frame-border');
-      if (border) {
-        border.style.width = fw + 'px';
-        border.style.height = fh + 'px';
-      }
-    });
-  }
-
-  positionWall(leftFrames, 'left');
-  positionWall(rightFrames, 'right');
+    // Hide hint after scrolling
+    var hint = galleryHallway.querySelector('.gallery-scroll-hint');
+    if (hint && hallwayInner.scrollLeft > 30) hint.style.opacity = '0';
+  }, { passive: false });
 }
-
-positionArtFrames();
-
-var resizeTimer;
-window.addEventListener('resize', function() {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(positionArtFrames, 150);
-});
-
-// Gallery scroll-walk animation
-var galleryTl = gsap.timeline({
-  scrollTrigger: {
-    trigger: '#gallery-section',
-    start: 'top top',
-    end: 'bottom bottom',
-    scrub: 0.8,
-  }
-});
-
-// Gallery intro fade in then out
-gsap.fromTo('#galleryIntro',
-  { opacity: 0, y: 20 },
-  {
-    opacity: 1, y: 0,
-    scrollTrigger: {
-      trigger: '#gallery-section',
-      start: 'top 90%',
-      end: 'top 60%',
-      scrub: true,
-    }
-  }
-);
-
-galleryTl
-  .to('#galleryIntro', { opacity: 0, y: -30, duration: 0.08 }, 0)
-  .to('#hallwayPerspective', {
-    scale: 2.2,
-    duration: 1,
-    ease: 'none',
-    transformOrigin: '50% 50%',
-  }, 0)
-  .to('.hallway-door', { scale: 2.5, duration: 1, ease: 'none' }, 0.3);
-
-// Video hover — autoplay muted on hover
-document.querySelectorAll('.art-frame[data-type="video"]').forEach(function(frame) {
-  var vid = frame.querySelector('video');
-  if (!vid) return;
-  frame.addEventListener('mouseenter', function() { vid.play().catch(function() {}); });
-  frame.addEventListener('mouseleave', function() { vid.pause(); });
-});
 
 // ── Art Viewer ───────────────────────────────
 var artViewer = document.getElementById('artViewer');
@@ -462,95 +492,28 @@ var artViewerInfo = document.getElementById('artViewerInfo');
 function openArtViewer(index) {
   var data = GALLERY_ART[index];
   if (!data) return;
-
-  // Build media element
-  if (data.type === 'video') {
-    artViewerMedia.innerHTML =
-      '<video src="' + data.src + '" controls autoplay' +
-      (data.poster ? ' poster="' + data.poster + '"' : '') +
-      ' playsinline style="max-width:70vw;max-height:65vh;"></video>';
-  } else {
-    artViewerMedia.innerHTML =
-      '<img src="' + data.src + '" alt="' + data.title + '" />';
-  }
-
+  artViewerMedia.innerHTML = '<img src="' + data.src + '" alt="' + data.title + '" />';
   artViewerInfo.querySelector('.viewer-title').textContent = data.title;
   artViewerInfo.querySelector('.viewer-medium').textContent =
     [data.medium, data.year].filter(Boolean).join(' \u2014 ');
   artViewerInfo.querySelector('.viewer-description').textContent = data.description || '';
-
   artViewer.classList.add('active');
   document.body.style.overflow = 'hidden';
-
-  // Focus trap
-  document.getElementById('artViewerClose').focus();
 }
 
 function closeArtViewer() {
   artViewer.classList.remove('active');
   document.body.style.overflow = '';
-  // Clean up video playback
-  var vid = artViewerMedia.querySelector('video');
-  if (vid) vid.pause();
 }
 
-// Click handlers on frames
 document.addEventListener('click', function(e) {
   var frame = e.target.closest('.art-frame');
-  if (!frame) return;
-  var idx = parseInt(frame.dataset.art);
-  openArtViewer(idx);
+  if (frame) { openArtViewer(parseInt(frame.dataset.art)); return; }
+  if (e.target.closest('.art-viewer-backdrop') || e.target.closest('.art-viewer-close')) closeArtViewer();
 });
 
 document.addEventListener('keydown', function(e) {
-  var frame = e.target.closest('.art-frame');
-  if (frame && (e.key === 'Enter' || e.key === ' ')) {
-    e.preventDefault();
-    var idx = parseInt(frame.dataset.art);
-    openArtViewer(idx);
-  }
   if (e.key === 'Escape') closeArtViewer();
-});
-
-document.getElementById('artViewerClose').addEventListener('click', closeArtViewer);
-document.querySelector('.art-viewer-backdrop').addEventListener('click', closeArtViewer);
-
-// ============================================
-// DOOR → CONTACT
-// ============================================
-var hallwayDoor = document.getElementById('hallwayDoor');
-var contactSection = document.getElementById('contact-section');
-var backToGallery = document.getElementById('backToGallery');
-
-hallwayDoor.addEventListener('click', function() {
-  gsap.to('#doorPanel', {
-    rotateY: -90,
-    duration: 0.8,
-    ease: 'power2.inOut',
-    onComplete: function() {
-      contactSection.style.display = 'block';
-      gsap.fromTo(contactSection, { opacity: 0 }, { opacity: 1, duration: 0.6 });
-      gsap.fromTo('.contact-content', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, delay: 0.2 });
-    }
-  });
-});
-
-hallwayDoor.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    hallwayDoor.click();
-  }
-});
-
-backToGallery.addEventListener('click', function() {
-  gsap.to(contactSection, {
-    opacity: 0,
-    duration: 0.4,
-    onComplete: function() {
-      contactSection.style.display = 'none';
-      gsap.to('#doorPanel', { rotateY: 0, duration: 0.5 });
-    }
-  });
 });
 
 // ============================================

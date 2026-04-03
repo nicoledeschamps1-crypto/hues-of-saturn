@@ -198,7 +198,12 @@ body {
 /* Front halves sit in front of the face */
 .saturn-ring-front { z-index: 3; }
 
-/* Arena (inner) ring — steeper tilt */
+/* Art (innermost) ring — closest to face, steepest tilt */
+.ring-art {
+  transform: translate(-50%, -50%) rotateX(76deg) rotateZ(-8deg);
+}
+
+/* Arena (middle) ring */
 .ring-arena {
   transform: translate(-50%, -50%) rotateX(74deg) rotateZ(-12deg);
 }
@@ -229,7 +234,8 @@ body {
   transition: opacity 0.3s;
 }
 
-.ring-image img {
+.ring-image img,
+.ring-image video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -259,7 +265,8 @@ body {
   transform: scale(1);
 }
 
-.ring-preview img {
+.ring-preview img,
+.ring-preview video {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -354,133 +361,1288 @@ body {
 /* ============================================ */
 /* SECTION 2: THE CRACK                         */
 /* ============================================ */
-.crack-section {
+/* ============================================ */
+/* SECTION 2: ELEVATOR DOORS                    */
+/* ============================================ */
+.elevator-section {
   position: relative;
-  width: 100%;
-  height: 300vh;
-  background: var(--black);
-}
-
-.crack-container {
-  position: sticky;
-  top: 0;
   width: 100%;
   height: 100vh;
   height: 100dvh;
+  background: #0a0a0c;
   overflow: hidden;
 }
 
-.crack-surface {
+.elevator-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Interior walls — brushed stainless steel matching doors */
+.elevator-wall {
+  position: absolute;
+  top: 0;
+  width: 12%;
+  height: 100%;
+  z-index: 5;
+  /* Warm/cool horizontal banding like real brushed steel */
+  background:
+    linear-gradient(180deg,
+      hsl(30, 5%, 30%) 0%,
+      hsl(20, 4%, 34%) 10%,
+      hsl(0, 2%, 26%) 18%,
+      hsl(220, 3%, 32%) 26%,
+      hsl(30, 6%, 36%) 34%,
+      hsl(15, 5%, 28%) 42%,
+      hsl(200, 3%, 23%) 50%,
+      hsl(30, 4%, 30%) 58%,
+      hsl(10, 3%, 24%) 66%,
+      hsl(220, 2%, 20%) 74%,
+      hsl(30, 5%, 26%) 82%,
+      hsl(0, 2%, 18%) 90%,
+      hsl(200, 3%, 15%) 100%
+    );
+  overflow: hidden;
+}
+/* Horizontal brushed grain texture */
+.elevator-wall::before {
+  content: '';
   position: absolute;
   inset: 0;
-  background: var(--dark);
-  z-index: 3;
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0px,
+      rgba(255,255,255,0.035) 1px,
+      transparent 2px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(180deg,
+      transparent 0px,
+      rgba(255,255,255,0.018) 1px,
+      rgba(0,0,0,0.012) 2px,
+      transparent 4px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(180deg,
+      transparent 0px,
+      rgba(255,255,255,0.008) 1px,
+      transparent 1.5px,
+      transparent 8px
+    );
+  pointer-events: none;
+}
+/* Warm reflection bloom on walls */
+.elevator-wall::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 200% 40% at 50% 20%,
+      rgba(200, 180, 160, 0.07) 0%,
+      transparent 100%
+    ),
+    radial-gradient(ellipse 150% 30% at 50% 60%,
+      rgba(180, 170, 165, 0.04) 0%,
+      transparent 100%
+    );
+  pointer-events: none;
+}
+.elevator-wall-left {
+  left: 0;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  box-shadow:
+    inset -6px 0 16px rgba(0,0,0,0.35),
+    inset 0 -40px 60px rgba(0,0,0,0.15);
+}
+.elevator-wall-right {
+  right: 0;
+  border-left: 1px solid rgba(255,255,255,0.05);
+  box-shadow:
+    inset 6px 0 16px rgba(0,0,0,0.35),
+    inset 0 -40px 60px rgba(0,0,0,0.15);
+}
+
+/* Handrail across side walls */
+.wall-handrail {
+  position: absolute;
+  top: 55%;
+  left: 8%;
+  right: 8%;
+  height: 6px;
+  z-index: 2;
+  border-radius: 3px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.12) 0%,
+    hsl(220, 3%, 38%) 20%,
+    hsl(30, 4%, 42%) 50%,
+    hsl(220, 3%, 30%) 80%,
+    rgba(0,0,0,0.2) 100%
+  );
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06),
+    0 2px 4px rgba(0,0,0,0.4),
+    0 -1px 0 rgba(255,255,255,0.03);
+}
+.wall-handrail::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.1) 30%,
+    rgba(255,255,255,0.15) 50%,
+    rgba(255,255,255,0.1) 70%,
+    transparent 100%
+  );
+}
+.wall-handrail::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 10%;
+  right: 10%;
+  height: 4px;
+  background: radial-gradient(ellipse at 50% 0%,
+    rgba(0,0,0,0.25) 0%,
+    transparent 100%
+  );
+}
+
+/* Ceiling */
+.elevator-ceiling {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4%;
+  z-index: 5;
+  background: linear-gradient(180deg,
+    hsl(220, 3%, 14%) 0%,
+    hsl(220, 3%, 18%) 60%,
+    hsl(220, 3%, 16%) 100%
+  );
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.4),
+    0 8px 40px rgba(255, 240, 220, 0.04);
+}
+
+/* Ceiling light strip — warm overhead panel */
+.elevator-ceiling::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 25%;
+  right: 25%;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 245, 230, 0.25) 15%,
+    rgba(255, 248, 240, 0.35) 50%,
+    rgba(255, 245, 230, 0.25) 85%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  box-shadow:
+    0 0 6px rgba(255, 245, 230, 0.15),
+    0 2px 20px rgba(255, 240, 220, 0.1),
+    0 6px 50px rgba(255, 235, 210, 0.06),
+    0 10px 80px rgba(255, 230, 200, 0.04);
+}
+/* Warm downward glow from ceiling light */
+.elevator-ceiling::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: 20%;
+  right: 20%;
+  height: 60px;
+  background: radial-gradient(ellipse 100% 100% at 50% 0%,
+    rgba(255, 240, 220, 0.06) 0%,
+    rgba(255, 235, 210, 0.03) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Ambient light overlay — top-down illumination gradient */
+.elevator-ambient-light {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background:
+    /* Warm glow from ceiling */
+    linear-gradient(180deg,
+      rgba(255, 240, 220, 0.04) 0%,
+      rgba(255, 235, 210, 0.02) 15%,
+      transparent 35%,
+      transparent 75%,
+      rgba(0, 0, 0, 0.06) 100%
+    ),
+    /* Corner vignettes — where walls meet ceiling */
+    radial-gradient(ellipse 30% 20% at 6% 2%,
+      rgba(0, 0, 0, 0.25) 0%,
+      transparent 100%
+    ),
+    radial-gradient(ellipse 30% 20% at 94% 2%,
+      rgba(0, 0, 0, 0.25) 0%,
+      transparent 100%
+    ),
+    /* Corner vignettes — where walls meet floor */
+    radial-gradient(ellipse 30% 15% at 6% 98%,
+      rgba(0, 0, 0, 0.2) 0%,
+      transparent 100%
+    ),
+    radial-gradient(ellipse 30% 15% at 94% 98%,
+      rgba(0, 0, 0, 0.2) 0%,
+      transparent 100%
+    );
+}
+
+/* Floor surface */
+.elevator-floor-surface {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3%;
+  z-index: 5;
+  background: linear-gradient(180deg,
+    hsl(220, 3%, 12%) 0%,
+    hsl(220, 3%, 8%) 100%
+  );
+  border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Frame around door opening */
+.elevator-frame {
+  position: absolute;
+  inset: 4% 12%;
+  z-index: 4;
+  pointer-events: none;
+}
+.frame-top {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.08) 0%,
+    rgba(120,120,130,0.3) 50%,
+    rgba(0,0,0,0.3) 100%
+  );
+  border-radius: 2px 2px 0 0;
+}
+.frame-left, .frame-right {
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.06) 0%,
+    rgba(100,100,110,0.2) 50%,
+    rgba(0,0,0,0.2) 100%
+  );
+}
+.frame-left { left: -3px; }
+.frame-right { right: -3px; transform: scaleX(-1); }
+
+/* Floor indicator display — recessed LED panel */
+.floor-indicator {
+  position: absolute;
+  top: 5.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* Dark recessed panel */
+  background: linear-gradient(180deg,
+    hsl(0, 0%, 6%) 0%,
+    hsl(0, 0%, 9%) 50%,
+    hsl(0, 0%, 7%) 100%
+  );
+  /* Beveled edge — light top/left, dark bottom/right */
+  border: 1px solid rgba(0,0,0,0.7);
+  border-top-color: rgba(255,255,255,0.08);
+  border-left-color: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  padding: 5px 14px 5px 10px;
+  box-shadow:
+    /* Outer bevel highlight */
+    0 -1px 0 rgba(255,255,255,0.06),
+    1px 0 0 rgba(255,255,255,0.03),
+    /* Recessed depth */
+    inset 0 1px 4px rgba(0,0,0,0.6),
+    inset 0 0 8px rgba(0,0,0,0.4),
+    /* Drop shadow */
+    0 2px 8px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+/* Scanline / dot-matrix overlay */
+.floor-indicator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0px,
+      rgba(0,0,0,0.15) 1px,
+      transparent 2px,
+      transparent 3px
+    );
+  pointer-events: none;
+  z-index: 1;
+}
+/* Subtle inner glow from LED */
+.floor-indicator::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: radial-gradient(ellipse 80% 70% at 55% 50%,
+    rgba(238, 50, 50, 0.06) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Direction arrow */
+.indicator-arrow {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  /* Default: up arrow */
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 7px solid #e33;
+  filter: drop-shadow(0 0 4px rgba(238, 50, 50, 0.5));
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+.indicator-arrow.arrow-down {
+  border-bottom: none;
+  border-top: 7px solid #e33;
+  filter: drop-shadow(0 0 4px rgba(238, 50, 50, 0.5));
+}
+
+.indicator-floor {
+  font-family: 'Inter', monospace;
+  font-size: clamp(16px, 2vw, 24px);
+  font-weight: 700;
+  color: #e44;
+  text-shadow:
+    0 0 6px rgba(238, 68, 68, 0.7),
+    0 0 14px rgba(238, 50, 50, 0.4),
+    0 0 28px rgba(238, 40, 40, 0.2);
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Behind the doors */
+.elevator-behind {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #080810;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.surface-text {
+.behind-content {
   text-align: center;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.6s ease 0.3s, transform 0.6s ease 0.3s;
 }
 
-.surface-label {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  font-weight: 900;
+.elevator-section.doors-open .behind-content {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.behind-title {
+  font-family: 'Climate Crisis', cursive;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 16px;
+}
+
+.behind-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.8rem, 1.5vw, 1.1rem);
   letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.22);
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
 }
 
-/* Crack SVG */
-.crack-svg {
+/* Gallery behind doors */
+.behind-gallery {
   position: absolute;
   inset: 0;
+  display: none;
+  overflow: hidden;
+}
+
+.behind-gallery.active {
+  display: block;
+}
+
+/* ── Gallery Hallway ─────────────────────────── */
+.gallery-hallway {
   width: 100%;
   height: 100%;
-  z-index: 5;
+  overflow: hidden;
+  position: relative;
+  /* Warm moody background — fades to darkness at the end */
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 40%,
+      hsl(28, 20%, 22%) 0%,
+      hsl(22, 15%, 14%) 50%,
+      hsl(18, 12%, 8%) 100%
+    );
+}
+
+/* Perspective walls drawn with CSS gradients */
+.gallery-hallway::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* Left wall — warm beige, perspective trapezoid */
+    linear-gradient(to right,
+      hsl(30, 25%, 35%) 0%,
+      hsl(28, 20%, 28%) 18%,
+      transparent 18.5%
+    ),
+    /* Right wall */
+    linear-gradient(to left,
+      hsl(30, 22%, 33%) 0%,
+      hsl(28, 18%, 26%) 18%,
+      transparent 18.5%
+    );
   pointer-events: none;
+  z-index: 0;
 }
 
-.crack-glow {
-  fill: none;
-  stroke: var(--crack-purple);
-  stroke-width: 35;
-  opacity: 0;
-}
-
-.crack-line {
-  fill: none;
-  stroke: var(--crack-glow-inner);
-  stroke-width: 4;
-  opacity: 0;
-}
-
-.branch-glow {
-  fill: none;
-  stroke: var(--crack-purple);
-  stroke-width: 15;
-  opacity: 0;
-}
-
-.branch-line {
-  fill: none;
-  stroke: var(--crack-glow-inner);
-  stroke-width: 2;
-  opacity: 0;
-}
-
-/* Cosmic void behind crack */
-.crack-reveals {
+/* Crown molding — top strips */
+.gallery-hallway::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  z-index: 2;
-  clip-path: polygon(0 50%, 100% 50%, 100% 50%, 0 50%);
-}
-
-.cosmic-void {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%,
-    hsl(240, 50%, 10%) 0%,
-    hsl(250, 60%, 5%) 40%,
-    hsl(240, 80%, 2%) 100%
+  top: 12%;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg,
+    rgba(220, 190, 150, 0.25) 0%,
+    rgba(220, 190, 150, 0.08) 20%,
+    transparent 25%,
+    transparent 75%,
+    rgba(220, 190, 150, 0.08) 80%,
+    rgba(220, 190, 150, 0.25) 100%
   );
+  z-index: 1;
+  pointer-events: none;
 }
 
-.void-stars {
+/* Polished floor */
+.gallery-hallway .hallway-floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 22%;
+  background: linear-gradient(180deg,
+    hsl(20, 10%, 10%) 0%,
+    hsl(20, 8%, 7%) 100%
+  );
+  z-index: 0;
+  /* Floor reflection shine */
+  box-shadow: inset 0 1px 0 rgba(200, 170, 130, 0.06);
+}
+
+/* Ceiling */
+.gallery-hallway .hallway-ceiling {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12%;
+  background: hsl(25, 12%, 15%);
+  z-index: 0;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide unused wall divs */
+.gallery-hallway .wall-surface-left,
+.gallery-hallway .wall-surface-right,
+.gallery-hallway .hallway-wall-left,
+.gallery-hallway .hallway-wall-right {
+  display: none;
+}
+
+/* Hallway perspective container — scrolls horizontally */
+.gallery-hallway .hallway-perspective {
+  position: absolute;
+  top: 12%;
+  bottom: 22%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(30px, 5vw, 60px);
+  padding: 0 clamp(50px, 8vw, 120px);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  z-index: 2;
+}
+.gallery-hallway .hallway-perspective::-webkit-scrollbar { display: none; }
+
+/* Art frames */
+.art-frame {
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+.art-frame:hover {
+  transform: translateY(-6px) scale(1.03);
+}
+
+.frame-border {
+  background: white;
+  padding: clamp(6px, 1vw, 12px);
+  box-shadow:
+    0 6px 24px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.2),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.art-frame:hover .frame-border {
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.25),
+    0 0 40px rgba(255, 240, 210, 0.06),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.art-media {
+  display: block;
+  height: clamp(160px, 38vh, 340px);
+  width: auto;
+  max-width: clamp(160px, 30vw, 400px);
+  object-fit: contain;
+}
+
+.art-label {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(7px, 0.8vw, 10px);
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(220, 200, 170, 0.4);
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* Spotlight glow above each piece */
+.art-frame::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 40px;
+  background: radial-gradient(ellipse 80% 100% at 50% 100%,
+    rgba(255, 240, 210, 0.1) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Spotlight on the frame itself */
+.art-frame::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(ellipse at 50% 30%,
+    rgba(255, 240, 210, 0.04) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Gallery scroll hint */
+.gallery-scroll-hint {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(200, 180, 150, 0.3);
+  pointer-events: none;
+  animation: hint-fade 3s ease-in-out infinite;
+}
+
+@keyframes hint-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+/* Doors */
+.elevator-door {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  z-index: 2;
+  transition: transform 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.door-left { left: 0; }
+.door-right { right: 0; }
+
+.elevator-section.doors-open .door-left {
+  transform: translateX(-100%);
+}
+.elevator-section.doors-open .door-right {
+  transform: translateX(100%);
+}
+
+/* Moving light reflection — sweeps across door during transition */
+.door-surface::before {
+  transition: left 1.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.elevator-section.doors-open .door-left .door-surface::before {
+  left: -60%;
+}
+.elevator-section.doors-open .door-right .door-surface::before {
+  left: 60%;
+}
+
+/* Metallic shine sweep on doors during movement */
+.elevator-door::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -30%;
+  width: 20%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 70%,
+    transparent 100%
+  );
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: left 1.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.3s;
+}
+
+.elevator-section.doors-open .door-left::after {
+  left: 110%;
+  opacity: 1;
+}
+.elevator-section.doors-open .door-right::after {
+  left: 110%;
+  opacity: 1;
+}
+
+/* Metal surface — brushed stainless steel */
+.door-surface {
   position: absolute;
   inset: 0;
+  /* Base: horizontal bands of warm/cool reflections like real steel */
+  background:
+    linear-gradient(180deg,
+      hsl(30, 5%, 32%) 0%,
+      hsl(20, 4%, 38%) 8%,
+      hsl(0, 2%, 28%) 15%,
+      hsl(220, 3%, 35%) 22%,
+      hsl(30, 6%, 42%) 30%,
+      hsl(15, 5%, 30%) 38%,
+      hsl(200, 3%, 25%) 46%,
+      hsl(30, 4%, 36%) 54%,
+      hsl(10, 3%, 28%) 62%,
+      hsl(220, 2%, 22%) 70%,
+      hsl(30, 5%, 30%) 78%,
+      hsl(0, 2%, 20%) 86%,
+      hsl(200, 3%, 18%) 93%,
+      hsl(220, 4%, 14%) 100%
+    );
+  overflow: hidden;
+}
+
+/* Horizontal brushed grain — the key texture */
+.door-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 2px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.02) 1px,
+      rgba(0, 0, 0, 0.015) 2px,
+      transparent 4px,
+      transparent 6px
+    ),
+    repeating-linear-gradient(
+      180deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.01) 1px,
+      transparent 1.5px,
+      transparent 8px
+    );
   pointer-events: none;
 }
 
-.void-star {
+/* Subtle warm reflection bloom */
+.door-surface::after {
+  content: '';
   position: absolute;
-  background: hsl(220, 60%, 80%);
-  border-radius: 50%;
-  animation: twinkle var(--duration) ease-in-out infinite;
-  animation-delay: var(--delay);
-}
-
-.void-nebula {
-  position: absolute;
-  top: 30%;
-  left: 20%;
-  width: 400px;
-  height: 300px;
-  background: radial-gradient(ellipse, hsla(260, 70%, 40%, 0.15) 0%, transparent 70%);
-  filter: blur(40px);
-  border-radius: 50%;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 30% at 50% 30%,
+      rgba(200, 180, 160, 0.08) 0%,
+      transparent 100%
+    ),
+    radial-gradient(ellipse 100% 25% at 40% 65%,
+      rgba(180, 170, 165, 0.06) 0%,
+      transparent 100%
+    );
   pointer-events: none;
 }
 
-.void-nebula-2 {
+/* Scratches — heavier, more visible */
+.door-scratches {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(168deg, transparent 18%, rgba(255,255,255,0.06) 18.3%, transparent 18.6%),
+    linear-gradient(174deg, transparent 42%, rgba(255,255,255,0.04) 42.2%, transparent 42.5%),
+    linear-gradient(162deg, transparent 63%, rgba(255,255,255,0.07) 63.2%, transparent 63.5%),
+    linear-gradient(170deg, transparent 28%, rgba(255,255,255,0.03) 28.3%, transparent 28.7%),
+    linear-gradient(165deg, transparent 78%, rgba(255,255,255,0.05) 78.2%, transparent 78.5%),
+    linear-gradient(155deg, transparent 51%, rgba(255,255,255,0.04) 51.3%, transparent 51.6%);
+}
+
+.door-scratches-2 {
+  background:
+    linear-gradient(158deg, transparent 8%, rgba(255,255,255,0.05) 8.2%, transparent 8.5%),
+    linear-gradient(176deg, transparent 55%, rgba(255,255,255,0.06) 55.2%, transparent 55.4%),
+    linear-gradient(163deg, transparent 33%, rgba(255,255,255,0.04) 33.3%, transparent 33.6%),
+    linear-gradient(171deg, transparent 72%, rgba(255,255,255,0.05) 72.2%, transparent 72.4%),
+    linear-gradient(167deg, transparent 88%, rgba(255,255,255,0.03) 88.2%, transparent 88.5%) !important;
+}
+
+.door-scratches-3 {
+  background:
+    linear-gradient(193deg, transparent 12%, rgba(255,255,255,0.05) 12.2%, transparent 12.5%),
+    linear-gradient(185deg, transparent 48%, rgba(255,255,255,0.06) 48.2%, transparent 48.4%),
+    linear-gradient(200deg, transparent 68%, rgba(255,255,255,0.04) 68.3%, transparent 68.6%),
+    linear-gradient(188deg, transparent 23%, rgba(255,255,255,0.07) 23.2%, transparent 23.4%),
+    linear-gradient(195deg, transparent 82%, rgba(255,255,255,0.03) 82.2%, transparent 82.5%) !important;
+}
+
+.door-scratches-4 {
+  background:
+    linear-gradient(190deg, transparent 38%, rgba(255,255,255,0.04) 38.2%, transparent 38.5%),
+    linear-gradient(182deg, transparent 58%, rgba(255,255,255,0.06) 58.2%, transparent 58.4%),
+    linear-gradient(197deg, transparent 15%, rgba(255,255,255,0.05) 15.2%, transparent 15.5%),
+    linear-gradient(186deg, transparent 76%, rgba(255,255,255,0.04) 76.2%, transparent 76.5%) !important;
+}
+
+/* Deep gouges / heavy scratches */
+.door-gouges {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(170deg, transparent 22%, rgba(255,255,255,0.1) 22.1%, rgba(255,255,255,0.06) 22.2%, transparent 22.4%),
+    linear-gradient(165deg, transparent 47%, rgba(255,255,255,0.08) 47.1%, rgba(255,255,255,0.04) 47.2%, transparent 47.4%),
+    linear-gradient(173deg, transparent 71%, rgba(255,255,255,0.09) 71.1%, rgba(255,255,255,0.05) 71.15%, transparent 71.3%),
+    linear-gradient(160deg, transparent 35%, rgba(255,255,255,0.07) 35.1%, transparent 35.25%),
+    linear-gradient(178deg, transparent 58%, rgba(255,255,255,0.06) 58.1%, transparent 58.2%),
+    linear-gradient(155deg, transparent 84%, rgba(255,255,255,0.08) 84.1%, rgba(255,255,255,0.03) 84.2%, transparent 84.35%);
+}
+
+.door-gouges-right {
+  background:
+    linear-gradient(192deg, transparent 19%, rgba(255,255,255,0.09) 19.1%, rgba(255,255,255,0.04) 19.2%, transparent 19.35%),
+    linear-gradient(188deg, transparent 44%, rgba(255,255,255,0.07) 44.1%, transparent 44.25%),
+    linear-gradient(195deg, transparent 66%, rgba(255,255,255,0.1) 66.1%, rgba(255,255,255,0.05) 66.15%, transparent 66.3%),
+    linear-gradient(183deg, transparent 31%, rgba(255,255,255,0.06) 31.1%, transparent 31.2%),
+    linear-gradient(198deg, transparent 79%, rgba(255,255,255,0.08) 79.1%, rgba(255,255,255,0.03) 79.15%, transparent 79.3%) !important;
+}
+
+/* Vertical panel seam lines (like multi-panel door) */
+.door-seam {
+  position: absolute;
+}
+
+.door-seam-edge {
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.door-left .door-seam-edge { right: 30%; }
+.door-right .door-seam-edge { left: 30%; }
+
+/* Door edge borders */
+.door-left .door-surface {
+  border-right: 1px solid rgba(0, 0, 0, 0.7);
+  box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.door-right .door-surface {
+  border-left: 1px solid rgba(0, 0, 0, 0.7);
+  box-shadow: inset 2px 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Center seam — visible gap between doors */
+.door-center-seam {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow:
+    -1px 0 0 rgba(255, 255, 255, 0.04),
+    1px 0 0 rgba(255, 255, 255, 0.04);
+  z-index: 3;
+  transition: opacity 0.3s;
+}
+
+.elevator-section.doors-open .door-center-seam {
+  opacity: 0;
+}
+
+/* ── Travel animation — elevator moving ────── */
+.elevator-section.traveling .elevator-wall,
+.elevator-section.traveling .elevator-ceiling,
+.elevator-section.traveling .elevator-floor-surface,
+.elevator-section.traveling .button-panel {
+  animation: elevator-shake 0.15s ease-in-out infinite;
+}
+
+.elevator-section.traveling .elevator-wall::before {
+  animation: wall-blur 0.3s ease-in-out infinite;
+}
+
+.elevator-section.traveling .floor-indicator {
+  animation: indicator-flicker 0.5s ease-in-out infinite;
+}
+
+@keyframes elevator-shake {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-0.5px) translateX(0.3px); }
+  50% { transform: translateY(0.5px); }
+  75% { transform: translateY(-0.3px) translateX(-0.2px); }
+}
+
+/* Keep button panel position during shake */
+.elevator-section.traveling .button-panel {
+  animation: panel-shake 0.15s ease-in-out infinite;
+}
+
+@keyframes panel-shake {
+  0%, 100% { transform: translateY(-50%); }
+  25% { transform: translateY(calc(-50% - 0.5px)); }
+  50% { transform: translateY(calc(-50% + 0.5px)); }
+  75% { transform: translateY(calc(-50% - 0.3px)); }
+}
+
+@keyframes wall-blur {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.92; }
+}
+
+@keyframes indicator-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* ── Button Panel — brushed metal plate on right wall ── */
+.button-panel {
+  position: absolute;
+  right: 0;
   top: 50%;
-  left: 55%;
-  width: 350px;
-  height: 250px;
-  background: radial-gradient(ellipse, hsla(220, 80%, 50%, 0.1) 0%, transparent 70%);
+  transform: translateY(-50%);
+  z-index: 6;
+  width: 12%;
+  display: flex;
+  justify-content: center;
+}
+
+.panel-surface {
+  background:
+    linear-gradient(180deg,
+      hsl(220, 3%, 22%) 0%,
+      hsl(220, 3%, 18%) 50%,
+      hsl(220, 3%, 15%) 100%
+    );
+  border: 1px solid rgba(60, 60, 65, 0.6);
+  border-top-color: rgba(255, 255, 255, 0.06);
+  border-left-color: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: clamp(90px, 8vw, 120px);
+  position: relative;
+  background-image:
+    repeating-linear-gradient(180deg,
+      transparent 0px, rgba(255,255,255,0.01) 1px, transparent 2px, transparent 4px
+    ),
+    linear-gradient(168deg, transparent 30%, rgba(255,255,255,0.02) 30.2%, transparent 30.4%),
+    linear-gradient(172deg, transparent 60%, rgba(255,255,255,0.015) 60.2%, transparent 60.4%);
+}
+
+/* Corner screws */
+.panel-surface::before,
+.panel-surface::after {
+  content: '';
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%,
+    rgba(255,255,255,0.1) 0%,
+    hsl(220, 3%, 20%) 50%,
+    hsl(220, 3%, 12%) 100%
+  );
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  z-index: 2;
+}
+.panel-surface::before { top: 6px; left: 6px; }
+.panel-surface::after { bottom: 6px; left: 6px; }
+
+/* ── Floor buttons — rectangular ── */
+.floor-btn {
+  width: 100%;
+  height: 30px;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg,
+      hsl(220, 3%, 28%) 0%,
+      hsl(220, 3%, 20%) 50%,
+      hsl(220, 3%, 16%) 100%
+    );
+  border: 1px solid rgba(80, 80, 90, 0.4);
+  border-top-color: rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  cursor: pointer;
+  padding: 0 10px;
+  user-select: none;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.1s;
+  position: relative;
+}
+
+.btn-num {
+  font-weight: 700;
+  font-size: 12px;
+  min-width: 16px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.btn-label {
+  font-size: 7px;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Hover */
+.floor-btn:hover {
+  background:
+    linear-gradient(180deg,
+      hsl(220, 3%, 34%) 0%,
+      hsl(220, 3%, 26%) 50%,
+      hsl(220, 3%, 22%) 100%
+    );
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(200, 200, 220, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.floor-btn:hover .btn-num { color: rgba(255, 255, 255, 0.9); }
+.floor-btn:hover .btn-label { color: rgba(255, 255, 255, 0.55); }
+
+/* Press */
+.floor-btn:active {
+  transform: translateY(1px);
+  background:
+    linear-gradient(180deg,
+      hsl(220, 3%, 14%) 0%,
+      hsl(220, 3%, 12%) 50%,
+      hsl(220, 3%, 10%) 100%
+    );
+  box-shadow:
+    0 0 2px rgba(0, 0, 0, 0.5),
+    inset 0 2px 5px rgba(0, 0, 0, 0.5);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Active floor — amber backlit */
+.floor-btn.active {
+  background:
+    linear-gradient(180deg,
+      hsl(35, 40%, 38%) 0%,
+      hsl(35, 35%, 28%) 50%,
+      hsl(30, 28%, 20%) 100%
+    );
+  border-color: rgba(200, 160, 80, 0.3);
+  color: rgba(255, 255, 255, 1);
+  box-shadow:
+    0 0 10px rgba(255, 180, 80, 0.15),
+    0 0 20px rgba(255, 180, 80, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 220, 150, 0.15);
+}
+
+.floor-btn.active .btn-num {
+  color: rgba(255, 230, 160, 1);
+  text-shadow: 0 0 8px rgba(255, 200, 100, 0.6);
+}
+
+.floor-btn.active .btn-label {
+  color: rgba(255, 220, 150, 0.7);
+}
+
+/* ── Door control buttons ── */
+.panel-door-row {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.door-btn {
+  flex: 1;
+  height: 26px;
+  border-radius: 3px;
+  background:
+    linear-gradient(180deg,
+      hsl(220, 3%, 26%) 0%,
+      hsl(220, 3%, 18%) 100%
+    );
+  border: 1px solid rgba(80, 80, 90, 0.4);
+  border-top-color: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.45);
+  font-family: 'Inter', sans-serif;
+  font-size: 8px;
+  letter-spacing: -2px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.door-btn:hover {
+  background: linear-gradient(180deg, hsl(220, 3%, 32%) 0%, hsl(220, 3%, 24%) 100%);
+  color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.4), 0 0 8px rgba(200, 200, 220, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.door-btn:active {
+  transform: translateY(1px);
+  background: linear-gradient(180deg, hsl(220, 3%, 12%) 0%, hsl(220, 3%, 10%) 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Alarm button ── */
+.alarm-btn {
+  width: 100%;
+  height: 28px;
+  border-radius: 3px;
+  background:
+    linear-gradient(180deg,
+      hsl(0, 15%, 22%) 0%,
+      hsl(0, 12%, 16%) 100%
+    );
+  border: 1px solid rgba(100, 60, 60, 0.4);
+  border-top-color: rgba(255, 255, 255, 0.04);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: alarm-pulse 3s ease-in-out infinite;
+  transition: box-shadow 0.2s;
+}
+
+@keyframes alarm-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  50% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 8px rgba(255, 60, 60, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+.alarm-btn:hover {
+  animation: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), 0 0 14px rgba(255, 60, 60, 0.15);
+}
+
+.alarm-btn:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* CSS bell icon */
+.bell-icon {
+  display: block;
+  width: 10px;
+  height: 9px;
+  border: 1.5px solid rgba(255,255,255,0.45);
+  border-radius: 5px 5px 0 0;
+  border-bottom: none;
+  position: relative;
+}
+.bell-icon::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 1.5px;
+  background: rgba(255,255,255,0.45);
+  border-radius: 1px;
+}
+
+.panel-divider {
+  width: 85%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 2px 0;
+}
+
+/* ── Floating Elevator Nav ──────────────────── */
+.elevator-nav {
+  position: fixed;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 6px;
+  background: rgba(20, 20, 24, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 24px;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.elevator-nav.visible {
+  opacity: 1;
+}
+
+.nav-floor-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.nav-floor-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-floor-btn.active {
+  border-color: rgba(200, 180, 100, 0.4);
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(200, 180, 100, 0.15);
+  box-shadow: 0 0 8px rgba(200, 180, 100, 0.15);
 }
 
 /* ============================================ */

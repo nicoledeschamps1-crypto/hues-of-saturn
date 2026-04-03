@@ -6,7 +6,10 @@ const ArenaLoader = (function() {
   'use strict';
 
   // ── Configuration ──────────────────────────────
-  const ARENA_CHANNEL = 'i-like-t58kvbzcjmu';
+  const ARENA_CHANNELS = [
+    'i-like-t58kvbzcjmu',
+    'creative-direction-msvjvkzq6ei',
+  ];
   const COSMOS_DATA_PATH = 'cosmos-data.json';
 
   const API_BASE = 'https://api.are.na/v2';
@@ -38,16 +41,12 @@ const ArenaLoader = (function() {
   }
 
   // ── Are.na API ─────────────────────────────────
-  async function fetchArenaImages() {
-    const url = `${API_BASE}/channels/${ARENA_CHANNEL}/contents?per=100`;
+  async function fetchOneChannel(slug) {
+    const url = `${API_BASE}/channels/${slug}/contents?per=100`;
     const res = await fetch(url);
 
     if (!res.ok) {
-      if (res.status === 401 || res.status === 403) {
-        console.warn(`[Loader] Are.na channel "${ARENA_CHANNEL}" is private. Skipping.`);
-      } else {
-        console.warn(`[Loader] Are.na returned ${res.status}. Skipping.`);
-      }
+      console.warn(`[Loader] Are.na channel "${slug}" returned ${res.status}. Skipping.`);
       return [];
     }
 
@@ -66,6 +65,24 @@ const ArenaLoader = (function() {
         return { src, alt: b.title || b.generated_title || 'Inspiration', source: 'arena' };
       })
       .filter(img => img.src);
+  }
+
+  async function fetchArenaImages() {
+    const results = await Promise.all(
+      ARENA_CHANNELS.map(slug => fetchOneChannel(slug).catch(() => []))
+    );
+    // Merge and dedupe by src
+    const seen = new Set();
+    const all = [];
+    for (const imgs of results) {
+      for (const img of imgs) {
+        if (!seen.has(img.src)) {
+          seen.add(img.src);
+          all.push(img);
+        }
+      }
+    }
+    return all;
   }
 
   // ── Cosmos (local JSON from update-cosmos.py) ──
