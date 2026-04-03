@@ -1766,33 +1766,58 @@ body {
   cursor: default;
 }
 
-/* Social links */
-.about-socials {
+/* Connect page — Jacquard 24, bold layout */
+.connect-text {
+  font-family: 'Jacquard 24', serif;
+  font-size: clamp(1.3rem, 2.8vw, 1.8rem);
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.75);
+  max-width: 680px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 50px;
+}
+
+.connect-text .w {
+  display: inline-block;
+  transition: transform 0.12s ease-out,
+              opacity 0.15s ease-out,
+              color 0.35s ease-out;
+  will-change: transform;
+  cursor: default;
+}
+
+/* Connect links — stacked, direct handles */
+.connect-links {
   display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 36px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 680px;
+  width: 100%;
 }
 
-.about-socials a {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(0.95rem, 1.6vw, 1.15rem);
-  font-weight: 300;
-  letter-spacing: 0.12em;
-  text-transform: lowercase;
-  color: rgba(255, 255, 255, 0.45);
+.connect-links a {
+  font-family: 'Jacquard 24', serif;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: rgba(255, 255, 255, 0.35);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: color 0.3s, letter-spacing 0.3s;
+  letter-spacing: 0.02em;
 }
 
-.about-socials a:hover {
+.connect-links a:hover {
   color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.06em;
+}
+
+.connect-platform {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.6em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin-left: 8px;
+  vertical-align: middle;
 }
 
 /* ── Pretext-style floating orbs ── */
