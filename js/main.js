@@ -403,11 +403,14 @@ function pressFloor(floor) {
   // Prepare content behind doors
   setFloorContent(floor);
 
-  // If doors are open, close first then travel
+  // If doors are open, close visually but keep fixed positioning to prevent page scroll jump
   if (elevatorSection.classList.contains('doors-open')) {
+    // Add a transitional class that closes doors but stays position:fixed
+    elevatorSection.classList.add('doors-closing');
     elevatorSection.classList.remove('doors-open');
     setTimeout(function() {
       travelToFloor(floor, function() {
+        elevatorSection.classList.remove('doors-closing');
         elevatorSection.classList.add('doors-open');
         activeFloor = floor;
         traveling = false;
@@ -426,6 +429,7 @@ function pressFloor(floor) {
 function closeDoors() {
   if (traveling) return;
   elevatorSection.classList.remove('doors-open');
+  elevatorSection.classList.remove('doors-closing');
   document.querySelectorAll('.floor-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
   behindGallery.classList.remove('active');
   behindAbout.classList.remove('active');
@@ -721,73 +725,56 @@ function buildFloorWords(container, copy) {
 aboutWords = buildFloorWords(aboutText, ABOUT_COPY);
 connectWords = buildFloorWords(connectText, CONNECT_COPY);
 
-// ── Orb physics system (Pretext-inspired) ──
-var ORB_DEFS = [
-  { name: 'sun',    radius: 75,  vx:  0.35, vy:  0.25, startX: 0.55, startY: 0.30 },
-  { name: 'saturn', radius: 65,  vx: -0.30, vy:  0.40, startX: 0.25, startY: 0.55 },
-  { name: 'coral',  radius: 55,  vx:  0.28, vy: -0.35, startX: 0.70, startY: 0.65 },
-  { name: 'teal',   radius: 60,  vx: -0.22, vy: -0.28, startX: 0.40, startY: 0.75 },
-];
+// ── Sun + Moon orb system (Pretext-inspired) ──
+var SUN_RADIUS = 75;
 var MOON_RADIUS = 50;
-var MIN_ORB_GAP = 20;
 
-var aboutOrbs = [];
+var sunEl = behindAbout ? behindAbout.querySelector('.orb-sun') : null;
 var moonEl = behindAbout ? behindAbout.querySelector('.orb-moon') : null;
 var aboutMouseX = -9999, aboutMouseY = -9999;
 var aboutOrbRAF = null;
 
-// Initialize orbs
-if (behindAbout) {
-  ORB_DEFS.forEach(function(def) {
-    var el = behindAbout.querySelector('.orb-' + def.name);
-    if (!el) return;
-    var pw = behindAbout.offsetWidth || 800;
-    var ph = behindAbout.offsetHeight || 600;
-    var orb = {
-      el: el,
-      name: def.name,
-      radius: def.radius,
-      x: def.startX * pw,
-      y: def.startY * ph,
-      vx: def.vx,
-      vy: def.vy,
-      dragging: false,
-      dragOffX: 0,
-      dragOffY: 0,
-    };
-    el.style.left = orb.x + 'px';
-    el.style.top = orb.y + 'px';
+// Sun state
+var sunX = 0, sunY = 0, sunVX = 0.35, sunVY = 0.25;
+var sunDragging = false, sunDragOffX = 0, sunDragOffY = 0;
 
-    // Drag handlers
-    el.addEventListener('pointerdown', function(e) {
-      orb.dragging = true;
-      el.classList.add('dragging');
-      var rect = el.getBoundingClientRect();
-      orb.dragOffX = e.clientX - rect.left - rect.width / 2;
-      orb.dragOffY = e.clientY - rect.top - rect.height / 2;
-      el.setPointerCapture(e.pointerId);
-      e.preventDefault();
-    });
+if (behindAbout && sunEl) {
+  var pw = behindAbout.offsetWidth || 800;
+  var ph = behindAbout.offsetHeight || 600;
+  sunX = 0.55 * pw;
+  sunY = 0.30 * ph;
+  sunEl.style.left = sunX + 'px';
+  sunEl.style.top = sunY + 'px';
 
-    el.addEventListener('pointermove', function(e) {
-      if (!orb.dragging) return;
-      var pr = behindAbout.getBoundingClientRect();
-      orb.x = e.clientX - pr.left - orb.dragOffX - el.offsetWidth / 2;
-      orb.y = e.clientY - pr.top - orb.dragOffY - el.offsetHeight / 2;
-      el.style.left = orb.x + 'px';
-      el.style.top = orb.y + 'px';
-    });
-
-    el.addEventListener('pointerup', function() {
-      orb.dragging = false;
-      el.classList.remove('dragging');
-      orb.vx = (Math.random() - 0.5) * 0.7;
-      orb.vy = (Math.random() - 0.5) * 0.7;
-    });
-
-    aboutOrbs.push(orb);
+  // Drag handlers for sun
+  sunEl.addEventListener('pointerdown', function(e) {
+    sunDragging = true;
+    sunEl.classList.add('dragging');
+    var rect = sunEl.getBoundingClientRect();
+    sunDragOffX = e.clientX - rect.left - rect.width / 2;
+    sunDragOffY = e.clientY - rect.top - rect.height / 2;
+    sunEl.setPointerCapture(e.pointerId);
+    e.preventDefault();
   });
 
+  sunEl.addEventListener('pointermove', function(e) {
+    if (!sunDragging) return;
+    var pr = behindAbout.getBoundingClientRect();
+    sunX = e.clientX - pr.left - sunDragOffX - sunEl.offsetWidth / 2;
+    sunY = e.clientY - pr.top - sunDragOffY - sunEl.offsetHeight / 2;
+    sunEl.style.left = sunX + 'px';
+    sunEl.style.top = sunY + 'px';
+  });
+
+  sunEl.addEventListener('pointerup', function() {
+    sunDragging = false;
+    sunEl.classList.remove('dragging');
+    sunVX = (Math.random() - 0.5) * 0.7;
+    sunVY = (Math.random() - 0.5) * 0.7;
+  });
+}
+
+if (behindAbout) {
   // Mouse tracking — move moon orb to cursor
   behindAbout.addEventListener('mousemove', function(e) {
     aboutMouseX = e.clientX;
@@ -807,75 +794,46 @@ if (behindAbout) {
   });
 }
 
-// Physics + text displacement loop (runs continuously when about is active)
+// Physics + text displacement loop
 function orbPhysicsLoop() {
   aboutOrbRAF = requestAnimationFrame(orbPhysicsLoop);
   if (!aboutActive) return;
 
-  var pw = behindAbout.offsetWidth;
-  var ph = behindAbout.offsetHeight;
+  // Float the sun
+  if (sunEl && !sunDragging) {
+    var pw = behindAbout.offsetWidth;
+    var ph = behindAbout.offsetHeight;
+    var ew = sunEl.offsetWidth;
+    var eh = sunEl.offsetHeight;
 
-  // Move orbs
-  for (var i = 0; i < aboutOrbs.length; i++) {
-    var orb = aboutOrbs[i];
-    if (orb.dragging) continue;
+    sunX += sunVX;
+    sunY += sunVY;
 
-    orb.x += orb.vx;
-    orb.y += orb.vy;
+    if (sunX <= 0) { sunVX = Math.abs(sunVX); sunX = 0; }
+    if (sunX >= pw - ew) { sunVX = -Math.abs(sunVX); sunX = pw - ew; }
+    if (sunY <= 0) { sunVY = Math.abs(sunVY); sunY = 0; }
+    if (sunY >= ph - eh) { sunVY = -Math.abs(sunVY); sunY = ph - eh; }
 
-    // Bounce off walls
-    var ew = orb.el.offsetWidth;
-    var eh = orb.el.offsetHeight;
-    if (orb.x <= 0) { orb.vx = Math.abs(orb.vx); orb.x = 0; }
-    if (orb.x >= pw - ew) { orb.vx = -Math.abs(orb.vx); orb.x = pw - ew; }
-    if (orb.y <= 0) { orb.vy = Math.abs(orb.vy); orb.y = 0; }
-    if (orb.y >= ph - eh) { orb.vy = -Math.abs(orb.vy); orb.y = ph - eh; }
-
-    orb.el.style.left = orb.x + 'px';
-    orb.el.style.top = orb.y + 'px';
+    sunEl.style.left = sunX + 'px';
+    sunEl.style.top = sunY + 'px';
   }
 
-  // Orb-orb collision avoidance
-  for (var a = 0; a < aboutOrbs.length; a++) {
-    for (var b = a + 1; b < aboutOrbs.length; b++) {
-      var oa = aboutOrbs[a], ob = aboutOrbs[b];
-      var acx = oa.x + oa.el.offsetWidth / 2;
-      var acy = oa.y + oa.el.offsetHeight / 2;
-      var bcx = ob.x + ob.el.offsetWidth / 2;
-      var bcy = ob.y + ob.el.offsetHeight / 2;
-      var dx = bcx - acx, dy = bcy - acy;
-      var dist = Math.sqrt(dx * dx + dy * dy);
-      var minDist = oa.radius + ob.radius + MIN_ORB_GAP;
-      if (dist < minDist && dist > 0) {
-        var nx = dx / dist, ny = dy / dist;
-        var overlap = (minDist - dist) / 2;
-        if (!oa.dragging) { oa.x -= nx * overlap; oa.y -= ny * overlap; }
-        if (!ob.dragging) { ob.x += nx * overlap; ob.y += ny * overlap; }
-        // Deflect velocities
-        if (!oa.dragging) { oa.vx -= nx * 0.05; oa.vy -= ny * 0.05; }
-        if (!ob.dragging) { ob.vx += nx * 0.05; ob.vy += ny * 0.05; }
-      }
-    }
-  }
-
-  // Text displacement from all orbs + moon cursor
+  // Build displacement centers
   var pr = behindAbout.getBoundingClientRect();
-  var orbCenters = [];
+  var centers = [];
 
-  for (var k = 0; k < aboutOrbs.length; k++) {
-    var o = aboutOrbs[k];
-    orbCenters.push({
-      cx: pr.left + o.x + o.el.offsetWidth / 2,
-      cy: pr.top + o.y + o.el.offsetHeight / 2,
-      r: o.radius + 30,
+  if (sunEl) {
+    centers.push({
+      cx: pr.left + sunX + sunEl.offsetWidth / 2,
+      cy: pr.top + sunY + sunEl.offsetHeight / 2,
+      r: SUN_RADIUS + 30,
     });
   }
-  // Moon (cursor) orb
   if (aboutMouseX > -9999) {
-    orbCenters.push({ cx: aboutMouseX, cy: aboutMouseY, r: MOON_RADIUS + 25 });
+    centers.push({ cx: aboutMouseX, cy: aboutMouseY, r: MOON_RADIUS + 25 });
   }
 
-  displaceWords(aboutWords, orbCenters);
+  displaceWords(aboutWords, centers);
 }
 orbPhysicsLoop();
 

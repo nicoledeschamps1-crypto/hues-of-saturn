@@ -43,8 +43,9 @@ body {
   cursor: default;
 }
 
-/* Lock page scroll when elevator doors are open */
-.elevator-section.doors-open {
+/* Lock page scroll when elevator doors are open or transitioning between floors */
+.elevator-section.doors-open,
+.elevator-section.doors-closing {
   position: fixed;
   top: 0;
   left: 0;
