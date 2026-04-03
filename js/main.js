@@ -529,21 +529,8 @@ var maxWalkZ = 0;
 function buildGalleryFrames() {
   if (!hallwayInner) return;
 
-  if (isMobile) {
-    // Flat layout — no 3D transforms
-    GALLERY_ART.forEach(function(item, i) {
-      var frame = document.createElement('div');
-      frame.className = 'art-frame';
-      frame.dataset.art = i;
-      frame.innerHTML = '<div class="frame-border"><img src="' + item.src + '" alt="' + (item.title || '') + '" loading="lazy" /><div class="art-label">' + (item.title || '') + '</div></div>';
-      frame.addEventListener('click', function() { openArtViewer(i); });
-      hallwayInner.appendChild(frame);
-    });
-    return;
-  }
-
-  // Depth spacing per position level
-  var depthStep = 1200;
+  // Depth spacing per position level — tighter on mobile
+  var depthStep = isMobile ? 800 : 1200;
   var maxPos = 0;
   GALLERY_ART.forEach(function(a) { if (a.position > maxPos) maxPos = a.position; });
   maxWalkZ = maxPos * depthStep + 400;
@@ -556,9 +543,9 @@ function buildGalleryFrames() {
     frame.setAttribute('tabindex', '0');
     frame.setAttribute('aria-label', 'View ' + art.title);
 
-    // Frame size
-    var w = 240;
-    var h = 300;
+    // Frame size — smaller on mobile
+    var w = isMobile ? 160 : 240;
+    var h = isMobile ? 200 : 300;
 
     frame.innerHTML =
       '<div class="frame-border" style="width:' + w + 'px;height:' + h + 'px">' +
@@ -568,8 +555,8 @@ function buildGalleryFrames() {
 
     // Position in 3D space — flush against walls
     // Start art 600px into the hallway so you see some empty corridor first
-    var z = -600 - (art.position * depthStep);
-    var xOffset = art.wall === 'left' ? -480 : 480;
+    var z = -(isMobile ? 300 : 600) - (art.position * depthStep);
+    var xOffset = art.wall === 'left' ? (isMobile ? -280 : -480) : (isMobile ? 280 : 480);
     var rotY = art.wall === 'left' ? 72 : -72;
     var yOffset = -20;
 
@@ -592,7 +579,6 @@ buildGalleryFrames();
 // Scroll wheel → walk through the hallway (translateZ)
 if (galleryHallway) {
   galleryHallway.addEventListener('wheel', function(e) {
-    if (isMobile) return;
     if (!behindGallery.classList.contains('active')) return;
     e.preventDefault();
 
@@ -609,7 +595,6 @@ if (galleryHallway) {
   var touchWalkZ = 0;
   var touchMoved = false;
   galleryHallway.addEventListener('touchstart', function(e) {
-    if (isMobile) return;
     if (!behindGallery.classList.contains('active')) return;
     touchStartY = e.touches[0].clientY;
     touchWalkZ = walkZ;
@@ -617,7 +602,6 @@ if (galleryHallway) {
   }, { passive: true });
 
   galleryHallway.addEventListener('touchmove', function(e) {
-    if (isMobile) return;
     if (!behindGallery.classList.contains('active')) return;
     var deltaY = touchStartY - e.touches[0].clientY;
     if (Math.abs(deltaY) > 10) touchMoved = true;

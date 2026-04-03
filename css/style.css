@@ -2285,37 +2285,9 @@ body {
     font-size: clamp(0.9rem, 1.8vw, 1.1rem);
   }
 
-  /* Gallery — flat layout (no 3D perspective) */
-  .gallery-hallway {
-    perspective: none;
-    overflow-y: auto;
-  }
-
-  .hallway-perspective {
-    transform-style: flat;
-  }
-
-  .art-frame {
-    position: relative !important;
-    transform: none !important;
-    top: auto !important;
-    left: auto !important;
-    margin: 20px auto;
-  }
-
-  .hallway-ceiling,
-  .hallway-floor,
-  .wall-surface-left,
-  .wall-surface-right {
-    display: none;
-  }
-
-  .gallery-hallway::before {
-    display: none;
-  }
-
+  /* Gallery — keep 3D hallway, hint swipe */
   .gallery-scroll-hint {
-    display: none;
+    content: 'swipe to walk';
   }
 
   /* Art viewer */
