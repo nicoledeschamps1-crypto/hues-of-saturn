@@ -138,17 +138,9 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
       mediaEl.muted = true;
       mediaEl.loop = true;
       mediaEl.playsInline = true;
-      mediaEl.preload = 'none';
+      mediaEl.autoplay = true;
       mediaEl.setAttribute('playsinline', '');
       mediaEl.onerror = function() { wrapper.style.display = 'none'; };
-      // Lazy-load: only play when visible
-      var videoObs = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) { mediaEl.play().catch(function(){}); }
-          else { mediaEl.pause(); }
-        });
-      });
-      videoObs.observe(wrapper);
     } else {
       mediaEl = document.createElement('img');
       mediaEl.src = img.src;
@@ -284,6 +276,18 @@ if (saturnEl && typeof ResizeObserver !== 'undefined') {
     });
   });
   ringResizeObs.observe(saturnEl);
+}
+
+// Pause ring videos when hero section is off-screen (single observer, not per-item)
+var heroEl = document.getElementById('hero');
+if (heroEl && typeof IntersectionObserver !== 'undefined') {
+  new IntersectionObserver(function(entries) {
+    var visible = entries[0].isIntersecting;
+    document.querySelectorAll('.ring-image video').forEach(function(v) {
+      if (visible) { v.play().catch(function(){}); }
+      else { v.pause(); }
+    });
+  }).observe(heroEl);
 }
 
 // ============================================
@@ -821,16 +825,29 @@ function orbPhysicsLoop() {
   // Build displacement centers
   var pr = behindAbout.getBoundingClientRect();
   var centers = [];
+  var sunCX = -9999, sunCY = -9999;
 
   if (sunEl) {
-    centers.push({
-      cx: pr.left + sunX + sunEl.offsetWidth / 2,
-      cy: pr.top + sunY + sunEl.offsetHeight / 2,
-      r: SUN_RADIUS + 30,
-    });
+    sunCX = pr.left + sunX + sunEl.offsetWidth / 2;
+    sunCY = pr.top + sunY + sunEl.offsetHeight / 2;
+    centers.push({ cx: sunCX, cy: sunCY, r: SUN_RADIUS + 30 });
   }
   if (aboutMouseX > -9999) {
     centers.push({ cx: aboutMouseX, cy: aboutMouseY, r: MOON_RADIUS + 25 });
+  }
+
+  // Eclipse detection — moon overlaps sun
+  if (sunEl && aboutMouseX > -9999) {
+    var edx = aboutMouseX - sunCX;
+    var edy = aboutMouseY - sunCY;
+    var eDist = Math.sqrt(edx * edx + edy * edy);
+    if (eDist < SUN_RADIUS + 10) {
+      if (!sunEl.classList.contains('eclipse')) sunEl.classList.add('eclipse');
+    } else {
+      if (sunEl.classList.contains('eclipse')) sunEl.classList.remove('eclipse');
+    }
+  } else if (sunEl) {
+    sunEl.classList.remove('eclipse');
   }
 
   displaceWords(aboutWords, centers);
