@@ -122,6 +122,35 @@ function hideRingPreview() {
   ringPreview.classList.remove('visible');
 }
 
+// ── Ring image lightbox (tap to view) ──
+var ringLightbox = document.createElement('div');
+ringLightbox.className = 'ring-lightbox';
+ringLightbox.innerHTML = '<div class="ring-lightbox-inner"><img /><video muted loop playsinline style="display:none"></video></div>';
+document.body.appendChild(ringLightbox);
+
+ringLightbox.addEventListener('click', function() {
+  ringLightbox.classList.remove('visible');
+  var vid = ringLightbox.querySelector('video');
+  vid.pause();
+});
+
+function openRingLightbox(src, isVideo) {
+  var img = ringLightbox.querySelector('img');
+  var vid = ringLightbox.querySelector('video');
+  if (isVideo) {
+    img.style.display = 'none';
+    vid.style.display = 'block';
+    vid.src = src;
+    vid.play().catch(function() {});
+  } else {
+    vid.style.display = 'none';
+    vid.pause();
+    img.style.display = 'block';
+    img.src = src;
+  }
+  ringLightbox.classList.add('visible');
+}
+
 // ============================================
 // SATURN — Dual Inspiration Rings
 // ============================================
@@ -186,6 +215,13 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
       wrapper._hovered = false;
       hideRingPreview();
     });
+
+    // Click/tap — open lightbox
+    wrapper.addEventListener('click', function(e) {
+      e.stopPropagation();
+      openRingLightbox(wrapper._mediaEl.src || wrapper._mediaEl.currentSrc, img.isVideo);
+    });
+    wrapper.style.cursor = 'pointer';
 
     if (angle >= 0 && angle < 180) {
       backEl.appendChild(wrapper);
