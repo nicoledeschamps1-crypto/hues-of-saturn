@@ -31,6 +31,18 @@
   inherits: false;
 }
 
+@property --radius {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
+@property --img-size {
+  syntax: '<number>';
+  initial-value: 40;
+  inherits: false;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -202,7 +214,7 @@ body {
 }
 
 .saturn-body img {
-  width: 85%;
+  width: 190%;
   height: auto;
   display: block;
   object-fit: contain;
@@ -227,9 +239,9 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 180%;
-  height: 180%;
-  transform: translate(-50%, -50%) rotateX(72deg) rotateZ(-15deg);
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%) rotateX(78deg) rotateZ(-10deg);
   transform-style: preserve-3d;
   pointer-events: none;
 }
@@ -243,19 +255,17 @@ body {
 /* Front halves sit in front of the face */
 .saturn-ring-front { z-index: 3; }
 
-/* Art (innermost) ring — closest to face, steepest tilt */
+/* All rings share the same tilt for cohesive Saturn look */
 .ring-art {
-  transform: translate(-50%, -50%) rotateX(76deg) rotateZ(-8deg);
+  transform: translate(-50%, -50%) rotateX(78deg) rotateZ(-10deg);
 }
 
-/* Arena (middle) ring */
 .ring-arena {
-  transform: translate(-50%, -50%) rotateX(74deg) rotateZ(-12deg);
+  transform: translate(-50%, -50%) rotateX(78deg) rotateZ(-10deg);
 }
 
-/* Cosmos (outer) ring — flatter, wider tilt for depth separation */
 .ring-cosmos {
-  transform: translate(-50%, -50%) rotateX(68deg) rotateZ(-20deg);
+  transform: translate(-50%, -50%) rotateX(78deg) rotateZ(-10deg);
 }
 
 .ring-image {
@@ -878,6 +888,166 @@ body {
   font-style: italic;
 }
 
+/* ── H.O.D. Portal (Floor 2) ────────────────── */
+.behind-hod {
+  position: absolute;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+  background: #0e0a16;
+}
+
+.behind-hod.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Deep void background */
+.hod-void {
+  position: absolute;
+  inset: 0;
+  background:
+    /* Central purple nebula */
+    radial-gradient(ellipse 60% 60% at 50% 50%, rgba(139, 69, 232, 0.12) 0%, transparent 70%),
+    /* Deep magenta accent */
+    radial-gradient(ellipse 40% 50% at 30% 60%, rgba(180, 50, 160, 0.06) 0%, transparent 100%),
+    /* Dark void base */
+    radial-gradient(ellipse 100% 100% at 50% 50%, #110e16 0%, #080610 100%);
+  pointer-events: none;
+}
+
+/* Film grain (matches About page) */
+.hod-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Floating Saturn-like orb */
+.hod-orb {
+  position: absolute;
+  top: 64%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 200px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hod-orb-core {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 40% 35%, rgba(180, 130, 255, 0.5) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, #8B45E8 0%, #5a2d9e 60%, #2d1560 100%);
+  box-shadow:
+    0 0 30px rgba(139, 69, 232, 0.4),
+    0 0 60px rgba(139, 69, 232, 0.15),
+    0 0 100px rgba(139, 69, 232, 0.08);
+}
+
+/* Orbital rings */
+.hod-orb-ring {
+  position: absolute;
+  inset: 5%;
+  border: 1px solid rgba(139, 69, 232, 0.25);
+  border-radius: 50%;
+  transform: rotateX(65deg) rotateZ(0deg);
+  animation: hodOrbitSpin 12s linear infinite;
+}
+
+.hod-orb-ring-2 {
+  inset: -5%;
+  border-color: rgba(180, 50, 160, 0.15);
+  animation-duration: 18s;
+  animation-direction: reverse;
+}
+
+@keyframes hodOrbitSpin {
+  to { transform: rotateX(65deg) rotateZ(360deg); }
+}
+
+/* Text content */
+.hod-portal-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.hod-title {
+  font-family: 'Climate Crisis', cursive;
+  font-size: clamp(1.2rem, 3.5vw, 2.2rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 12px;
+  text-shadow: 0 0 30px rgba(139, 69, 232, 0.3);
+}
+
+.hod-tagline {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+  letter-spacing: 0.15em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+  margin-bottom: 20px;
+  max-width: 560px;
+}
+
+.hod-description {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+  line-height: 1.8;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.5);
+  max-width: 520px;
+  margin: 16px auto 20px;
+}
+
+.hod-enter {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.85rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  padding: 12px 32px;
+  border: 1px solid rgba(139, 69, 232, 0.35);
+  border-radius: 2px;
+  transition: all 0.4s ease;
+  background: rgba(139, 69, 232, 0.06);
+}
+
+.hod-enter:hover {
+  color: #fff;
+  border-color: rgba(139, 69, 232, 0.7);
+  background: rgba(139, 69, 232, 0.15);
+  box-shadow: 0 0 30px rgba(139, 69, 232, 0.2), 0 0 60px rgba(139, 69, 232, 0.08);
+  letter-spacing: 0.35em;
+}
+
+.hod-enter-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.hod-enter:hover .hod-enter-arrow {
+  transform: translateX(4px);
+}
+
 /* Gallery behind doors */
 .behind-gallery {
   position: absolute;
@@ -896,7 +1066,7 @@ body {
   height: 100%;
   overflow: hidden;
   position: relative;
-  background: #e8e4de;
+  background: #ede6da;
   perspective: 1200px;
   perspective-origin: 50% 50%;
 }
@@ -910,8 +1080,8 @@ body {
   width: 14%;
   height: 22%;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(255, 245, 225, 0.3) 0%, transparent 70%),
-    #d5d0c8;
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(255, 235, 200, 0.4) 0%, transparent 70%),
+    #dbd4c6;
   border: 1px solid rgba(0, 0, 0, 0.06);
   z-index: 0;
   pointer-events: none;
@@ -924,11 +1094,11 @@ body {
   inset: 0;
   background:
     /* Central overhead warm glow */
-    radial-gradient(ellipse 50% 35% at 50% 8%, rgba(255, 240, 210, 0.25) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 35% at 50% 8%, rgba(255, 225, 180, 0.32) 0%, transparent 100%),
     /* Soft left wall wash */
-    radial-gradient(ellipse 30% 50% at 15% 40%, rgba(255, 245, 220, 0.12) 0%, transparent 100%),
+    radial-gradient(ellipse 30% 50% at 15% 40%, rgba(255, 235, 200, 0.16) 0%, transparent 100%),
     /* Soft right wall wash */
-    radial-gradient(ellipse 30% 50% at 85% 40%, rgba(255, 245, 220, 0.12) 0%, transparent 100%),
+    radial-gradient(ellipse 30% 50% at 85% 40%, rgba(255, 235, 200, 0.16) 0%, transparent 100%),
     /* Subtle vignette for depth */
     radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.08) 100%);
   z-index: 4;
@@ -944,13 +1114,16 @@ body {
   height: 50%;
   z-index: 1;
   background:
-    /* Track light spots along ceiling */
-    radial-gradient(ellipse 8% 18% at 25% 60%, rgba(255, 248, 230, 0.35) 0%, transparent 100%),
-    radial-gradient(ellipse 8% 18% at 50% 80%, rgba(255, 248, 230, 0.25) 0%, transparent 100%),
-    radial-gradient(ellipse 8% 18% at 75% 60%, rgba(255, 248, 230, 0.35) 0%, transparent 100%),
+    /* Track light hot spots — bright warm center */
+    radial-gradient(ellipse 4% 10% at 25% 62%, rgba(255, 252, 240, 0.4) 0%, transparent 100%),
+    radial-gradient(ellipse 4% 10% at 75% 62%, rgba(255, 252, 240, 0.4) 0%, transparent 100%),
+    /* Track light spread — wider warm wash */
+    radial-gradient(ellipse 10% 22% at 25% 60%, rgba(255, 245, 220, 0.3) 0%, transparent 100%),
+    radial-gradient(ellipse 8% 18% at 50% 80%, rgba(255, 248, 230, 0.2) 0%, transparent 100%),
+    radial-gradient(ellipse 10% 22% at 75% 60%, rgba(255, 245, 220, 0.3) 0%, transparent 100%),
     /* Depth: darker toward edges where ceiling recedes */
     linear-gradient(to right, rgba(0,0,0,0.06) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.06) 100%),
-    linear-gradient(to bottom, #f2ede7 0%, #e4dfd7 50%, #d8d3cb 100%);
+    linear-gradient(to bottom, #f5ede2 0%, #e9e0d2 50%, #ddd4c6 100%);
   clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
   pointer-events: none;
 }
@@ -1016,7 +1189,7 @@ body {
     /* Shadow at bottom edge (floor junction) */
     linear-gradient(to top, rgba(0,0,0,0.06) 0%, transparent 6%),
     /* Subtle vertical depth — darker toward the vanishing point */
-    linear-gradient(to right, #e2ddd5 0%, #dbd6ce 50%, #ccc7bf 100%);
+    linear-gradient(to right, #e8dfcf 0%, #e0d7c8 50%, #d2c9ba 100%);
   clip-path: polygon(0% 0%, 43% 39%, 43% 61%, 0% 100%);
   z-index: 2;
   pointer-events: none;
@@ -1034,7 +1207,7 @@ body {
     /* Shadow at bottom edge (floor junction) */
     linear-gradient(to top, rgba(0,0,0,0.06) 0%, transparent 6%),
     /* Subtle vertical depth — darker toward the vanishing point */
-    linear-gradient(to left, #e2ddd5 0%, #dbd6ce 50%, #ccc7bf 100%);
+    linear-gradient(to left, #e8dfcf 0%, #e0d7c8 50%, #d2c9ba 100%);
   clip-path: polygon(100% 0%, 57% 39%, 57% 61%, 100% 100%);
   z-index: 2;
   pointer-events: none;
@@ -1048,10 +1221,16 @@ body {
   height: 50%;
   z-index: 1;
   background:
-    /* Light reflections on polished floor */
-    radial-gradient(ellipse 20% 30% at 25% 20%, rgba(255, 250, 235, 0.08) 0%, transparent 100%),
-    radial-gradient(ellipse 20% 30% at 75% 20%, rgba(255, 250, 235, 0.08) 0%, transparent 100%),
-    linear-gradient(to top, #c0bab0 0%, #d2cdc5 50%, #ddd8d0 100%);
+    /* Warm light pools beneath track lights — polished floor reflections */
+    radial-gradient(ellipse 14% 20% at 25% 15%, rgba(255, 248, 225, 0.14) 0%, transparent 100%),
+    radial-gradient(ellipse 10% 16% at 50% 10%, rgba(255, 248, 230, 0.10) 0%, transparent 100%),
+    radial-gradient(ellipse 14% 20% at 75% 15%, rgba(255, 248, 225, 0.14) 0%, transparent 100%),
+    /* Diffused reflections */
+    radial-gradient(ellipse 20% 30% at 25% 20%, rgba(255, 250, 235, 0.06) 0%, transparent 100%),
+    radial-gradient(ellipse 20% 30% at 75% 20%, rgba(255, 250, 235, 0.06) 0%, transparent 100%),
+    /* Subtle warm sheen near walls */
+    linear-gradient(to right, rgba(255, 248, 230, 0.04) 0%, transparent 15%, transparent 85%, rgba(255, 248, 230, 0.04) 100%),
+    linear-gradient(to top, #c5bba8 0%, #d6ccbc 50%, #e2d8ca 100%);
   clip-path: polygon(0% 100%, 100% 100%, 57% 0%, 43% 0%);
   pointer-events: none;
 }
@@ -1073,24 +1252,74 @@ body {
   transition: filter 0.3s ease;
 }
 
+/* Museum picture light — warm cone from above */
+.art-frame::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 20px;
+  background:
+    radial-gradient(ellipse 100% 100% at 50% 100%, rgba(255, 245, 225, 0.6) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Warm light wash over the painting */
+.art-frame::after {
+  content: '';
+  position: absolute;
+  top: -20px;
+  left: -10%;
+  width: 120%;
+  height: 130%;
+  background:
+    /* Downward cone from picture light */
+    linear-gradient(175deg, rgba(255, 248, 230, 0.18) 0%, rgba(255, 245, 220, 0.06) 40%, transparent 70%),
+    /* Soft ambient warmth */
+    radial-gradient(ellipse 80% 50% at 50% 10%, rgba(255, 240, 210, 0.12) 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
 .art-frame:hover {
   filter: brightness(1.08);
 }
 
+.art-frame:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
+}
+
+.art-frame:hover::after {
+  opacity: 1.3;
+}
+
 .frame-border {
+  position: relative;
   padding: 4px;
   background: #1a1a1a;
   box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.25),
-    0 1px 4px rgba(0, 0, 0, 0.15);
+    /* Primary drop shadow — directional from above */
+    2px 6px 20px rgba(0, 0, 0, 0.3),
+    /* Soft ambient shadow */
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    /* Warm light reflection on top edge */
+    0 -1px 3px rgba(255, 245, 225, 0.08);
   transition: box-shadow 0.3s ease;
   overflow: hidden;
 }
 
 .art-frame:hover .frame-border {
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.35),
-    0 0 40px rgba(0, 0, 0, 0.1);
+    2px 8px 28px rgba(0, 0, 0, 0.4),
+    0 2px 12px rgba(0, 0, 0, 0.2),
+    0 -1px 6px rgba(255, 245, 225, 0.12),
+    0 0 40px rgba(255, 245, 220, 0.06);
 }
 
 .art-media {
@@ -1572,6 +1801,13 @@ body {
   color: rgba(255, 255, 255, 0.35);
 }
 
+.floor-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(210, 170, 100, 0.6),
+    0 0 10px rgba(210, 170, 100, 0.25);
+}
+
 /* Active floor — amber backlit */
 .floor-btn.active {
   background:
@@ -1643,6 +1879,13 @@ body {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
+.door-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(210, 170, 100, 0.6),
+    0 0 10px rgba(210, 170, 100, 0.25);
+}
+
 /* ── Alarm button ── */
 .alarm-btn {
   width: 100%;
@@ -1685,6 +1928,13 @@ body {
 .alarm-btn:active {
   transform: translateY(1px);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.alarm-btn:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(255, 80, 80, 0.5),
+    0 0 10px rgba(255, 60, 60, 0.2);
 }
 
 /* CSS bell icon */
@@ -2305,10 +2555,7 @@ body {
     font-size: clamp(0.9rem, 1.8vw, 1.1rem);
   }
 
-  /* Gallery — keep 3D hallway, hint swipe */
-  .gallery-scroll-hint {
-    content: 'swipe to walk';
-  }
+  /* Gallery — swipe hint handled by JS (isTouch check) */
 
   /* Art viewer */
   .art-viewer-media img,

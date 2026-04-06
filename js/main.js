@@ -23,10 +23,28 @@ var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 var isMobile = window.matchMedia('(max-width: 767px)').matches;
 var isPhone = window.matchMedia('(max-width: 599px)').matches;
 var isTouch = window.matchMedia('(hover: none)').matches;
-// Re-evaluate on resize
+// Re-evaluate on resize — rebuild gallery if breakpoint changes
+var _prevMobile = isMobile;
+var _prevPhone = isPhone;
+var _resizeTimer = null;
 window.addEventListener('resize', function() {
   isMobile = window.matchMedia('(max-width: 767px)').matches;
   isPhone = window.matchMedia('(max-width: 599px)').matches;
+  isTouch = window.matchMedia('(hover: none)').matches;
+  // Debounced gallery rebuild when breakpoint actually changes
+  if (isMobile !== _prevMobile || isPhone !== _prevPhone) {
+    _prevMobile = isMobile;
+    _prevPhone = isPhone;
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(function() {
+      if (hallwayInner) {
+        hallwayInner.innerHTML = '';
+        walkZ = 0;
+        buildGalleryFrames();
+        hallwayInner.style.transform = 'translateZ(0px)';
+      }
+    }, 250);
+  }
 });
 
 // ============================================
@@ -262,7 +280,7 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
 // Load and build all three rings
 ArenaLoader.getAllImages().then(function(data) {
   var containerW = document.getElementById('saturn').offsetWidth || 800;
-  var MAX_PER_RING = isPhone ? 30 : (isMobile ? 50 : 80);
+  var MAX_PER_RING = isPhone ? 18 : (isMobile ? 28 : 45);
 
   // Innermost ring — Your art + videos
   var artImages = GALLERY_ART.map(function(a) {
@@ -270,46 +288,44 @@ ArenaLoader.getAllImages().then(function(data) {
   });
   // Add BlobFX videos to the orbit
   var videoFiles = [
-    { src: 'assets/art/blob-tracking-2026-03-19_131722.mp4', alt: 'Hues of Dispositions I', source: 'art', isVideo: true },
-    { src: 'assets/art/blob-tracking-2026-03-19_175436.mp4', alt: 'Hues of Dispositions II', source: 'art', isVideo: true },
-    { src: 'assets/art/blob-tracking-2026-03-23_172251.mp4', alt: 'Hues of Dispositions III', source: 'art', isVideo: true },
+    { src: 'assets/art/compressed/blob-tracking-2026-03-19_131722-sm.mp4', alt: 'Hues of Dispositions I', source: 'art', isVideo: true },
+    { src: 'assets/art/compressed/blob-tracking-2026-03-19_175436-sm.mp4', alt: 'Hues of Dispositions II', source: 'art', isVideo: true },
+    { src: 'assets/art/compressed/blob-tracking-2026-03-23_172251-sm.mp4', alt: 'Hues of Dispositions III', source: 'art', isVideo: true },
   ];
   artImages = artImages.concat(videoFiles);
-  // Add Pinterest (@planetarydispositions) posts to the art ring
-  if (data.pinterest && data.pinterest.length > 0) {
-    artImages = artImages.concat(data.pinterest);
-  }
+  // Pinterest removed for now
+  var artCap = isPhone ? 12 : (isMobile ? 18 : artImages.length);
   buildRing(
-    artImages,
+    artImages.slice(0, artCap),
     document.getElementById('artRingBack'),
     document.getElementById('artRingFront'),
-    containerW * 0.42,
-    [40, 60],
+    containerW * 0.35,
+    [38, 52],
     [50, 70]
   );
 
-  // Middle ring — Are.na
+  // Middle ring — Are.na (clear gap from inner)
   buildRing(
     data.arena.slice(0, MAX_PER_RING),
     document.getElementById('arenaRingBack'),
     document.getElementById('arenaRingFront'),
-    containerW * 0.57,
-    [28, 50],
-    [60, 90]
+    containerW * 0.52,
+    [32, 46],
+    [70, 100]
   );
 
-  // Outer ring — Cosmos
+  // Outer ring — Cosmos (clear gap from middle)
   buildRing(
     data.cosmos.slice(0, MAX_PER_RING),
     document.getElementById('cosmosRingBack'),
     document.getElementById('cosmosRingFront'),
-    containerW * 0.72,
-    [38, 68],
-    [110, 160]
+    containerW * 0.70,
+    [35, 50],
+    [120, 170]
   );
 
   // Check if all rings are empty (resolved but no data)
-  var totalImages = (data.arena || []).length + (data.cosmos || []).length + (data.pinterest || []).length;
+  var totalImages = (data.arena || []).length + (data.cosmos || []).length;
   if (totalImages === 0) {
     var saturn = document.getElementById('saturn');
     if (saturn) saturn.classList.add('rings-failed');
@@ -321,7 +337,7 @@ ArenaLoader.getAllImages().then(function(data) {
 });
 
 // B9: Recompute ring radii on container resize
-var RING_RADIUS_MULTIPLIERS = { 'ring-art': 0.42, 'ring-arena': 0.57, 'ring-cosmos': 0.72 };
+var RING_RADIUS_MULTIPLIERS = { 'ring-art': 0.35, 'ring-arena': 0.52, 'ring-cosmos': 0.70 };
 var saturnEl = document.getElementById('saturn');
 if (saturnEl && typeof ResizeObserver !== 'undefined') {
   var ringResizeObs = new ResizeObserver(function(entries) {
@@ -359,6 +375,7 @@ var behindText = document.getElementById('behindText');
 var behindGallery = document.getElementById('behindGallery');
 var behindAbout = document.getElementById('behindAbout');
 var behindConnect = document.getElementById('behindConnect');
+var behindHod = document.getElementById('behindHod');
 var floorIndicator = document.querySelector('.indicator-floor');
 
 var floorLabels = {
@@ -366,8 +383,8 @@ var floorLabels = {
 };
 
 // Floor order for counter ticking (lobby=0)
-var floorOrder = ['★', '1', '2', '3', '4'];
-var floorToIndex = { gallery: 1, hod: 2, about: 3, contact: 4, help: 4 };
+var floorOrder = ['★', '1', '2', '3', '4', '?'];
+var floorToIndex = { gallery: 1, hod: 2, about: 3, contact: 4, help: 5 };
 var currentFloorIndex = 0;
 var traveling = false;
 
@@ -388,18 +405,23 @@ function setFloorContent(floor) {
   behindGallery.classList.remove('active');
   behindAbout.classList.remove('active');
   behindConnect.classList.remove('active');
+  if (behindHod) behindHod.classList.remove('active');
   aboutActive = false;
   connectActive = false;
   behindText.style.display = 'none';
 
   if (floor === 'gallery') {
     behindGallery.classList.add('active');
+  } else if (floor === 'hod') {
+    if (behindHod) behindHod.classList.add('active');
   } else if (floor === 'about') {
     behindAbout.classList.add('active');
     aboutActive = true;
+    if (!_orbRunning) { _orbRunning = true; orbPhysicsLoop(); }
   } else if (floor === 'contact') {
     behindConnect.classList.add('active');
     connectActive = true;
+    if (!_connectRunning) { _connectRunning = true; connectLoop(); }
   } else {
     behindText.style.display = '';
     var content = floorContent[floor];
@@ -415,8 +437,6 @@ function travelToFloor(floor, callback) {
   var direction = targetIndex > currentFloorIndex ? 1 : -1;
   var floorsToTravel = Math.abs(targetIndex - currentFloorIndex);
   if (floorsToTravel === 0) { callback(); return; }
-
-  var travelTime = floorsToTravel * 0.7; // 0.7s per floor
 
   // Set arrow direction
   indicatorArrow.className = 'indicator-arrow' + (direction > 0 ? '' : ' arrow-down');
@@ -463,15 +483,14 @@ function pressFloor(floor) {
   var btn = document.querySelector('[data-floor="' + floor + '"]');
   if (btn) { btn.classList.add('active'); btn.setAttribute('aria-pressed', 'true'); }
 
-  // Prepare content behind doors
-  setFloorContent(floor);
-
-  // If doors are open, close visually but keep fixed positioning to prevent page scroll jump
+  // If doors are open, close first then swap content during travel
   if (elevatorSection.classList.contains('doors-open')) {
     // Add a transitional class that closes doors but stays position:fixed
     elevatorSection.classList.add('doors-closing');
     elevatorSection.classList.remove('doors-open');
     setTimeout(function() {
+      // Swap content only after doors have fully closed
+      setFloorContent(floor);
       travelToFloor(floor, function() {
         elevatorSection.classList.remove('doors-closing');
         elevatorSection.classList.add('doors-open');
@@ -480,9 +499,10 @@ function pressFloor(floor) {
         traveling = false;
         updateMobileNavActive(floor);
       });
-    }, 1600); // wait for 1.5s door close animation
+    }, 1600); // wait for door close animation
   } else {
-    // Doors already closed — travel then open
+    // Doors already closed — set content then travel and open
+    setFloorContent(floor);
     travelToFloor(floor, function() {
       elevatorSection.classList.add('doors-open');
       lockBodyScroll();
@@ -500,17 +520,22 @@ function closeDoors() {
   elevatorSection.classList.add('doors-closing');
   unlockBodyScroll();
   document.querySelectorAll('.floor-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
-  behindGallery.classList.remove('active');
-  behindAbout.classList.remove('active');
-  behindConnect.classList.remove('active');
-  aboutActive = false;
-  connectActive = false;
-  behindText.style.display = '';
-  // Reset gallery walk position
-  walkZ = 0;
-  if (hallwayInner) hallwayInner.style.transform = 'translateZ(0px)';
   activeFloor = null;
   updateMobileNavActive(null);
+
+  // Clear floor content AFTER doors finish closing (matches 1.6s CSS transition)
+  setTimeout(function() {
+    behindGallery.classList.remove('active');
+    behindAbout.classList.remove('active');
+    behindConnect.classList.remove('active');
+    if (behindHod) behindHod.classList.remove('active');
+    aboutActive = false;
+    connectActive = false;
+    behindText.style.display = '';
+    // Reset gallery walk position
+    walkZ = 0;
+    if (hallwayInner) hallwayInner.style.transform = 'translateZ(0px)';
+  }, 1600);
 
   function releaseElevator() {
     // Scroll to elevator before releasing fixed position so page doesn't jump
@@ -583,11 +608,21 @@ function buildGalleryFrames() {
     var w = isMobile ? 160 : 240;
     var h = isMobile ? 200 : 300;
 
-    frame.innerHTML =
-      '<div class="frame-border" style="width:' + w + 'px;height:' + h + 'px">' +
-        '<img class="art-media" src="' + art.src + '" alt="' + art.title + '" loading="lazy" />' +
-      '</div>' +
-      '<div class="art-label">' + art.title + '</div>';
+    var frameBorder = document.createElement('div');
+    frameBorder.className = 'frame-border';
+    frameBorder.style.width = w + 'px';
+    frameBorder.style.height = h + 'px';
+    var artImg = document.createElement('img');
+    artImg.className = 'art-media';
+    artImg.src = art.src;
+    artImg.alt = art.title;
+    artImg.loading = 'lazy';
+    frameBorder.appendChild(artImg);
+    var artLabel = document.createElement('div');
+    artLabel.className = 'art-label';
+    artLabel.textContent = art.title;
+    frame.appendChild(frameBorder);
+    frame.appendChild(artLabel);
 
     // Position in 3D space — flush against walls
     // Start art 600px into the hallway so you see some empty corridor first
@@ -611,6 +646,10 @@ function buildGalleryFrames() {
 }
 
 buildGalleryFrames();
+
+// Update hint text for touch devices
+var galleryHint = document.querySelector('.gallery-scroll-hint');
+if (galleryHint && isTouch) galleryHint.textContent = 'swipe to walk';
 
 // Scroll/swipe → walk through the hallway with momentum
 if (galleryHallway) {
@@ -644,15 +683,14 @@ if (galleryHallway) {
     }
   }
 
-  // Desktop: wheel input feeds velocity
+  // Desktop: wheel input feeds velocity (momentum handles movement)
   galleryHallway.addEventListener('wheel', function(e) {
     if (!behindGallery.classList.contains('active')) return;
     e.preventDefault();
-    walkVelocity += e.deltaY * 0.4;
+    walkVelocity += e.deltaY * 0.6;
     // Cap velocity
     if (walkVelocity > 30) walkVelocity = 30;
     if (walkVelocity < -30) walkVelocity = -30;
-    walkZ += e.deltaY * 1.2;
     applyWalk();
     startMomentum();
   }, { passive: false });
@@ -729,7 +767,11 @@ function openArtViewer(index) {
   var data = GALLERY_ART[index];
   if (!data) return;
   _artViewerPrevFocus = document.activeElement;
-  artViewerMedia.innerHTML = '<img src="' + data.src + '" alt="' + data.title + '" />';
+  artViewerMedia.innerHTML = '';
+  var viewerImg = document.createElement('img');
+  viewerImg.src = data.src;
+  viewerImg.alt = data.title;
+  artViewerMedia.appendChild(viewerImg);
   artViewerInfo.querySelector('.viewer-title').textContent = data.title;
   artViewerInfo.querySelector('.viewer-medium').textContent =
     [data.medium, data.year].filter(Boolean).join(' \u2014 ');
@@ -913,9 +955,10 @@ if (behindAbout) {
 }
 
 // Main physics + rendering loop
+var _orbRunning = false;
 function orbPhysicsLoop() {
+  if (!aboutActive) { _orbRunning = false; return; }
   requestAnimationFrame(orbPhysicsLoop);
-  if (!aboutActive) return;
 
   var pw = behindAbout.offsetWidth;
   var ph = behindAbout.offsetHeight;
@@ -1017,12 +1060,18 @@ function orbPhysicsLoop() {
   var moonCenter = moonX > -9000 ? { cx: moonX, cy: moonY, r: MOON_RADIUS + 25, type: 'moon' } : null;
   displaceAboutWords(aboutWords, sunCenter, moonCenter, eclipseRatio);
 }
-orbPhysicsLoop();
+_orbRunning = true; orbPhysicsLoop();
 
 function displaceAboutWords(words, sun, moon, eclipse) {
+  // Batch all reads first to avoid interleaved read/write layout thrash
+  var rects = new Array(words.length);
+  for (var i = 0; i < words.length; i++) {
+    rects[i] = words[i].getBoundingClientRect();
+  }
+  // Now apply transforms (write pass)
   for (var i = 0; i < words.length; i++) {
     var span = words[i];
-    var rect = span.getBoundingClientRect();
+    var rect = rects[i];
     var wcx = rect.left + rect.width / 2;
     var wcy = rect.top + rect.height / 2;
     var totalTX = 0, totalTY = 0, minOpacity = 1;
@@ -1103,15 +1152,16 @@ if (behindConnect) {
   });
 }
 
+var _connectRunning = false;
 function connectLoop() {
+  if (!connectActive) { _connectRunning = false; return; }
   requestAnimationFrame(connectLoop);
-  if (!connectActive) return;
   if (isTouch) return;
   if (connectMouseX < -9000) return;
   var cMoon = { cx: connectMouseX, cy: connectMouseY, r: 80, type: 'moon' };
   displaceAboutWords(connectWords, null, cMoon, 0);
 }
-connectLoop();
+_connectRunning = true; connectLoop();
 
 // ============================================
 // iOS SCROLL LOCK HELPERS
@@ -1129,14 +1179,14 @@ function unlockBodyScroll() {
   document.body.style.position = '';
   document.body.style.width = '';
   document.body.style.top = '';
-  window.scrollTo(0, parseInt(scrollY || '0') * -1);
+  window.scrollTo(0, (parseInt(scrollY || '0', 10) || 0) * -1);
 }
 
 // ============================================
 // MOBILE BOTTOM NAV
 // ============================================
 var mobileFloorNav = document.getElementById('mobileFloorNav');
-var mobileFloorMap = { 'lobby': null, '1': 'gallery', '3': 'about', '4': 'contact' };
+var mobileFloorMap = { 'lobby': null, '1': 'gallery', '2': 'hod', '3': 'about', '4': 'contact' };
 
 function updateMobileNavActive(floor) {
   if (!mobileFloorNav) return;
