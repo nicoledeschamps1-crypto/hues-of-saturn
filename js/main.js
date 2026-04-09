@@ -939,7 +939,7 @@ function orbPhysicsLoop() {
   var moonCenter = moonX > -9000 ? { cx: moonX, cy: moonY, r: MOON_RADIUS + 25, type: 'moon' } : null;
   displaceAboutWords(aboutWords, sunCenter, moonCenter, eclipseRatio);
 }
-_orbRunning = true; orbPhysicsLoop();
+// orbPhysicsLoop starts on demand when About floor is activated (setFloorContent)
 
 function displaceAboutWords(words, sun, moon, eclipse) {
   // Batch all reads first to avoid interleaved read/write layout thrash
@@ -1040,7 +1040,7 @@ function connectLoop() {
   var cMoon = { cx: connectMouseX, cy: connectMouseY, r: 80, type: 'moon' };
   displaceAboutWords(connectWords, null, cMoon, 0);
 }
-_connectRunning = true; connectLoop();
+// connectLoop starts on demand when Connect floor is activated (setFloorContent)
 
 // ============================================
 // iOS SCROLL LOCK HELPERS
