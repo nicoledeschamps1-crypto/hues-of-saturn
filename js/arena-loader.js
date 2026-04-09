@@ -13,7 +13,7 @@ const ArenaLoader = (function() {
   const COSMOS_DATA_PATH = 'cosmos-data.json';
 
   const API_BASE = 'https://api.are.na/v2';
-  const CACHE_KEY = 'hos-inspiration-v9';
+  const CACHE_KEY = 'hos-inspiration-v10';
   const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
 
   // ── Cache ──────────────────────────────────────
@@ -67,13 +67,16 @@ const ArenaLoader = (function() {
           .filter(Boolean).join(' ');
         if (/pinterest|pin on |saved from |discover this pin|pinned by/i.test(allText)) return false;
 
-        // Filter tiny images (likely icons/avatars) — Are.na provides dimensions
+        // Filter tiny/square images (likely icons/avatars) — Are.na provides dimensions
         const img = b.image || {};
         const origW = img.original && img.original.width;
         const origH = img.original && img.original.height;
         if (origW && origH) {
           // Skip very small images (icons, thumbnails)
           if (origW < 200 && origH < 200) return false;
+          // Skip small square images (profile pics) — ratio ~1:1 and under 400px
+          const ratio = Math.max(origW, origH) / Math.min(origW, origH);
+          if (ratio < 1.15 && Math.max(origW, origH) < 400) return false;
         }
 
         return true;
@@ -181,6 +184,8 @@ const ArenaLoader = (function() {
     /\/p\/\d+x\d+\//i,              // Common CDN profile size pattern
     /default.*avatar/i,              // Default avatar images
     /placeholder/i,                  // Placeholder images
+    /arena-avatars/i,                // Are.na avatar bucket
+    /d2w9rnfcy7mm78.*\/small_/i,    // Are.na small thumbnails (often avatars)
   ];
 
   // Screenshots & low-quality content to filter out

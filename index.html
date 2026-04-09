@@ -11,7 +11,15 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20260405">
+  <link rel="stylesheet" href="css/style.css?v=20260407">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -172,14 +180,32 @@
         <!-- Gallery floor -->
         <div class="behind-gallery" id="behindGallery">
           <div class="gallery-hallway" id="galleryHallway">
-            <!-- Perspective structure (positioned relative to hallway) -->
-            <div class="hallway-ceiling"></div>
-            <div class="wall-surface-left"></div>
-            <div class="wall-surface-right"></div>
-            <div class="hallway-floor"></div>
-            <!-- Scrollable art frames -->
-            <div class="hallway-perspective" id="hallwayInner"></div>
-            <div class="gallery-scroll-hint">scroll to walk</div>
+            <!-- Three.js WebGL canvas mount -->
+            <div id="galleryViewport"></div>
+            <!-- Loading overlay -->
+            <div class="gallery-loading" id="galleryLoading">
+              <div class="gallery-loading-ring"></div>
+            </div>
+            <!-- Controls HUD (desktop) -->
+            <div class="gallery-controls-hud" id="galleryControlsHud">
+              <span class="hud-item"><kbd>&uarr;</kbd><kbd>&darr;</kbd> or scroll &mdash; walk</span>
+              <span class="hud-divider"></span>
+              <span class="hud-item">click artwork &mdash; view</span>
+            </div>
+            <!-- Mobile D-Pad -->
+            <div class="gallery-dpad" id="galleryDpad">
+              <button class="gallery-dpad-btn" data-dir="up" aria-label="Walk forward">&#9650;</button>
+              <div class="gallery-dpad-row">
+                <button class="gallery-dpad-btn" data-dir="left" aria-label="Look left">&#9664;</button>
+                <button class="gallery-dpad-btn" data-dir="right" aria-label="Look right">&#9654;</button>
+              </div>
+              <button class="gallery-dpad-btn" data-dir="down" aria-label="Walk back">&#9660;</button>
+            </div>
+            <!-- Gallery position indicator -->
+            <div class="gallery-position" id="galleryPosition">
+              <div class="gallery-position-fill"></div>
+              <span class="gallery-position-label">1 / <span class="gallery-position-total"></span></span>
+            </div>
           </div>
         </div>
       </div>
@@ -235,13 +261,17 @@
   <div class="art-viewer" id="artViewer" role="dialog" aria-modal="true" aria-labelledby="viewerTitle">
     <div class="art-viewer-backdrop"></div>
     <div class="art-viewer-content">
-      <div class="art-viewer-media" id="artViewerMedia"></div>
+      <div class="art-viewer-frame">
+        <div class="art-viewer-media" id="artViewerMedia"></div>
+      </div>
       <div class="art-viewer-info" id="artViewerInfo">
         <h3 class="viewer-title" id="viewerTitle"></h3>
         <p class="viewer-medium"></p>
         <p class="viewer-description"></p>
       </div>
     </div>
+    <button class="art-viewer-prev" id="artViewerPrev" aria-label="Previous artwork">&#8592;</button>
+    <button class="art-viewer-next" id="artViewerNext" aria-label="Next artwork">&#8594;</button>
     <button class="art-viewer-close" id="artViewerClose" aria-label="Close artwork viewer">&times;</button>
   </div>
 
@@ -257,8 +287,9 @@
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
-  <script src="js/arena-loader.js?v=20260405"></script>
-  <script src="js/gallery-data.js?v=20260405"></script>
-  <script src="js/main.js?v=20260405"></script>
+  <script src="js/arena-loader.js?v=20260405b"></script>
+  <script src="js/gallery-data.js?v=20260407"></script>
+  <script type="module" src="js/gallery-3d.js?v=20260407"></script>
+  <script src="js/main.js?v=20260407"></script>
 </body>
 </html>

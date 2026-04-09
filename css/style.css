@@ -1060,292 +1060,190 @@ body {
   display: block;
 }
 
-/* ── Gallery Hallway ─────────────────────────── */
+/* ── Gallery Hallway (Three.js container) ──── */
 .gallery-hallway {
   width: 100%;
   height: 100%;
   overflow: hidden;
   position: relative;
   background: #ede6da;
-  perspective: 1200px;
-  perspective-origin: 50% 50%;
 }
 
-/* Back wall (vanishing point) */
-.gallery-hallway::before {
-  content: '';
-  position: absolute;
-  top: 39%;
-  left: 43%;
-  width: 14%;
-  height: 22%;
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(255, 235, 200, 0.4) 0%, transparent 70%),
-    #dbd4c6;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Ambient light overlay — warm glow from above */
-.gallery-hallway::after {
-  content: '';
+#galleryViewport {
   position: absolute;
   inset: 0;
-  background:
-    /* Central overhead warm glow */
-    radial-gradient(ellipse 50% 35% at 50% 8%, rgba(255, 225, 180, 0.32) 0%, transparent 100%),
-    /* Soft left wall wash */
-    radial-gradient(ellipse 30% 50% at 15% 40%, rgba(255, 235, 200, 0.16) 0%, transparent 100%),
-    /* Soft right wall wash */
-    radial-gradient(ellipse 30% 50% at 85% 40%, rgba(255, 235, 200, 0.16) 0%, transparent 100%),
-    /* Subtle vignette for depth */
-    radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.08) 100%);
-  z-index: 4;
-  pointer-events: none;
+  touch-action: none;
 }
 
-/* ── Perspective corridor structure ─────────── */
-.gallery-hallway .hallway-ceiling {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  z-index: 1;
-  background:
-    /* Track light hot spots — bright warm center */
-    radial-gradient(ellipse 4% 10% at 25% 62%, rgba(255, 252, 240, 0.4) 0%, transparent 100%),
-    radial-gradient(ellipse 4% 10% at 75% 62%, rgba(255, 252, 240, 0.4) 0%, transparent 100%),
-    /* Track light spread — wider warm wash */
-    radial-gradient(ellipse 10% 22% at 25% 60%, rgba(255, 245, 220, 0.3) 0%, transparent 100%),
-    radial-gradient(ellipse 8% 18% at 50% 80%, rgba(255, 248, 230, 0.2) 0%, transparent 100%),
-    radial-gradient(ellipse 10% 22% at 75% 60%, rgba(255, 245, 220, 0.3) 0%, transparent 100%),
-    /* Depth: darker toward edges where ceiling recedes */
-    linear-gradient(to right, rgba(0,0,0,0.06) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.06) 100%),
-    linear-gradient(to bottom, #f5ede2 0%, #e9e0d2 50%, #ddd4c6 100%);
-  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
-  pointer-events: none;
+#galleryViewport canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-/* Crown molding shadow — where ceiling meets walls */
-.gallery-hallway .hallway-ceiling::before {
-  content: '';
+/* Loading overlay */
+.gallery-loading {
   position: absolute;
   inset: 0;
-  background:
-    /* Left molding shadow line */
-    linear-gradient(to right,
-      rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 1.5%, transparent 4%
-    ),
-    /* Right molding shadow line */
-    linear-gradient(to left,
-      rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.06) 1.5%, transparent 4%
-    ),
-    /* Bottom edge shadow — where ceiling meets back wall */
-    linear-gradient(to top,
-      rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.04) 3%, transparent 8%
-    );
-  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ede6da;
+  z-index: 6;
 }
 
-/* Track lighting rail */
-.gallery-hallway .hallway-ceiling::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background:
-    /* Center track rail */
-    linear-gradient(to bottom,
-      transparent 70%,
-      rgba(0,0,0,0.04) 72%,
-      rgba(0,0,0,0.08) 74%,
-      rgba(0,0,0,0.04) 76%,
-      transparent 78%
-    ),
-    /* Track rail highlight */
-    linear-gradient(to bottom,
-      transparent 69%,
-      rgba(255,255,255,0.12) 70%,
-      transparent 71%
-    );
-  clip-path: polygon(0% 0%, 100% 0%, 57% 100%, 43% 100%);
-  pointer-events: none;
+.gallery-loading-ring {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
-.gallery-hallway .wall-surface-left {
-  position: absolute;
-  inset: 0;
-  background:
-    /* Light wash from ceiling spots */
-    radial-gradient(ellipse 60% 25% at 20% 15%, rgba(255, 248, 230, 0.2) 0%, transparent 100%),
-    radial-gradient(ellipse 50% 25% at 35% 25%, rgba(255, 248, 230, 0.12) 0%, transparent 100%),
-    /* Shadow at top edge (ceiling junction) */
-    linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 8%),
-    /* Shadow at bottom edge (floor junction) */
-    linear-gradient(to top, rgba(0,0,0,0.06) 0%, transparent 6%),
-    /* Subtle vertical depth — darker toward the vanishing point */
-    linear-gradient(to right, #e8dfcf 0%, #e0d7c8 50%, #d2c9ba 100%);
-  clip-path: polygon(0% 0%, 43% 39%, 43% 61%, 0% 100%);
-  z-index: 2;
-  pointer-events: none;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.gallery-hallway .wall-surface-right {
-  position: absolute;
-  inset: 0;
-  background:
-    /* Light wash from ceiling spots */
-    radial-gradient(ellipse 60% 25% at 80% 15%, rgba(255, 248, 230, 0.2) 0%, transparent 100%),
-    radial-gradient(ellipse 50% 25% at 65% 25%, rgba(255, 248, 230, 0.12) 0%, transparent 100%),
-    /* Shadow at top edge (ceiling junction) */
-    linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, transparent 8%),
-    /* Shadow at bottom edge (floor junction) */
-    linear-gradient(to top, rgba(0,0,0,0.06) 0%, transparent 6%),
-    /* Subtle vertical depth — darker toward the vanishing point */
-    linear-gradient(to left, #e8dfcf 0%, #e0d7c8 50%, #d2c9ba 100%);
-  clip-path: polygon(100% 0%, 57% 39%, 57% 61%, 100% 100%);
-  z-index: 2;
-  pointer-events: none;
+/* (Old CSS 3D hallway styles removed — Three.js handles rendering now) */
+
 }
 
-.gallery-hallway .hallway-floor {
+/* ── Controls HUD ───────────────────────────── */
+.gallery-controls-hud {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  z-index: 1;
-  background:
-    /* Warm light pools beneath track lights — polished floor reflections */
-    radial-gradient(ellipse 14% 20% at 25% 15%, rgba(255, 248, 225, 0.14) 0%, transparent 100%),
-    radial-gradient(ellipse 10% 16% at 50% 10%, rgba(255, 248, 230, 0.10) 0%, transparent 100%),
-    radial-gradient(ellipse 14% 20% at 75% 15%, rgba(255, 248, 225, 0.14) 0%, transparent 100%),
-    /* Diffused reflections */
-    radial-gradient(ellipse 20% 30% at 25% 20%, rgba(255, 250, 235, 0.06) 0%, transparent 100%),
-    radial-gradient(ellipse 20% 30% at 75% 20%, rgba(255, 250, 235, 0.06) 0%, transparent 100%),
-    /* Subtle warm sheen near walls */
-    linear-gradient(to right, rgba(255, 248, 230, 0.04) 0%, transparent 15%, transparent 85%, rgba(255, 248, 230, 0.04) 100%),
-    linear-gradient(to top, #c5bba8 0%, #d6ccbc 50%, #e2d8ca 100%);
-  clip-path: polygon(0% 100%, 100% 100%, 57% 0%, 43% 0%);
-  pointer-events: none;
-}
-
-/* 3D walk-through container */
-.gallery-hallway .hallway-perspective {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  z-index: 3;
-  pointer-events: none;
-}
-
-/* Art frames — positioned in 3D on walls */
-.art-frame {
-  position: absolute;
-  cursor: pointer;
-  pointer-events: all;
-  transition: filter 0.3s ease;
-}
-
-/* Museum picture light — warm cone from above */
-.art-frame::before {
-  content: '';
-  position: absolute;
-  top: -30px;
+  bottom: 4%;
   left: 50%;
   transform: translateX(-50%);
-  width: 60%;
-  height: 20px;
-  background:
-    radial-gradient(ellipse 100% 100% at 50% 100%, rgba(255, 245, 225, 0.6) 0%, transparent 70%);
-  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: rgba(40, 35, 28, 0.4);
   pointer-events: none;
-  z-index: 2;
+  transition: opacity 0.5s ease;
 }
 
-/* Warm light wash over the painting */
-.art-frame::after {
-  content: '';
+.gallery-controls-hud.faded {
+  opacity: 0.2;
+}
+
+.gallery-controls-hud kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  border: 1px solid rgba(40, 35, 28, 0.2);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  margin: 0 1px;
+  line-height: 1.2;
+}
+
+.hud-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(40, 35, 28, 0.15);
+}
+
+/* ── Mobile D-Pad ───────────────────────────── */
+.gallery-dpad {
+  display: none;
   position: absolute;
-  top: -20px;
-  left: -10%;
-  width: 120%;
-  height: 130%;
-  background:
-    /* Downward cone from picture light */
-    linear-gradient(175deg, rgba(255, 248, 230, 0.18) 0%, rgba(255, 245, 220, 0.06) 40%, transparent 70%),
-    /* Soft ambient warmth */
-    radial-gradient(ellipse 80% 50% at 50% 10%, rgba(255, 240, 210, 0.12) 0%, transparent 100%);
-  pointer-events: none;
-  z-index: 1;
-  transition: opacity 0.3s ease;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  left: 16px;
+  z-index: 12;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: all;
+  opacity: 0.5;
+  transition: opacity 0.2s;
 }
 
-.art-frame:hover {
-  filter: brightness(1.08);
+.gallery-dpad:active,
+.gallery-dpad.in-use {
+  opacity: 0.85;
 }
 
-.art-frame:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.6);
-  outline-offset: 4px;
+.gallery-dpad-row {
+  display: flex;
+  gap: 4px;
 }
 
-.art-frame:hover::after {
-  opacity: 1.3;
+.gallery-dpad-btn {
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid rgba(26, 23, 20, 0.25);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.5);
+  color: rgba(26, 23, 20, 0.5);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: background 0.1s, border-color 0.1s;
 }
 
-.frame-border {
+.gallery-dpad-btn.active,
+.gallery-dpad-btn:active {
+  background: rgba(26, 23, 20, 0.12);
+  border-color: rgba(26, 23, 20, 0.4);
+}
+
+
+/* ── Gallery Position Indicator ─────────────── */
+.gallery-position {
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.gallery-position.visible {
+  opacity: 1;
+}
+
+.gallery-position-fill {
+  width: 80px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 1px;
   position: relative;
-  padding: 4px;
-  background: #1a1a1a;
-  box-shadow:
-    /* Primary drop shadow — directional from above */
-    2px 6px 20px rgba(0, 0, 0, 0.3),
-    /* Soft ambient shadow */
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    /* Warm light reflection on top edge */
-    0 -1px 3px rgba(255, 245, 225, 0.08);
-  transition: box-shadow 0.3s ease;
   overflow: hidden;
 }
 
-.art-frame:hover .frame-border {
-  box-shadow:
-    2px 8px 28px rgba(0, 0, 0, 0.4),
-    0 2px 12px rgba(0, 0, 0, 0.2),
-    0 -1px 6px rgba(255, 245, 225, 0.12),
-    0 0 40px rgba(255, 245, 220, 0.06);
-}
-
-.art-media {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.art-label {
+.gallery-position-fill::after {
+  content: '';
   position: absolute;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.45);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.3s;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--walk-progress, 0%);
+  background: rgba(180, 150, 90, 0.6);
+  border-radius: 1px;
+  transition: width 0.2s ease-out;
 }
 
-.art-frame:hover .art-label {
-  opacity: 1;
+.gallery-position-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
 }
 
 /* Gallery scroll hint */
@@ -2287,80 +2185,148 @@ body {
 .art-viewer-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.92);
+  /* Textured gallery wall backdrop */
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 60% 40% at 50% 30%, rgba(255, 248, 230, 0.06) 0%, transparent 100%),
+    linear-gradient(180deg, #1a1815 0%, #141210 50%, #0e0d0b 100%);
+  background-size: 256px 256px, 100% 100%, 100% 100%;
 }
 
 .art-viewer-content {
   position: relative;
   z-index: 2;
   max-width: 85vw;
-  max-height: 85vh;
+  max-height: 88vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   transform: scale(0.85);
-  transition: transform 0.5s ease;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .art-viewer.active .art-viewer-content {
   transform: scale(1);
 }
 
+/* Museum frame around artwork */
+.art-viewer-frame {
+  position: relative;
+  padding: 12px;
+  background: #1a1a1a;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.6),
+    0 2px 10px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Mat/mount inside the frame */
+.art-viewer-frame::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  pointer-events: none;
+}
+
+/* Picture light glow from above */
+.art-viewer-frame::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 10%;
+  width: 80%;
+  height: 50px;
+  background: radial-gradient(ellipse 100% 100% at 50% 100%, rgba(255, 245, 225, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
 .art-viewer-media {
-  max-width: 70vw;
-  max-height: 65vh;
+  max-width: 68vw;
+  max-height: 58vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #f5f0e8;
 }
 
 .art-viewer-media img,
 .art-viewer-media video {
-  max-width: 70vw;
-  max-height: 65vh;
+  max-width: 68vw;
+  max-height: 58vh;
   object-fit: contain;
-  border: 4px solid #222;
-  box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
   display: block;
 }
 
 .art-viewer-info {
-  margin-top: 24px;
+  margin-top: 28px;
   text-align: center;
 }
 
 .viewer-title {
   font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  letter-spacing: 0.1em;
-  margin-bottom: 6px;
+  font-size: 1.4rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .viewer-medium {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  opacity: 0.5;
-  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 10px;
 }
 
 .viewer-description {
   font-size: 0.85rem;
-  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.5);
   max-width: 500px;
   line-height: 1.6;
 }
 
-.art-viewer-close {
+/* Prev/Next navigation arrows */
+.art-viewer-prev,
+.art-viewer-next {
   position: absolute;
-  top: 30px;
-  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 3;
   background: none;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  width: 48px;
+  height: 48px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  border-radius: 0;
+}
+
+.art-viewer-prev { left: 24px; }
+.art-viewer-next { right: 24px; }
+
+.art-viewer-prev:hover,
+.art-viewer-next:hover {
+  border-color: rgba(255, 255, 255, 0.5);
   color: #fff;
-  width: 50px;
-  height: 50px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.art-viewer-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 3;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255, 255, 255, 0.6);
+  width: 48px;
+  height: 48px;
   font-size: 1.5rem;
   cursor: pointer;
   display: flex;
@@ -2370,8 +2336,9 @@ body {
 }
 
 .art-viewer-close:hover {
-  border-color: #fff;
-  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.5);
+  color: #fff;
+  background: rgba(255,255,255,0.06);
 }
 
 
@@ -2555,18 +2522,40 @@ body {
     font-size: clamp(0.9rem, 1.8vw, 1.1rem);
   }
 
-  /* Gallery — swipe hint handled by JS (isTouch check) */
+  /* Hide desktop HUD, show d-pad on mobile */
+  .gallery-controls-hud {
+    display: none;
+  }
 
-  /* Art viewer */
+  .gallery-dpad {
+    display: flex;
+  }
+
+  /* Art viewer — mobile */
+  .art-viewer-media,
   .art-viewer-media img,
   .art-viewer-media video {
-    max-width: 95vw;
-    max-height: 55vh;
+    max-width: 92vw;
+    max-height: 50vh;
   }
 
   .art-viewer-content {
     max-width: 98vw;
   }
+
+  .art-viewer-frame {
+    padding: 6px;
+  }
+
+  .art-viewer-prev,
+  .art-viewer-next {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .art-viewer-prev { left: 8px; }
+  .art-viewer-next { right: 8px; }
 
   /* Mobile bottom nav */
   .mobile-floor-nav {
@@ -2658,11 +2647,6 @@ body {
     padding: 8px 0;
   }
 
-  /* Gallery art frames */
-  .art-frame {
-    width: 85vw !important;
-    max-width: 340px;
-  }
 }
 
 /* ── 429px — Small Phones ──────────────────── */
@@ -2770,4 +2754,5 @@ body {
   .about-grain { animation: none; }
   .orb-sun .orb-core { animation: none; }
   .alarm-btn { animation: none; }
+  /* (old gallery avatar/marker reduced-motion rules removed — Three.js handles this now) */
 }

@@ -37,12 +37,7 @@ window.addEventListener('resize', function() {
     _prevPhone = isPhone;
     clearTimeout(_resizeTimer);
     _resizeTimer = setTimeout(function() {
-      if (hallwayInner) {
-        hallwayInner.innerHTML = '';
-        walkZ = 0;
-        buildGalleryFrames();
-        hallwayInner.style.transform = 'translateZ(0px)';
-      }
+      // Three.js gallery handles its own resize via internal ResizeObserver
     }, 250);
   }
 });
@@ -172,8 +167,12 @@ function openRingLightbox(src, isVideo) {
 // ============================================
 // SATURN — Dual Inspiration Rings
 // ============================================
-function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
+function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange, allImages) {
   if (!backEl || !frontEl || !images || images.length === 0) return;
+
+  // Pool of surplus images to cycle in (beyond the initially displayed set)
+  var pool = (allImages && allImages.length > images.length) ? allImages.slice(images.length) : [];
+  var poolIndex = 0;
 
   var goldenAngle = 137.508;
   var items = [];
@@ -268,6 +267,16 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange) {
         var shouldBeBack = (current >= 0 && current < 180);
         var isInBack = item.wrapper.parentElement === backEl;
         if (shouldBeBack && !isInBack) {
+          // Crossing to back (behind Saturn) — swap in a fresh image from the pool
+          if (pool.length > 0 && !item.wrapper._hovered) {
+            var next = pool[poolIndex % pool.length];
+            poolIndex++;
+            var media = item.wrapper._mediaEl;
+            if (media && !next.isVideo && media.tagName === 'IMG') {
+              media.src = next.src;
+              media.alt = next.alt || 'Inspiration';
+            }
+          }
           backEl.appendChild(item.wrapper);
         } else if (!shouldBeBack && isInBack) {
           frontEl.appendChild(item.wrapper);
@@ -301,7 +310,8 @@ ArenaLoader.getAllImages().then(function(data) {
     document.getElementById('artRingFront'),
     containerW * 0.35,
     [38, 52],
-    [50, 70]
+    [50, 70],
+    artImages
   );
 
   // Middle ring — Are.na (clear gap from inner)
@@ -311,7 +321,8 @@ ArenaLoader.getAllImages().then(function(data) {
     document.getElementById('arenaRingFront'),
     containerW * 0.52,
     [32, 46],
-    [70, 100]
+    [70, 100],
+    data.arena
   );
 
   // Outer ring — Cosmos (clear gap from middle)
@@ -321,7 +332,8 @@ ArenaLoader.getAllImages().then(function(data) {
     document.getElementById('cosmosRingFront'),
     containerW * 0.70,
     [35, 50],
-    [120, 170]
+    [120, 170],
+    data.cosmos
   );
 
   // Check if all rings are empty (resolved but no data)
@@ -410,8 +422,18 @@ function setFloorContent(floor) {
   connectActive = false;
   behindText.style.display = 'none';
 
+  // Stop Three.js gallery when leaving gallery floor
+  if (window.gallery3D && activeFloor === 'gallery') window.gallery3D.stop();
+
   if (floor === 'gallery') {
     behindGallery.classList.add('active');
+    // Start Three.js gallery
+    if (window.gallery3D) {
+      window.gallery3D.reset();
+      window.gallery3D.prepare();
+      // Small delay so container has dimensions before renderer sizes
+      setTimeout(function() { window.gallery3D.start(); }, 100);
+    }
   } else if (floor === 'hod') {
     if (behindHod) behindHod.classList.add('active');
   } else if (floor === 'about') {
@@ -532,9 +554,8 @@ function closeDoors() {
     aboutActive = false;
     connectActive = false;
     behindText.style.display = '';
-    // Reset gallery walk position
-    walkZ = 0;
-    if (hallwayInner) hallwayInner.style.transform = 'translateZ(0px)';
+    // Stop Three.js render loop when doors close
+    if (window.gallery3D) window.gallery3D.stop();
   }, 1600);
 
   function releaseElevator() {
@@ -580,222 +601,77 @@ document.querySelectorAll('.floor-btn, .door-btn, .alarm-btn').forEach(function(
 
 
 // ============================================
-// GALLERY (inside elevator — walk-through hallway)
+// GALLERY — Three.js (lifecycle managed by gallery-3d.js)
 // ============================================
-var hallwayInner = document.getElementById('hallwayInner');
-var galleryHallway = document.getElementById('galleryHallway');
-var walkZ = 0;
-var maxWalkZ = 0;
 
-function buildGalleryFrames() {
-  if (!hallwayInner) return;
-
-  // Depth spacing per position level — tighter on mobile
-  var depthStep = isMobile ? 800 : 1200;
-  var maxPos = 0;
-  GALLERY_ART.forEach(function(a) { if (a.position > maxPos) maxPos = a.position; });
-  maxWalkZ = maxPos * depthStep + 400;
-
-  GALLERY_ART.forEach(function(art, index) {
-    var frame = document.createElement('div');
-    frame.className = 'art-frame';
-    frame.dataset.art = index;
-    frame.setAttribute('role', 'button');
-    frame.setAttribute('tabindex', '0');
-    frame.setAttribute('aria-label', 'View ' + art.title);
-
-    // Frame size — smaller on mobile
-    var w = isMobile ? 160 : 240;
-    var h = isMobile ? 200 : 300;
-
-    var frameBorder = document.createElement('div');
-    frameBorder.className = 'frame-border';
-    frameBorder.style.width = w + 'px';
-    frameBorder.style.height = h + 'px';
-    var artImg = document.createElement('img');
-    artImg.className = 'art-media';
-    artImg.src = art.src;
-    artImg.alt = art.title;
-    artImg.loading = 'lazy';
-    frameBorder.appendChild(artImg);
-    var artLabel = document.createElement('div');
-    artLabel.className = 'art-label';
-    artLabel.textContent = art.title;
-    frame.appendChild(frameBorder);
-    frame.appendChild(artLabel);
-
-    // Position in 3D space — flush against walls
-    // Start art 600px into the hallway so you see some empty corridor first
-    var z = -(isMobile ? 300 : 600) - (art.position * depthStep);
-    var xOffset = art.wall === 'left' ? (isMobile ? -280 : -480) : (isMobile ? 280 : 480);
-    var rotY = art.wall === 'left' ? 72 : -72;
-    var yOffset = -20;
-
-    frame.style.top = '50%';
-    frame.style.left = '50%';
-    frame.style.transform =
-      'translate(-50%, -50%) ' +
-      'translateX(' + xOffset + 'px) ' +
-      'translateY(' + yOffset + 'px) ' +
-      'translateZ(' + z + 'px) ' +
-      'rotateY(' + rotY + 'deg) ' +
-      'rotateX(-2deg)';
-
-    hallwayInner.appendChild(frame);
-  });
-}
-
-buildGalleryFrames();
-
-// Update hint text for touch devices
-var galleryHint = document.querySelector('.gallery-scroll-hint');
-if (galleryHint && isTouch) galleryHint.textContent = 'swipe to walk';
-
-// Scroll/swipe → walk through the hallway with momentum
-if (galleryHallway) {
-  var walkVelocity = 0;
-  var walkMomentumRAF = null;
-  var walkFriction = 0.97;
-
-  function applyWalk() {
-    walkZ = Math.max(0, Math.min(maxWalkZ, walkZ));
-    hallwayInner.style.transform = 'translateZ(' + walkZ + 'px)';
-    var hint = galleryHallway.querySelector('.gallery-scroll-hint');
-    if (hint && walkZ > 30) hint.style.opacity = '0';
-  }
-
-  function momentumLoop() {
-    walkMomentumRAF = requestAnimationFrame(momentumLoop);
-    if (Math.abs(walkVelocity) < 0.3) {
-      walkVelocity = 0;
-      cancelAnimationFrame(walkMomentumRAF);
-      walkMomentumRAF = null;
-      return;
-    }
-    walkVelocity *= walkFriction;
-    walkZ += walkVelocity;
-    applyWalk();
-  }
-
-  function startMomentum() {
-    if (!walkMomentumRAF) {
-      walkMomentumRAF = requestAnimationFrame(momentumLoop);
-    }
-  }
-
-  // Desktop: wheel input feeds velocity (momentum handles movement)
-  galleryHallway.addEventListener('wheel', function(e) {
-    if (!behindGallery.classList.contains('active')) return;
-    e.preventDefault();
-    walkVelocity += e.deltaY * 0.6;
-    // Cap velocity
-    if (walkVelocity > 30) walkVelocity = 30;
-    if (walkVelocity < -30) walkVelocity = -30;
-    applyWalk();
-    startMomentum();
-  }, { passive: false });
-
-  // Touch: swipe with momentum on release
-  var touchStartY = 0;
-  var touchWalkZ = 0;
-  var touchMoved = false;
-  var touchPrevY = 0;
-  var touchTime = 0;
-
-  galleryHallway.addEventListener('touchstart', function(e) {
-    if (!behindGallery.classList.contains('active')) return;
-    touchStartY = e.touches[0].clientY;
-    touchPrevY = touchStartY;
-    touchTime = Date.now();
-    touchWalkZ = walkZ;
-    touchMoved = false;
-    // Stop any existing momentum
-    walkVelocity = 0;
-    if (walkMomentumRAF) {
-      cancelAnimationFrame(walkMomentumRAF);
-      walkMomentumRAF = null;
-    }
-  }, { passive: true });
-
-  galleryHallway.addEventListener('touchmove', function(e) {
-    if (!behindGallery.classList.contains('active')) return;
-    var currentY = e.touches[0].clientY;
-    var deltaY = touchStartY - currentY;
-    if (Math.abs(deltaY) > 10) touchMoved = true;
-    if (!touchMoved) return;
-    e.preventDefault();
-    walkZ = Math.max(0, Math.min(maxWalkZ, touchWalkZ + deltaY * 2));
-    applyWalk();
-    // Track for velocity calculation
-    touchPrevY = currentY;
-    touchTime = Date.now();
-  }, { passive: false });
-
-  galleryHallway.addEventListener('touchend', function(e) {
-    if (!touchMoved) return;
-    // Calculate fling velocity from last touch movement
-    var endY = e.changedTouches[0].clientY;
-    var dt = Math.max(1, Date.now() - touchTime);
-    var swipeSpeed = (touchPrevY - endY) / dt * 16;
-    walkVelocity = swipeSpeed * 3;
-    // Cap
-    if (walkVelocity > 25) walkVelocity = 25;
-    if (walkVelocity < -25) walkVelocity = -25;
-    if (Math.abs(walkVelocity) > 1) startMomentum();
-  }, { passive: true });
-}
-
-// Keyboard activation for gallery art frames
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' || e.key === ' ') {
-    var frame = e.target.closest('.art-frame');
-    if (frame) {
-      e.preventDefault();
-      openArtViewer(parseInt(frame.dataset.art));
-    }
-  }
-});
+// (CSS 3D gallery removed — gallery-3d.js handles rendering)
 
 // ── Art Viewer ───────────────────────────────
 var artViewer = document.getElementById('artViewer');
 var artViewerMedia = document.getElementById('artViewerMedia');
 var artViewerInfo = document.getElementById('artViewerInfo');
+var artViewerPrev = document.getElementById('artViewerPrev');
+var artViewerNext = document.getElementById('artViewerNext');
 
 var _artViewerPrevFocus = null;
+var _artViewerCurrentIndex = -1;
 
 function openArtViewer(index) {
   var data = GALLERY_ART[index];
   if (!data) return;
+  _artViewerCurrentIndex = index;
   _artViewerPrevFocus = document.activeElement;
+
   artViewerMedia.innerHTML = '';
   var viewerImg = document.createElement('img');
   viewerImg.src = data.src;
   viewerImg.alt = data.title;
   artViewerMedia.appendChild(viewerImg);
+
   artViewerInfo.querySelector('.viewer-title').textContent = data.title;
   artViewerInfo.querySelector('.viewer-medium').textContent =
     [data.medium, data.year].filter(Boolean).join(' \u2014 ');
   artViewerInfo.querySelector('.viewer-description').textContent = data.description || '';
+
+  // Update prev/next visibility
+  if (artViewerPrev) artViewerPrev.style.display = index > 0 ? 'flex' : 'none';
+  if (artViewerNext) artViewerNext.style.display = index < GALLERY_ART.length - 1 ? 'flex' : 'none';
+
   artViewer.classList.add('active');
-  // Move focus to close button
   var closeBtn = artViewer.querySelector('.art-viewer-close');
   if (closeBtn) closeBtn.focus();
 }
 
+function navigateArtViewer(direction) {
+  var newIndex = _artViewerCurrentIndex + direction;
+  if (newIndex < 0 || newIndex >= GALLERY_ART.length) return;
+  openArtViewer(newIndex);
+}
+
 function closeArtViewer() {
   artViewer.classList.remove('active');
-  // Return focus to triggering element
+  _artViewerCurrentIndex = -1;
   if (_artViewerPrevFocus) { _artViewerPrevFocus.focus(); _artViewerPrevFocus = null; }
 }
 
+// Bridge for gallery-3d.js module
+window.HOSArtViewer = {
+  open: openArtViewer,
+  close: closeArtViewer,
+  isOpen: function() { return artViewer && artViewer.classList.contains('active'); }
+};
+
 document.addEventListener('click', function(e) {
-  var frame = e.target.closest('.art-frame');
-  if (frame) { openArtViewer(parseInt(frame.dataset.art)); return; }
+  if (e.target.closest('.art-viewer-prev')) { navigateArtViewer(-1); return; }
+  if (e.target.closest('.art-viewer-next')) { navigateArtViewer(1); return; }
   if (e.target.closest('.art-viewer-backdrop') || e.target.closest('.art-viewer-close')) closeArtViewer();
 });
 
 document.addEventListener('keydown', function(e) {
+  if (!artViewer || !artViewer.classList.contains('active')) return;
   if (e.key === 'Escape') closeArtViewer();
+  if (e.key === 'ArrowLeft') { e.preventDefault(); navigateArtViewer(-1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); navigateArtViewer(1); }
 });
 
 // Focus trap for art viewer dialog
@@ -804,8 +680,11 @@ if (artViewer) {
     if (!artViewer.classList.contains('active')) return;
     if (e.key === 'Tab') {
       e.preventDefault();
-      var closeBtn = artViewer.querySelector('.art-viewer-close');
-      if (closeBtn) closeBtn.focus();
+      var focusable = artViewer.querySelectorAll('.art-viewer-close, .art-viewer-prev, .art-viewer-next');
+      var list = Array.from(focusable);
+      var idx = list.indexOf(document.activeElement);
+      var next = e.shiftKey ? (idx - 1 + list.length) % list.length : (idx + 1) % list.length;
+      list[next].focus();
     }
   });
 }
