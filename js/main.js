@@ -560,7 +560,6 @@ function closeDoors() {
   if (traveling) return;
   // Keep position:fixed while doors animate shut to prevent page jump
   elevatorSection.classList.remove('doors-open');
-  elevatorSection.classList.remove('gallery-active');
   elevatorSection.classList.add('doors-closing');
   unlockBodyScroll();
   document.querySelectorAll('.floor-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
@@ -569,6 +568,7 @@ function closeDoors() {
 
   // Clear floor content AFTER doors finish closing (matches 1.6s CSS transition)
   setTimeout(function() {
+    elevatorSection.classList.remove('gallery-active');
     behindGallery.classList.remove('active');
     behindAbout.classList.remove('active');
     behindConnect.classList.remove('active');

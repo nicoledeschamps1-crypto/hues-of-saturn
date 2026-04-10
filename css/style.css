@@ -1065,11 +1065,18 @@ body {
 }
 
 /* When gallery is active, remove portal clipping so 3D scene fills the elevator */
+.elevator-section.gallery-active {
+  background: #ede6da;
+}
 .elevator-section.gallery-active .elevator-frame {
   display: none;
 }
 .elevator-section.gallery-active .elevator-behind {
   clip-path: none;
+  background: #ede6da;
+}
+.elevator-section.gallery-active .elevator-ambient-light {
+  display: none;
 }
 
 /* ── Gallery Hallway (Three.js container) ──── */
@@ -1547,7 +1554,9 @@ body {
   transition: opacity 0.3s;
 }
 
-.elevator-section.doors-open .door-center-seam {
+.elevator-section.doors-open .door-center-seam,
+.elevator-section.doors-closing .door-center-seam,
+.elevator-section.gallery-active .door-center-seam {
   opacity: 0;
 }
 
