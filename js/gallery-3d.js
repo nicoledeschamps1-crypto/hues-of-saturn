@@ -117,11 +117,13 @@ function buildRoom() {
   minZ = ART_START_Z - hallLength + 2;
   maxZ = 2;
 
-  // Floor
+  // Floor — oversized so it fills the camera's full FOV
+  var floorW = HALL_WIDTH * 4;
+  var floorL = hallLength + 20;
   const floorTex = createPlasterTexture(FLOOR_COLOR, 256, 256);
-  floorTex.repeat.set(4, hallLength / 2);
+  floorTex.repeat.set(floorW / 2, floorL / 2);
   const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(HALL_WIDTH, hallLength),
+    new THREE.PlaneGeometry(floorW, floorL),
     new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.8 })
   );
   floor.rotation.x = -Math.PI / 2;
@@ -129,11 +131,11 @@ function buildRoom() {
   floor.receiveShadow = true;
   scene.add(floor);
 
-  // Ceiling
+  // Ceiling — oversized to match floor
   const ceilTex = createPlasterTexture(CEILING_COLOR, 256, 256);
-  ceilTex.repeat.set(4, hallLength / 2);
+  ceilTex.repeat.set(floorW / 2, floorL / 2);
   const ceiling = new THREE.Mesh(
-    new THREE.PlaneGeometry(HALL_WIDTH, hallLength),
+    new THREE.PlaneGeometry(floorW, floorL),
     new THREE.MeshStandardMaterial({ map: ceilTex, roughness: 0.9 })
   );
   ceiling.rotation.x = Math.PI / 2;
@@ -564,7 +566,7 @@ function prepare() {
 
   // Scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0a0a0c);
+  scene.background = new THREE.Color(WALL_COLOR);
 
   // Camera
   camera = new THREE.PerspectiveCamera(
