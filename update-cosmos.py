@@ -56,15 +56,23 @@ def extract_collections(html):
 
 
 def extract_images(html):
-    """Extract unique CDN image URLs from a page."""
+    """Extract unique CDN image URLs that are actual content (not avatars/profiles)."""
     raw_urls = CDN_PATTERN.findall(html)
-    # Dedupe preserving order, skip tiny avatars by checking context
+    # Dedupe preserving order, skip avatar/profile URLs by checking surrounding context
     seen = set()
     urls = []
     for url in raw_urls:
-        if url not in seen:
-            seen.add(url)
-            urls.append(url)
+        if url in seen:
+            continue
+        seen.add(url)
+        # Check if this URL appears as an avatar or profile image
+        pos = html.find(url)
+        if pos != -1:
+            # Look at the text immediately before the URL
+            before = html[max(0, pos - 80):pos].lower()
+            if 'avatarurl' in before or 'profileurl' in before or 'og:image' in before:
+                continue
+        urls.append(url)
     return urls
 
 

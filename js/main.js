@@ -681,7 +681,10 @@ if (artViewer) {
     if (e.key === 'Tab') {
       e.preventDefault();
       var focusable = artViewer.querySelectorAll('.art-viewer-close, .art-viewer-prev, .art-viewer-next');
-      var list = Array.from(focusable);
+      var list = Array.from(focusable).filter(function(el) {
+        return el.offsetParent !== null; // exclude display:none buttons
+      });
+      if (list.length === 0) return;
       var idx = list.indexOf(document.activeElement);
       var next = e.shiftKey ? (idx - 1 + list.length) % list.length : (idx + 1) % list.length;
       list[next].focus();

@@ -333,16 +333,20 @@ function unbindEvents() {
 }
 
 function onKeyDown(e) {
+  if (!running) return;
   if (window.HOSArtViewer && window.HOSArtViewer.isOpen()) return;
   const k = e.key;
   if (k === 'ArrowUp' || k === 'w' || k === 'W') { keys.up = true; e.preventDefault(); }
   if (k === 'ArrowDown' || k === 's' || k === 'S') { keys.down = true; e.preventDefault(); }
   if (k === 'ArrowLeft' || k === 'a' || k === 'A') { keys.left = true; e.preventDefault(); }
   if (k === 'ArrowRight' || k === 'd' || k === 'D') { keys.right = true; e.preventDefault(); }
+  // Enter key opens nearest artwork
+  if (k === 'Enter') { openNearestArtwork(); e.preventDefault(); }
 }
 
 function onKeyUp(e) {
-  if (window.HOSArtViewer && window.HOSArtViewer.isOpen()) return;
+  if (!running) return;
+  // Always clear keys even when viewer is open — prevents stuck movement
   const k = e.key;
   if (k === 'ArrowUp' || k === 'w' || k === 'W') keys.up = false;
   if (k === 'ArrowDown' || k === 's' || k === 'S') keys.down = false;
@@ -350,7 +354,22 @@ function onKeyUp(e) {
   if (k === 'ArrowRight' || k === 'd' || k === 'D') keys.right = false;
 }
 
+function openNearestArtwork() {
+  if (window.HOSArtViewer && window.HOSArtViewer.isOpen()) return;
+  if (artMeshes.length === 0) return;
+  var nearest = null;
+  var nearestDist = Infinity;
+  artMeshes.forEach(function(mesh) {
+    var dist = Math.abs(mesh.position.z - playerPos.z);
+    if (dist < nearestDist) { nearestDist = dist; nearest = mesh; }
+  });
+  if (nearest && nearestDist < ART_SPACING && window.HOSArtViewer) {
+    window.HOSArtViewer.open(nearest.userData.artIndex);
+  }
+}
+
 function onWheel(e) {
+  if (!running) return;
   if (window.HOSArtViewer && window.HOSArtViewer.isOpen()) return;
   e.preventDefault();
   // Normalize deltaMode for Firefox (lines/pages vs pixels)
