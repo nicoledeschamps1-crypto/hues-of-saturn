@@ -1,2 +1,4 @@
 .DS_Store
 assets/art/*.mp4
+assets/art/*.mov
+assets/art/*.HEIC
