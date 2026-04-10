@@ -462,6 +462,9 @@ body {
 /* SECTION 2: ELEVATOR DOORS                    */
 /* ============================================ */
 .elevator-section {
+  --portal-inset-top: 4%;
+  --portal-inset-x: 12%;
+  --portal-inset-bottom: 3%;
   position: relative;
   width: 100%;
   height: 100vh;
@@ -721,7 +724,7 @@ body {
 /* Frame around door opening */
 .elevator-frame {
   position: absolute;
-  inset: 4% 12%;
+  inset: var(--portal-inset-top) var(--portal-inset-x) var(--portal-inset-bottom);
   z-index: 4;
   pointer-events: none;
 }
@@ -852,6 +855,7 @@ body {
   inset: 0;
   z-index: 1;
   background: #080810;
+  clip-path: inset(var(--portal-inset-top) var(--portal-inset-x) var(--portal-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1060,13 +1064,21 @@ body {
   display: block;
 }
 
+/* When gallery is active, remove portal clipping so 3D scene fills the elevator */
+.elevator-section.gallery-active .elevator-frame {
+  display: none;
+}
+.elevator-section.gallery-active .elevator-behind {
+  clip-path: none;
+}
+
 /* ── Gallery Hallway (Three.js container) ──── */
 .gallery-hallway {
   width: 100%;
   height: 100%;
   overflow: hidden;
   position: relative;
-  background: #ede6da;
+  background: #0a0a0c;
 }
 
 #galleryViewport {
@@ -1086,19 +1098,50 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #ede6da;
+  gap: 14px;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 18%, rgba(139, 69, 232, 0.18) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(17, 14, 27, 0.96) 0%, rgba(9, 8, 15, 0.98) 100%);
   z-index: 6;
+  transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.gallery-loading.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .gallery-loading-ring {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-top-color: rgba(0, 0, 0, 0.4);
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.78);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+.gallery-loading-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.74);
+  text-align: center;
+  max-width: 28ch;
+}
+
+.gallery-loading.is-error .gallery-loading-ring {
+  display: none;
+}
+
+.gallery-loading.is-error .gallery-loading-text {
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 0.12em;
+  text-transform: none;
 }
 
 @keyframes spin {
@@ -1106,8 +1149,6 @@ body {
 }
 
 /* (Old CSS 3D hallway styles removed — Three.js handles rendering now) */
-
-}
 
 /* ── Controls HUD ───────────────────────────── */
 .gallery-controls-hud {
@@ -2400,6 +2441,10 @@ body {
 
 /* ── 1024px — Tablet ───────────────────────── */
 @media (max-width: 1024px) {
+  .elevator-section {
+    --portal-inset-x: 10%;
+  }
+
   .saturn-container {
     width: 85vw;
     height: 85vw;
@@ -2407,10 +2452,6 @@ body {
 
   .elevator-wall {
     width: 10%;
-  }
-
-  .elevator-frame {
-    inset: 4% 10%;
   }
 
   .orb-sun {
@@ -2432,6 +2473,10 @@ body {
 
 /* ── 767px — Large Phones ──────────────────── */
 @media (max-width: 767px) {
+  .elevator-section {
+    --portal-inset-x: 6%;
+  }
+
   /* Hero */
   .hero-title {
     top: 0;
@@ -2467,10 +2512,6 @@ body {
   .elevator-wall-left,
   .elevator-wall-right {
     width: 6%;
-  }
-
-  .elevator-frame {
-    inset: 4% 6%;
   }
 
   .wall-handrail {
@@ -2565,6 +2606,11 @@ body {
 
 /* ── 599px — Standard Phones ───────────────── */
 @media (max-width: 599px) {
+  .elevator-section {
+    --portal-inset-x: 4%;
+    --portal-inset-bottom: 2%;
+  }
+
   .hero-title {
     padding: 24px 16px;
     padding-top: env(safe-area-inset-top, 24px);
@@ -2591,10 +2637,6 @@ body {
   .elevator-wall-left,
   .elevator-wall-right {
     width: 4%;
-  }
-
-  .elevator-frame {
-    inset: 4% 4%;
   }
 
   .elevator-ceiling {

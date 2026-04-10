@@ -389,6 +389,8 @@ var behindAbout = document.getElementById('behindAbout');
 var behindConnect = document.getElementById('behindConnect');
 var behindHod = document.getElementById('behindHod');
 var floorIndicator = document.querySelector('.indicator-floor');
+var galleryLoading = document.getElementById('galleryLoading');
+var galleryLoadingText = document.getElementById('galleryLoadingText');
 
 var floorLabels = {
   gallery: '1', hod: '2', about: '3', contact: '4', help: '?'
@@ -411,6 +413,13 @@ var indicatorArrow = document.getElementById('indicatorArrow');
 
 // (Sound effects removed)
 
+function setGalleryLoadingState(message, isError) {
+  if (!galleryLoading) return;
+  if (galleryLoadingText && message) galleryLoadingText.textContent = message;
+  galleryLoading.classList.remove('is-hidden');
+  galleryLoading.classList.toggle('is-error', !!isError);
+}
+
 // ── Travel sequence ──────────────────────────
 function setFloorContent(floor) {
   // Hide all floor-specific content first
@@ -424,15 +433,27 @@ function setFloorContent(floor) {
 
   // Stop Three.js gallery when leaving gallery floor
   if (window.gallery3D && activeFloor === 'gallery') window.gallery3D.stop();
+  // Remove gallery-active class when leaving gallery
+  elevatorSection.classList.remove('gallery-active');
 
   if (floor === 'gallery') {
     behindGallery.classList.add('active');
-    // Start Three.js gallery
+    // Remove portal clipping so 3D scene fills the elevator
+    elevatorSection.classList.add('gallery-active');
     if (window.gallery3D) {
       window.gallery3D.reset();
-      window.gallery3D.prepare();
+      if (window.gallery3D.prepare() === false) return;
       // Small delay so container has dimensions before renderer sizes
-      setTimeout(function() { window.gallery3D.start(); }, 100);
+      setTimeout(function() {
+        if (window.gallery3D.start() === false) {
+          setGalleryLoadingState(
+            window.gallery3D.getStatusMessage ? window.gallery3D.getStatusMessage() : '3D gallery unavailable right now.',
+            true
+          );
+        }
+      }, 100);
+    } else {
+      setGalleryLoadingState('3D gallery unavailable right now.', true);
     }
   } else if (floor === 'hod') {
     if (behindHod) behindHod.classList.add('active');
@@ -539,6 +560,7 @@ function closeDoors() {
   if (traveling) return;
   // Keep position:fixed while doors animate shut to prevent page jump
   elevatorSection.classList.remove('doors-open');
+  elevatorSection.classList.remove('gallery-active');
   elevatorSection.classList.add('doors-closing');
   unlockBodyScroll();
   document.querySelectorAll('.floor-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
@@ -560,7 +582,7 @@ function closeDoors() {
 
   function releaseElevator() {
     // Scroll to elevator before releasing fixed position so page doesn't jump
-    window.scrollTo({ top: elevatorSection.offsetTop, behavior: 'instant' });
+    window.scrollTo({ top: elevatorSection.offsetTop, behavior: 'auto' });
     elevatorSection.classList.remove('doors-closing');
   }
 

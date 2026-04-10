@@ -34,7 +34,9 @@ let artMeshes = [];
 let spotLights = [];
 let running = false;
 let prepared = false;
+let assetsReady = false;
 let resizeObserver = null;
+let galleryError = '';
 
 let walkVelocity = 0;
 let walkBob = 0;
@@ -49,7 +51,38 @@ const _mouse = new THREE.Vector2();
 const _lookTarget = new THREE.Vector3();
 
 // ── DOM refs ──────────────────────────────────
-let viewport, loadingEl, hudEl, positionEl, dpadEl;
+let viewport, loadingEl, loadingTextEl, hudEl, positionEl, dpadEl;
+
+function showLoading(message, isError) {
+  if (!loadingEl) return;
+  if (loadingTextEl && message) loadingTextEl.textContent = message;
+  loadingEl.classList.remove('is-hidden');
+  loadingEl.classList.toggle('is-error', !!isError);
+}
+
+function hideLoading() {
+  if (!loadingEl) return;
+  loadingEl.classList.remove('is-error');
+  loadingEl.classList.add('is-hidden');
+}
+
+function setFailure(message) {
+  galleryError = message || '3D gallery unavailable right now.';
+  showLoading(galleryError, true);
+  return false;
+}
+
+function isWebGLAvailable() {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    );
+  } catch (_) {
+    return false;
+  }
+}
 
 // ── Texture noise for walls ───────────────────
 function createPlasterTexture(color, w, h) {
@@ -196,8 +229,8 @@ function buildRoom() {
   }
 }
 
-function buildArtworks() {
-  const loader = new THREE.TextureLoader();
+function buildArtworks(manager) {
+  const loader = new THREE.TextureLoader(manager);
   const maxArtH = 2.4;
   const maxArtW = 1.8;
   const artY = 2.6; // center height on wall
@@ -226,7 +259,7 @@ function buildArtworks() {
     // Artwork plane
     const artGeo = new THREE.PlaneGeometry(maxArtW, maxArtH);
     const artMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff, roughness: 0.6,
+      color: 0x9a8f80, roughness: 0.6,
       side: THREE.FrontSide
     });
     const artMesh = new THREE.Mesh(artGeo, artMat);
@@ -246,9 +279,12 @@ function buildArtworks() {
       if (isMobile && tex.image && tex.image.width > 1024) {
         tex.minFilter = THREE.LinearFilter;
       }
+      artMat.color.setHex(0xffffff);
       artMat.map = tex;
       artMat.needsUpdate = true;
     }, undefined, function(err) {
+      artMat.color.setHex(0x6f665c);
+      artMat.needsUpdate = true;
       console.warn('Gallery: failed to load', art.src, err);
     });
 
@@ -487,18 +523,36 @@ function animate() {
 
 // ── Lifecycle API ─────────────────────────────
 function prepare() {
-  if (prepared) return;
+  if (prepared) {
+    if (assetsReady) hideLoading();
+    else showLoading('loading gallery...', false);
+    return true;
+  }
 
   viewport = document.getElementById('galleryViewport');
   loadingEl = document.getElementById('galleryLoading');
+  loadingTextEl = document.getElementById('galleryLoadingText');
   hudEl = document.getElementById('galleryControlsHud');
   positionEl = document.getElementById('galleryPosition');
   dpadEl = document.getElementById('galleryDpad');
 
-  if (!viewport) return;
+  if (!viewport) return false;
+
+  galleryError = '';
+  assetsReady = false;
+  showLoading('loading gallery...', false);
+
+  if (!isWebGLAvailable()) {
+    return setFailure('3D gallery unavailable on this device right now.');
+  }
 
   // Renderer
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  } catch (err) {
+    console.warn('Gallery: renderer init failed', err);
+    return setFailure('3D gallery unavailable right now.');
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(viewport.clientWidth || 800, viewport.clientHeight || 600);
   renderer.shadowMap.enabled = !isMobile;
@@ -510,11 +564,11 @@ function prepare() {
 
   // Scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(WALL_COLOR);
+  scene.background = new THREE.Color(0x0a0a0c);
 
   // Camera
   camera = new THREE.PerspectiveCamera(
-    60,
+    72,
     (viewport.clientWidth || 800) / (viewport.clientHeight || 600),
     0.1,
     100
@@ -527,10 +581,15 @@ function prepare() {
   // Cache max position from gallery data
   _maxPos = Math.max(...GALLERY_ART.map(a => a.position));
 
+  const loadingManager = new THREE.LoadingManager(function() {
+    assetsReady = true;
+    hideLoading();
+  });
+
   // Build everything
   buildRoom();
   buildLighting();
-  buildArtworks();
+  buildArtworks(loadingManager);
   buildAvatar();
   bindEvents();
 
@@ -543,18 +602,18 @@ function prepare() {
   });
   resizeObserver.observe(viewport);
 
-  // Hide loading
-  if (loadingEl) loadingEl.style.display = 'none';
-
   prepared = true;
+  return true;
 }
 
 function start() {
-  if (!prepared) prepare();
+  if (!prepared && prepare() === false) return false;
+  if (galleryError) return false;
   if (running) return;
   running = true;
   clock.start();
   renderer.setAnimationLoop(animate);
+  return true;
 }
 
 function stop() {
@@ -599,7 +658,16 @@ function dispose() {
     }
   }
   prepared = false;
+  assetsReady = false;
+  galleryError = '';
 }
 
 // ── Expose global API for main.js ─────────────
-window.gallery3D = { prepare, start, stop, reset, dispose };
+window.gallery3D = {
+  prepare,
+  start,
+  stop,
+  reset,
+  dispose,
+  getStatusMessage: function() { return galleryError; }
+};
