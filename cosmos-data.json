@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-09T11:33:44Z",
+  "updated": "2026-04-10T11:14:11Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "fashion-ad",
     "febuary"
   ],
-  "total": 232,
+  "total": 233,
   "images": [
     {
       "src": "https://cdn.cosmos.so/14a5563b-4f9a-4218-afb5-9d3cb51c66fc?format=webp&w=400",
@@ -628,6 +628,18 @@
       "collection": "creative-direction"
     },
     {
+      "src": "https://cdn.cosmos.so/07d06b8e-68a0-4419-85e4-e6d899ae0003?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/797eb530-242a-4e07-afcb-7a06cb67667d?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/4cb0d248-7265-4c93-9f72-e5c65c1c1f0f?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
       "src": "https://cdn.cosmos.so/bd35253d-6538-457a-99bd-a80eb833f3da?format=webp&w=400",
       "collection": "creative-direction"
     },
@@ -737,14 +749,6 @@
     },
     {
       "src": "https://cdn.cosmos.so/c7d6872a-5888-470d-97be-9b62f35f1753?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/34f90aba-2668-4415-adcd-14ba38594aa3?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/1b80606b-66cb-42e7-aec5-098d62f0ee5c?format=webp&w=400",
       "collection": "creative-direction"
     },
     {
