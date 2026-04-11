@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-10T20:31:15Z",
+  "updated": "2026-04-11T10:02:35Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -20,12 +20,12 @@
     "cyber",
     "destruction-in-all-forms",
     "earthbending",
+    "egg",
     "event-ideas",
     "eye-see-u",
-    "fashion-ad",
-    "febuary"
+    "fashion-ad"
   ],
-  "total": 181,
+  "total": 159,
   "images": [
     {
       "src": "https://cdn.cosmos.so/e4a72c5f-95f0-4889-bc5b-408d821881b1?format=webp&w=400",
@@ -68,6 +68,14 @@
       "collection": "april"
     },
     {
+      "src": "https://cdn.cosmos.so/ac57e21b-ad72-466e-8d9e-9c7a2708fcce?format=webp&w=400",
+      "collection": "art-that-caught-me"
+    },
+    {
+      "src": "https://cdn.cosmos.so/64cc6fc5-93c4-4710-a649-91520f8a8046?format=webp&w=400",
+      "collection": "art-that-caught-me"
+    },
+    {
       "src": "https://cdn.cosmos.so/b5b4d50a-0751-41e9-b48e-e07b5ab78b77?format=webp&w=400",
       "collection": "art-that-caught-me"
     },
@@ -90,6 +98,10 @@
     {
       "src": "https://cdn.cosmos.so/61f7a296-74c7-43d0-b1a1-8f0e415e8acb?format=webp&w=400",
       "collection": "art-that-caught-me"
+    },
+    {
+      "src": "https://cdn.cosmos.so/a70decb2-065d-4fac-ab2c-ee5a5b1d3596?format=webp&w=400",
+      "collection": "blue-dreams"
     },
     {
       "src": "https://cdn.cosmos.so/070880da-45b5-4865-8028-949c7ccb0981?format=webp&w=400",
@@ -325,14 +337,6 @@
     },
     {
       "src": "https://cdn.cosmos.so/2446dea3-e254-4a61-a1d4-a60f605e236b?format=webp&w=400",
-      "collection": "cherry-bomb"
-    },
-    {
-      "src": "https://cdn.cosmos.so/04acbfbe-d5f0-4f36-b2b5-4248e7ca4f63?format=webp&w=400",
-      "collection": "cherry-bomb"
-    },
-    {
-      "src": "https://cdn.cosmos.so/de615688-f532-4782-bb6c-6f6dbf81e13d?format=webp&w=400",
       "collection": "cherry-bomb"
     },
     {
@@ -576,36 +580,8 @@
       "collection": "creative-direction"
     },
     {
-      "src": "https://cdn.cosmos.so/a05d335d-7c1a-47b5-8026-df807fbf686c?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/9a6db0fb-5cb1-46ab-a198-45a09a4d22f1?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/e4d827ce-82a2-4d8f-8416-6f1a6f6c41cb?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/fcd38506-369a-457a-9299-f11da47569f3?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/770cd4de-0d62-46f6-aafc-a617ec3d119e?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/8b0e17f8-7864-48db-8f63-d26b62151320?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/36e45df7-8301-48a1-93f2-28fb857257bc?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/c7d6872a-5888-470d-97be-9b62f35f1753?format=webp&w=400",
-      "collection": "creative-direction"
+      "src": "https://cdn.cosmos.so/13465a1b-14ae-4595-94d4-abfd77a07485?format=webp&w=400",
+      "collection": "destruction-in-all-forms"
     },
     {
       "src": "https://cdn.cosmos.so/8c73c883-d8ac-41b6-9b86-9407ac1d9803?format=webp&w=400",
@@ -686,70 +662,6 @@
     {
       "src": "https://cdn.cosmos.so/e0698c8e-65d5-40ea-97eb-8b0e4ce2462f?format=webp&w=400",
       "collection": "fashion-ad"
-    },
-    {
-      "src": "https://cdn.cosmos.so/4e631863-f137-417c-805e-948c040b3a4c?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/b9da6fb4-8cac-45ef-a34a-e1d0556212b9?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/e56b2308-1580-4cb4-aa2f-4e038bf774e7?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/e65cb448-bb2b-4731-8d06-b086a6f6291d?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/6ddf1d84-ec37-4aec-9ddc-13038725696c?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/4d411f05-0a85-4f33-9608-254c706bfcb4?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/da37db3a-c8da-45e3-a337-b461e83a27ae?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/96d10024-281a-40c6-a134-7fb95c9688c6?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/23eacc93-2399-4a19-8891-dbf60ef522d7?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/4e45fca5-b6b5-4d13-862f-43b63f58a579?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/3ba5d5ed-9d07-40a2-ac54-3fe1b74521bc?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/26d7b425-e1b3-4ad9-b268-4f6d7bbd6fbc?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/6493f4ad-470e-4f74-a40e-65fc557c3cc1?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/ccfffd9b-2cce-4305-8300-7612bfb7200f?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/1198a844-ba27-4fd6-894c-8fda2559630f?format=webp&w=400",
-      "collection": "febuary"
-    },
-    {
-      "src": "https://cdn.cosmos.so/05228529-a1fa-43a8-b8bf-c34c6e08556a?format=webp&w=400",
-      "collection": "febuary"
     }
   ]
 }
