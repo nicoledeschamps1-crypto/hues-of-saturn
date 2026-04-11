@@ -138,16 +138,24 @@ function hideRingPreview() {
 // ── Ring image lightbox (tap to view) ──
 var ringLightbox = document.createElement('div');
 ringLightbox.className = 'ring-lightbox';
-ringLightbox.innerHTML = '<div class="ring-lightbox-inner"><img /><video muted loop playsinline style="display:none"></video></div>';
+ringLightbox.innerHTML =
+  '<div class="ring-lightbox-wrap">' +
+    '<div class="ring-lightbox-inner"><img /><video muted loop playsinline style="display:none"></video></div>' +
+    '<a class="ring-lightbox-board" href="#" target="_blank" rel="noopener">view board →</a>' +
+  '</div>';
 document.body.appendChild(ringLightbox);
 
-ringLightbox.addEventListener('click', function() {
+var boardLink = ringLightbox.querySelector('.ring-lightbox-board');
+
+ringLightbox.addEventListener('click', function(e) {
+  // Don't close if clicking the board link
+  if (e.target === boardLink || boardLink.contains(e.target)) return;
   ringLightbox.classList.remove('visible');
   var vid = ringLightbox.querySelector('video');
   vid.pause();
 });
 
-function openRingLightbox(src, isVideo) {
+function openRingLightbox(src, isVideo, source, boardUrl) {
   var img = ringLightbox.querySelector('img');
   var vid = ringLightbox.querySelector('video');
   if (isVideo) {
@@ -160,6 +168,13 @@ function openRingLightbox(src, isVideo) {
     vid.pause();
     img.style.display = 'block';
     img.src = src;
+  }
+  // Show board link for arena/cosmos sources with direct URL
+  if (boardUrl) {
+    boardLink.href = boardUrl;
+    boardLink.style.display = '';
+  } else {
+    boardLink.style.display = 'none';
   }
   ringLightbox.classList.add('visible');
 }
@@ -220,13 +235,16 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange, allIm
     wrapper.appendChild(mediaEl);
     wrapper._hovered = false;
     wrapper._mediaEl = mediaEl;
+    wrapper._source = img.source || 'art';
+    wrapper._isVideo = img.isVideo || false;
+    wrapper._boardUrl = img.boardUrl || '';
 
     // Hover — show enlarged preview outside the 3D context
     wrapper.addEventListener('mouseenter', function() {
       if (isTouch) return;
       wrapper._hovered = true;
       var rect = wrapper._mediaEl.getBoundingClientRect();
-      showRingPreview(wrapper._mediaEl.src, rect, img.isVideo);
+      showRingPreview(wrapper._mediaEl.src, rect, wrapper._isVideo);
     });
     wrapper.addEventListener('mouseleave', function() {
       wrapper._hovered = false;
@@ -236,7 +254,7 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange, allIm
     // Click/tap — open lightbox
     wrapper.addEventListener('click', function(e) {
       e.stopPropagation();
-      openRingLightbox(wrapper._mediaEl.src || wrapper._mediaEl.currentSrc, img.isVideo);
+      openRingLightbox(wrapper._mediaEl.src || wrapper._mediaEl.currentSrc, wrapper._isVideo, wrapper._source, wrapper._boardUrl);
     });
     wrapper.style.cursor = 'pointer';
 
@@ -275,6 +293,7 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange, allIm
             if (media && !next.isVideo && media.tagName === 'IMG') {
               media.src = next.src;
               media.alt = next.alt || 'Inspiration';
+              item.wrapper._boardUrl = next.boardUrl || '';
             }
           }
           backEl.appendChild(item.wrapper);
@@ -375,6 +394,146 @@ if (heroEl && typeof IntersectionObserver !== 'undefined') {
     });
   }).observe(heroEl);
 }
+
+// ============================================
+// ORBIT KEY — "in my orbit" + radial chart + Saturn breathe
+// ============================================
+(function() {
+  var orbitKey = document.getElementById('orbitKey');
+  var trigger  = document.getElementById('orbitKeyTrigger');
+  var chart    = document.getElementById('orbitKeyChart');
+  if (!orbitKey || !trigger) return;
+
+  var labels = chart ? chart.querySelectorAll('.orbit-chart-label') : [];
+  var arcs   = chart ? chart.querySelectorAll('.orbit-arc') : [];
+  var saturnContainer = document.getElementById('saturn');
+  var activeRing = null;
+
+  var RING_CLASS_MAP = {
+    art:    'ring-art',
+    arena:  'ring-arena',
+    cosmos: 'ring-cosmos'
+  };
+
+  var ARC_CLASS_MAP = {
+    art:    'orbit-arc--art',
+    arena:  'orbit-arc--arena',
+    cosmos: 'orbit-arc--cosmos'
+  };
+
+  // Clear all ring isolation
+  function clearIsolation() {
+    if (activeRing === null) return;
+    activeRing = null;
+    document.querySelectorAll('.ring-art, .ring-arena, .ring-cosmos').forEach(function(el) {
+      el.classList.remove('ring-dimmed', 'ring-highlighted');
+    });
+    labels.forEach(function(btn) {
+      btn.setAttribute('aria-pressed', 'false');
+      btn.classList.remove('dimmed');
+    });
+    arcs.forEach(function(arc) {
+      arc.classList.remove('arc-active', 'arc-dimmed');
+    });
+  }
+
+  // Toggle chart open/closed
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var wasOpen = orbitKey.classList.contains('open');
+    orbitKey.classList.toggle('open');
+    // Closing the chart restores all rings
+    if (wasOpen) {
+      clearIsolation();
+      saturnBreathe();
+    }
+  });
+
+  // Close chart when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!orbitKey.contains(e.target) && orbitKey.classList.contains('open')) {
+      orbitKey.classList.remove('open');
+      clearIsolation();
+      saturnBreathe();
+    }
+  });
+
+  // Saturn breathe effect
+  function saturnBreathe() {
+    if (!saturnContainer) return;
+    saturnContainer.classList.remove('breathing');
+    // Force reflow to restart animation
+    void saturnContainer.offsetWidth;
+    saturnContainer.classList.add('breathing');
+    saturnContainer.addEventListener('animationend', function() {
+      saturnContainer.classList.remove('breathing');
+    }, { once: true });
+  }
+
+  function setIsolation(ringKey) {
+    var allRingEls = document.querySelectorAll('.ring-art, .ring-arena, .ring-cosmos');
+
+    if (ringKey === activeRing) {
+      // Toggle off — restore all
+      activeRing = null;
+      allRingEls.forEach(function(el) {
+        el.classList.remove('ring-dimmed', 'ring-highlighted');
+      });
+      labels.forEach(function(btn) {
+        btn.setAttribute('aria-pressed', 'false');
+        btn.classList.remove('dimmed');
+      });
+      arcs.forEach(function(arc) {
+        arc.classList.remove('arc-active', 'arc-dimmed');
+      });
+      saturnBreathe();
+      return;
+    }
+
+    activeRing = ringKey;
+    var targetClass = RING_CLASS_MAP[ringKey];
+    var targetArc   = ARC_CLASS_MAP[ringKey];
+
+    // Dim/highlight actual orbit rings
+    allRingEls.forEach(function(el) {
+      if (el.classList.contains(targetClass)) {
+        el.classList.remove('ring-dimmed');
+        el.classList.add('ring-highlighted');
+      } else {
+        el.classList.remove('ring-highlighted');
+        el.classList.add('ring-dimmed');
+      }
+    });
+
+    // Update chart labels
+    labels.forEach(function(btn) {
+      var isTarget = btn.dataset.ring === ringKey;
+      btn.setAttribute('aria-pressed', isTarget ? 'true' : 'false');
+      btn.classList.toggle('dimmed', !isTarget);
+    });
+
+    // Update chart arcs
+    arcs.forEach(function(arc) {
+      if (arc.classList.contains(targetArc)) {
+        arc.classList.add('arc-active');
+        arc.classList.remove('arc-dimmed');
+      } else {
+        arc.classList.remove('arc-active');
+        arc.classList.add('arc-dimmed');
+      }
+    });
+
+    saturnBreathe();
+  }
+
+  labels.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsolation(btn.dataset.ring);
+    });
+  });
+})();
 
 // ============================================
 // SECTION 2: ELEVATOR DOORS

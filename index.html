@@ -87,7 +87,20 @@
       <h1 class="title-main title-saturn">Saturn</h1>
     </div>
 
-    <p class="orbit-label">in my orbit</p>
+    <div class="orbit-key" id="orbitKey">
+      <button class="orbit-key-trigger" id="orbitKeyTrigger">in my orbit</button>
+      <div class="orbit-key-chart" id="orbitKeyChart">
+        <svg class="orbit-chart-svg" viewBox="0 0 140 80" aria-hidden="true">
+          <path class="orbit-arc orbit-arc--art"   d="M 10,70 A 30,30 0 0,1 70,70" />
+          <path class="orbit-arc orbit-arc--arena"  d="M 4,70  A 55,55 0 0,1 108,70" />
+          <path class="orbit-arc orbit-arc--cosmos" d="M 0,70  A 70,70 0 0,1 140,70" />
+          <circle class="orbit-chart-center" cx="70" cy="70" r="2.5" />
+        </svg>
+        <button class="orbit-chart-label" data-ring="art"    style="left:18%; bottom:38%">my art</button>
+        <button class="orbit-chart-label" data-ring="arena"  style="left:4%;  bottom:58%">are.na</button>
+        <button class="orbit-chart-label" data-ring="cosmos" style="left:0%;  bottom:78%">cosmos</button>
+      </div>
+    </div>
 
     <div class="scroll-hint" id="scrollHint">
       <span>scroll down</span>

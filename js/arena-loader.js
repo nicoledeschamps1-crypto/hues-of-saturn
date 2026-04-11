@@ -89,7 +89,7 @@ const ArenaLoader = (function() {
           || img.url
           || '';
         const alt = b.title || b.generated_title || 'Inspiration';
-        return { src, alt, source: 'arena' };
+        return { src, alt, source: 'arena', boardUrl: `https://www.are.na/block/${b.id}` };
       })
       .filter(img => img.src && !isJunkImage(img.src, img.alt));
   }
@@ -129,7 +129,7 @@ const ArenaLoader = (function() {
         if (res.ok) {
           const data = await res.json();
           const imgs = (data.images || [])
-            .map(img => ({ src: img.src, alt: img.alt || 'Inspiration', source: 'arena' }))
+            .map(img => ({ src: img.src, alt: img.alt || 'Inspiration', source: 'arena', boardUrl: img.boardUrl || '' }))
             .filter(img => !isJunkImage(img.src, img.alt));
           console.log(`[Loader] Are.na fallback: ${imgs.length} images from arena-data.json`);
           return imgs;
@@ -162,6 +162,7 @@ const ArenaLoader = (function() {
           alt: img.collection || 'Cosmos',
           source: 'cosmos',
           collection: img.collection,
+          boardUrl: img.collection ? `https://cosmos.so/huesofsaturn/${img.collection}` : 'https://cosmos.so/huesofsaturn',
         }))
         .filter(img => !isJunkImage(img.src, img.alt));
     } catch (err) {

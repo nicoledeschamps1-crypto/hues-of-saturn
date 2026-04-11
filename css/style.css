@@ -347,26 +347,63 @@ body {
   pointer-events: auto;
 }
 
-.ring-lightbox-inner {
+/* Flex column wrapper — image + link stacked */
+.ring-lightbox-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
   max-width: 85vw;
-  max-height: 80vh;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3), 0 20px 80px rgba(0, 0, 0, 0.6);
+  max-height: 92vh;
   transform: scale(0.9);
   transition: transform 0.3s ease;
 }
 
-.ring-lightbox.visible .ring-lightbox-inner {
+.ring-lightbox.visible .ring-lightbox-wrap {
   transform: scale(1);
+}
+
+.ring-lightbox-inner {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3), 0 20px 80px rgba(0, 0, 0, 0.6);
+  flex-shrink: 1;
+  min-height: 0;
 }
 
 .ring-lightbox-inner img,
 .ring-lightbox-inner video {
   max-width: 85vw;
-  max-height: 80vh;
+  max-height: calc(92vh - 50px);
   object-fit: contain;
   display: block;
+}
+
+/* "view board →" link — flows below the image */
+.ring-lightbox-board {
+  flex-shrink: 0;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.6rem, 0.9vw, 0.75rem);
+  letter-spacing: 0.2em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  transition: color 0.3s ease, border-color 0.3s ease, opacity 0.4s ease 0.3s;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ring-lightbox.visible .ring-lightbox-board {
+  opacity: 1;
+}
+
+.ring-lightbox-board:hover {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* Fallback rings when data fails to load */
@@ -405,20 +442,153 @@ body {
     0 0 80px rgba(0, 0, 0, 0.3);
 }
 
-/* Orbit label — positioned near the ring */
-.orbit-label {
+/* ── Orbit Key ("in my orbit" + radial star chart) ── */
+.orbit-key {
   position: absolute;
-  bottom: 18%;
+  bottom: 15%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orbit-key-trigger {
+  all: unset;
   font-family: 'Inter', sans-serif;
   font-weight: 300;
   font-size: clamp(0.65rem, 1vw, 0.85rem);
   letter-spacing: 0.35em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: color 0.4s ease;
+  padding: 4px 8px;
+}
+
+.orbit-key-trigger:hover,
+.orbit-key.open .orbit-key-trigger {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Radial chart — unfolds below the text */
+.orbit-key-chart {
+  position: relative;
+  width: 180px;
+  height: 100px;
+  margin-top: 6px;
+  opacity: 0;
+  transform: scaleY(0.3) translateY(-10px);
+  transform-origin: top center;
   pointer-events: none;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.orbit-key.open .orbit-key-chart {
+  opacity: 1;
+  transform: scaleY(1) translateY(0);
+  pointer-events: auto;
+}
+
+.orbit-chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.orbit-arc {
+  fill: none;
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  transition: stroke 0.4s ease, stroke-width 0.4s ease, opacity 0.4s ease;
+}
+
+.orbit-arc--art   { stroke: rgba(232, 197, 137, 0.35); }
+.orbit-arc--arena  { stroke: rgba(165, 180, 220, 0.35); }
+.orbit-arc--cosmos { stroke: rgba(160, 130, 200, 0.35); }
+
+.orbit-chart-center {
+  fill: rgba(255, 255, 255, 0.5);
+}
+
+/* Chart labels — positioned alongside arcs */
+.orbit-chart-label {
+  all: unset;
+  position: absolute;
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(0.52rem, 0.75vw, 0.65rem);
+  letter-spacing: 0.12em;
+  text-transform: lowercase;
+  color: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+  padding: 2px 4px;
+}
+
+.orbit-chart-label:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Active ring label */
+.orbit-chart-label[aria-pressed="true"] {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dimmed label (another ring is active) */
+.orbit-chart-label.dimmed {
+  color: rgba(255, 255, 255, 0.12);
+}
+
+/* Arc highlight when its ring is active */
+.orbit-arc--art.arc-active    { stroke: rgba(232, 197, 137, 0.8); stroke-width: 1.6; }
+.orbit-arc--arena.arc-active   { stroke: rgba(165, 180, 220, 0.8); stroke-width: 1.6; }
+.orbit-arc--cosmos.arc-active  { stroke: rgba(160, 130, 200, 0.8); stroke-width: 1.6; }
+
+.orbit-arc.arc-dimmed { opacity: 0.15; }
+
+/* ── Saturn Breathe ── */
+@keyframes saturn-breathe {
+  0%   { transform: translate(-50%, -50%) scale(1); }
+  40%  { transform: translate(-50%, -50%) scale(1.025); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.saturn-container.breathing {
+  animation: saturn-breathe 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Also pulse the glow during breathe */
+@keyframes glow-breathe {
+  0%   { opacity: 1; transform: scale(1); }
+  40%  { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.saturn-container.breathing .saturn-glow {
+  animation: glow-breathe 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ── Ring dimming (applied to actual orbit rings) ── */
+.ring-art,
+.ring-arena,
+.ring-cosmos {
+  transition: opacity 0.6s ease;
+}
+
+.ring-art.ring-dimmed,
+.ring-arena.ring-dimmed,
+.ring-cosmos.ring-dimmed {
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.ring-art.ring-highlighted .ring-image,
+.ring-arena.ring-highlighted .ring-image,
+.ring-cosmos.ring-highlighted .ring-image {
+  filter: saturate(1.15) brightness(1.1);
 }
 
 /* Scroll hint */
@@ -2630,7 +2800,7 @@ body {
     height: 65vw;
   }
 
-  .orbit-label {
+  .orbit-key-chart {
     display: none;
   }
 
