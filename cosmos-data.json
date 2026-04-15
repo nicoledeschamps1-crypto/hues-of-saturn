@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-14T11:41:39Z",
+  "updated": "2026-04-15T11:36:53Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "eye-see-u",
     "fashion-ad"
   ],
-  "total": 158,
+  "total": 168,
   "images": [
     {
       "src": "https://cdn.cosmos.so/e4a72c5f-95f0-4889-bc5b-408d821881b1?format=webp&w=400",
@@ -68,6 +68,10 @@
       "collection": "april"
     },
     {
+      "src": "https://cdn.cosmos.so/78b39e7a-3b6b-4867-861d-687ce49f8b9d?format=webp&w=400",
+      "collection": "art-that-caught-me"
+    },
+    {
       "src": "https://cdn.cosmos.so/ac57e21b-ad72-466e-8d9e-9c7a2708fcce?format=webp&w=400",
       "collection": "art-that-caught-me"
     },
@@ -105,6 +109,22 @@
     },
     {
       "src": "https://cdn.cosmos.so/e1a8da63-5f73-4965-8560-40eb42897c2c?format=webp&w=400",
+      "collection": "blue-dreams"
+    },
+    {
+      "src": "https://cdn.cosmos.so/d3116bff-3436-4a57-8f61-021a6ad35fde?format=webp&w=400",
+      "collection": "blue-dreams"
+    },
+    {
+      "src": "https://cdn.cosmos.so/383b8ffb-9b4f-4126-ac08-47cdb0da2159?format=webp&w=400",
+      "collection": "blue-dreams"
+    },
+    {
+      "src": "https://cdn.cosmos.so/5bf0ee8d-6f03-413c-8e4b-44815f357823?format=webp&w=400",
+      "collection": "blue-dreams"
+    },
+    {
+      "src": "https://cdn.cosmos.so/76481e2b-d3ca-4a7b-be46-21c32eb907de?format=webp&w=400",
       "collection": "blue-dreams"
     },
     {
@@ -260,6 +280,10 @@
       "collection": "candle-operas"
     },
     {
+      "src": "https://cdn.cosmos.so/6749c149-d179-4fdc-9d9c-d84a8bb27345?format=webp&w=400",
+      "collection": "cherry-bomb"
+    },
+    {
       "src": "https://cdn.cosmos.so/8508b6d3-2fb1-420a-b182-b132e8f26319?format=webp&w=400",
       "collection": "cherry-bomb"
     },
@@ -332,8 +356,20 @@
       "collection": "cherry-bomb"
     },
     {
-      "src": "https://cdn.cosmos.so/2446dea3-e254-4a61-a1d4-a60f605e236b?format=webp&w=400",
-      "collection": "cherry-bomb"
+      "src": "https://cdn.cosmos.so/b88ffb63-df1e-4454-9144-eda95b723bfe?format=webp&w=400",
+      "collection": "chrome"
+    },
+    {
+      "src": "https://cdn.cosmos.so/5fd0c46b-941b-494b-b1a2-0a8e6c5a47cd?format=webp&w=400",
+      "collection": "chrome"
+    },
+    {
+      "src": "https://cdn.cosmos.so/2003c62e-5e93-4a2a-98ec-e97773218e6a?format=webp&w=400",
+      "collection": "chrome"
+    },
+    {
+      "src": "https://cdn.cosmos.so/770d6d04-2f94-4324-98d9-f288d4519d3f?format=webp&w=400",
+      "collection": "chrome"
     },
     {
       "src": "https://cdn.cosmos.so/0458280e-b614-48d0-811f-d60ef0c58486?format=webp&w=400",
@@ -381,10 +417,6 @@
     },
     {
       "src": "https://cdn.cosmos.so/c6eadd50-b9b3-4a13-934c-1b75563402ee?format=webp&w=400",
-      "collection": "chrome"
-    },
-    {
-      "src": "https://cdn.cosmos.so/bf844ce7-0c4a-4c4f-ad4b-b1d6d322ffc3?format=webp&w=400",
       "collection": "chrome"
     },
     {
@@ -448,6 +480,10 @@
       "collection": "codecore"
     },
     {
+      "src": "https://cdn.cosmos.so/19798df0-82fe-412c-b44d-f432c0cf9dbb?format=webp&w=400",
+      "collection": "cold"
+    },
+    {
       "src": "https://cdn.cosmos.so/259b7f85-1fda-4c1a-b45b-79c4081ab8a7?format=webp&w=400",
       "collection": "cold"
     },
@@ -494,6 +530,26 @@
     {
       "src": "https://cdn.cosmos.so/657d1183-98c3-4eb8-a0cc-a2263f7f3467?format=webp&w=400",
       "collection": "cold"
+    },
+    {
+      "src": "https://cdn.cosmos.so/aba0f69c-0c24-4b3d-b62e-6d526b0dcb94?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/2d52d40a-c62a-4bce-993c-f38cc69bf58b?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/79f55b21-d690-4edc-8e44-f1e056c161bc?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/9b81670f-6890-4791-bf7e-e896aef77e27?format=webp&w=400",
+      "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/1cefb093-13b5-47b3-a297-2cee0d484ba2?format=webp&w=400",
+      "collection": "creative-direction"
     },
     {
       "src": "https://cdn.cosmos.so/797eb530-242a-4e07-afcb-7a06cb67667d?format=webp&w=400",
@@ -557,22 +613,6 @@
     },
     {
       "src": "https://cdn.cosmos.so/5582de94-8b27-4112-a655-d7d09dbed6f5?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/fe6eff28-783c-46c0-9a25-7d713ce4b9e9?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/d13aba2a-0e90-42df-8de0-692f95a4bc0f?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/a2f6d00d-dfaf-4665-81dc-fc14b5d5b0e3?format=webp&w=400",
-      "collection": "creative-direction"
-    },
-    {
-      "src": "https://cdn.cosmos.so/1d059382-2fbe-48bc-8984-c10baeb14f4b?format=webp&w=400",
       "collection": "creative-direction"
     },
     {
