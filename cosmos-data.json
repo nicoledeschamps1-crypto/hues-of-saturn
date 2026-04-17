@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-16T11:40:53Z",
+  "updated": "2026-04-17T09:15:29Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "eye-see-u",
     "fashion-ad"
   ],
-  "total": 167,
+  "total": 169,
   "images": [
     {
       "src": "https://cdn.cosmos.so/e4a72c5f-95f0-4889-bc5b-408d821881b1?format=webp&w=400",
@@ -460,6 +460,10 @@
       "collection": "clotbes-that-catch-me"
     },
     {
+      "src": "https://cdn.cosmos.so/6c3f9ee5-6ecf-4fb3-bbd4-cd0f99283e22?format=webp&w=400",
+      "collection": "codecore"
+    },
+    {
       "src": "https://cdn.cosmos.so/027f4ef2-4b10-4ec3-a674-d1d13b66b4ce?format=webp&w=400",
       "collection": "codecore"
     },
@@ -610,6 +614,10 @@
     {
       "src": "https://cdn.cosmos.so/5582de94-8b27-4112-a655-d7d09dbed6f5?format=webp&w=400",
       "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/d49148a1-fda2-4599-b844-92a5d8f2aa06?format=webp&w=400",
+      "collection": "destruction-in-all-forms"
     },
     {
       "src": "https://cdn.cosmos.so/13465a1b-14ae-4595-94d4-abfd77a07485?format=webp&w=400",
