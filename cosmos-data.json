@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-17T09:15:29Z",
+  "updated": "2026-04-18T08:45:25Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "eye-see-u",
     "fashion-ad"
   ],
-  "total": 169,
+  "total": 170,
   "images": [
     {
       "src": "https://cdn.cosmos.so/e4a72c5f-95f0-4889-bc5b-408d821881b1?format=webp&w=400",
@@ -270,6 +270,10 @@
     {
       "src": "https://cdn.cosmos.so/b1efddac-7314-4c75-acd7-48e94064120d?format=webp&w=400",
       "collection": "cancer-sun"
+    },
+    {
+      "src": "https://cdn.cosmos.so/e6c26eb6-12f8-4c59-95e4-a8c47c283c08?format=webp&w=400",
+      "collection": "candle-operas"
     },
     {
       "src": "https://cdn.cosmos.so/793df00e-959e-4d56-adf8-7a94218bbe6a?format=webp&w=400",
@@ -616,10 +620,6 @@
       "collection": "creative-direction"
     },
     {
-      "src": "https://cdn.cosmos.so/d49148a1-fda2-4599-b844-92a5d8f2aa06?format=webp&w=400",
-      "collection": "destruction-in-all-forms"
-    },
-    {
       "src": "https://cdn.cosmos.so/13465a1b-14ae-4595-94d4-abfd77a07485?format=webp&w=400",
       "collection": "destruction-in-all-forms"
     },
@@ -694,6 +694,10 @@
     {
       "src": "https://cdn.cosmos.so/38beebb9-6484-4937-a298-205183ddeb8f?format=webp&w=400",
       "collection": "earthbending"
+    },
+    {
+      "src": "https://cdn.cosmos.so/77754030-2e76-4513-859f-290fc83bb032?format=webp&w=400",
+      "collection": "eye-see-u"
     },
     {
       "src": "https://cdn.cosmos.so/a1521c9a-9186-469a-9aab-317e53541c28?format=webp&w=400",
