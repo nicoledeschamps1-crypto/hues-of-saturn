@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-18T08:45:25Z",
+  "updated": "2026-04-19T08:51:44Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "eye-see-u",
     "fashion-ad"
   ],
-  "total": 170,
+  "total": 173,
   "images": [
     {
       "src": "https://cdn.cosmos.so/e4a72c5f-95f0-4889-bc5b-408d821881b1?format=webp&w=400",
@@ -272,16 +272,16 @@
       "collection": "cancer-sun"
     },
     {
-      "src": "https://cdn.cosmos.so/e6c26eb6-12f8-4c59-95e4-a8c47c283c08?format=webp&w=400",
-      "collection": "candle-operas"
-    },
-    {
       "src": "https://cdn.cosmos.so/793df00e-959e-4d56-adf8-7a94218bbe6a?format=webp&w=400",
       "collection": "candle-operas"
     },
     {
       "src": "https://cdn.cosmos.so/99ed179e-2061-4cbd-b1bc-0f8e3bfb454a?format=webp&w=400",
       "collection": "candle-operas"
+    },
+    {
+      "src": "https://cdn.cosmos.so/22cc38f6-81ca-480f-bbf5-9b99d020a13b?format=webp&w=400",
+      "collection": "cherry-bomb"
     },
     {
       "src": "https://cdn.cosmos.so/6749c149-d179-4fdc-9d9c-d84a8bb27345?format=webp&w=400",
@@ -432,6 +432,10 @@
       "collection": "circles"
     },
     {
+      "src": "https://cdn.cosmos.so/3c47f9e3-0dab-45ba-a0dd-7b1ffa76d1b2?format=webp&w=400",
+      "collection": "clotbes-that-catch-me"
+    },
+    {
       "src": "https://cdn.cosmos.so/bff16996-9981-44f9-b366-464087983a6d?format=webp&w=400",
       "collection": "clotbes-that-catch-me"
     },
@@ -462,6 +466,10 @@
     {
       "src": "https://cdn.cosmos.so/f40f8530-cddb-4ae3-8c17-3d84d136b000?format=webp&w=400",
       "collection": "clotbes-that-catch-me"
+    },
+    {
+      "src": "https://cdn.cosmos.so/10bf4aec-7e52-4979-80ad-f3e986f72f69?format=webp&w=400",
+      "collection": "codecore"
     },
     {
       "src": "https://cdn.cosmos.so/6c3f9ee5-6ecf-4fb3-bbd4-cd0f99283e22?format=webp&w=400",
@@ -640,6 +648,10 @@
       "collection": "destruction-in-all-forms"
     },
     {
+      "src": "https://cdn.cosmos.so/77ca5f53-b7c5-41d4-b158-0bba42055339?format=webp&w=400",
+      "collection": "earthbending"
+    },
+    {
       "src": "https://cdn.cosmos.so/e367495f-cd6c-4561-9325-9fa3eeff774b?format=webp&w=400",
       "collection": "earthbending"
     },
@@ -696,8 +708,8 @@
       "collection": "earthbending"
     },
     {
-      "src": "https://cdn.cosmos.so/77754030-2e76-4513-859f-290fc83bb032?format=webp&w=400",
-      "collection": "eye-see-u"
+      "src": "https://cdn.cosmos.so/786b892f-4d79-4387-b499-40e456cb54bb?format=webp&w=400",
+      "collection": "event-ideas"
     },
     {
       "src": "https://cdn.cosmos.so/a1521c9a-9186-469a-9aab-317e53541c28?format=webp&w=400",
