@@ -179,6 +179,16 @@ function openRingLightbox(src, isVideo, source, boardUrl) {
   ringLightbox.classList.add('visible');
 }
 
+function closeRingLightbox() {
+  ringLightbox.classList.remove('visible');
+  var vid = ringLightbox.querySelector('video');
+  if (vid) vid.pause();
+}
+
+// Expose for other modules (e.g., immersive-orbit.js pinch-to-open)
+window.openRingLightbox  = openRingLightbox;
+window.closeRingLightbox = closeRingLightbox;
+
 // ============================================
 // SATURN — Dual Inspiration Rings
 // ============================================
@@ -271,16 +281,23 @@ function buildRing(images, backEl, frontEl, radius, sizeRange, speedRange, allIm
   if (prefersReducedMotion || items.length === 0) return;
   var ringPhase = { angle: 0 };
   var avgDuration = (speedRange[0] + speedRange[1]) / 2;
+  // Ring identity for immersive-orbit spin offset lookup
+  var ringId = backEl.classList.contains('ring-art') ? 'art'
+             : backEl.classList.contains('ring-arena') ? 'arena'
+             : backEl.classList.contains('ring-cosmos') ? 'cosmos' : null;
   gsap.to(ringPhase, {
     angle: 360,
     duration: avgDuration,
     repeat: -1,
     ease: 'none',
     onUpdate: function() {
+      var spin = (ringId && window.ImmersiveOrbit && window.ImmersiveOrbit.ringSpinDeg)
+        ? (window.ImmersiveOrbit.ringSpinDeg[ringId] || 0) : 0;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (item.wrapper._hovered) continue;
-        var current = (item.baseAngle + ringPhase.angle) % 360;
+        var current = (item.baseAngle + ringPhase.angle + spin) % 360;
+        if (current < 0) current += 360;
         item.wrapper.style.setProperty('--angle', current);
         var shouldBeBack = (current >= 0 && current < 180);
         var isInBack = item.wrapper.parentElement === backEl;
@@ -900,8 +917,6 @@ var ABOUT_COPY = [
 ];
 
 var CONNECT_COPY = [
-  'open to collaboration, conversation, or just hearing what moved you.',
-  '',
   'the best things happen when curious people find each other.',
 ];
 
@@ -934,6 +949,156 @@ function buildFloorWords(container, copy) {
 
 aboutWords = buildFloorWords(aboutText, ABOUT_COPY);
 connectWords = buildFloorWords(connectText, CONNECT_COPY);
+
+// ============================================
+// STAR POPOVERS — Libra (about) · Gemini (HOD) · lone star (connect)
+// ============================================
+(function starPopoverInit() {
+  var pop        = document.getElementById('starPopover');
+  var card       = document.getElementById('starPopoverCard');
+  var titleEl    = document.getElementById('starPopoverTitle');
+  var bodyEl     = document.getElementById('starPopoverBody');
+  var actionsEl  = document.getElementById('starPopoverActions');
+  var closeBtn   = document.getElementById('starPopoverClose');
+  var backdrop   = document.getElementById('starPopoverBackdrop');
+  if (!pop || !card || !titleEl || !bodyEl || !actionsEl) return;
+
+  var HOD_URL = 'https://nicoledeschamps1-crypto.github.io/hues-of-dispositions/';
+
+  var HOD_COPY = [
+    'a tool i built to play with the world around me.',
+    '',
+    '68 real time effects. audio reactive visuals that move to sound. motion tracking that follows what you follow. layers, blend modes, a timeline to shape it all. everything runs live, right in your browser.',
+    '',
+    'this is how i see... now you can too. just upload or open your camera and let curiosity drive you.',
+  ];
+
+  var CONNECT_LINKS = [
+    { href: 'https://instagram.com/huesofsaturn',          label: '@huesofsaturn',          platform: 'ig' },
+    { href: 'https://instagram.com/planetarydispositions', label: '@planetarydispositions', platform: 'ig' },
+    { href: 'mailto:nicole.deschamps1@gmail.com',          label: 'nicole.deschamps1@gmail.com' },
+  ];
+
+  function paragraphize(copy) {
+    var frag = document.createDocumentFragment();
+    var buffer = [];
+    function flush() {
+      if (!buffer.length) return;
+      var p = document.createElement('p');
+      p.textContent = buffer.join(' ');
+      frag.appendChild(p);
+      buffer = [];
+    }
+    copy.forEach(function(line) {
+      if (line === '') flush();
+      else buffer.push(line);
+    });
+    flush();
+    return frag;
+  }
+
+  function buildAbout() {
+    titleEl.textContent = 'moon in libra';
+    bodyEl.innerHTML = '';
+    bodyEl.appendChild(paragraphize(ABOUT_COPY));
+    actionsEl.innerHTML = '';
+  }
+
+  function buildHod() {
+    titleEl.textContent = 'hues of dispositions';
+    bodyEl.innerHTML = '';
+    bodyEl.appendChild(paragraphize(HOD_COPY));
+    actionsEl.innerHTML = '';
+    var a = document.createElement('a');
+    a.className = 'star-popover-enter';
+    a.href = HOD_URL;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.innerHTML = 'enter <span class="star-popover-enter-arrow" aria-hidden="true">→</span>';
+    actionsEl.appendChild(a);
+  }
+
+  function buildConnect() {
+    titleEl.textContent = 'connect';
+    bodyEl.innerHTML = '';
+    bodyEl.appendChild(paragraphize(CONNECT_COPY));
+    var links = document.createElement('div');
+    links.className = 'connect-links';
+    CONNECT_LINKS.forEach(function(l) {
+      var a = document.createElement('a');
+      a.href = l.href;
+      if (l.href.indexOf('mailto:') !== 0) {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
+      a.textContent = l.label;
+      if (l.platform) {
+        var plat = document.createElement('span');
+        plat.className = 'connect-platform';
+        plat.textContent = l.platform;
+        a.appendChild(plat);
+      }
+      links.appendChild(a);
+    });
+    bodyEl.appendChild(links);
+    actionsEl.innerHTML = '';
+  }
+
+  var BUILDERS = { about: buildAbout, hod: buildHod, connect: buildConnect };
+  var lastTrigger = null;
+
+  function openPopover(action, trigger) {
+    var build = BUILDERS[action];
+    if (!build) return;
+    build();
+    lastTrigger = trigger || null;
+    card.scrollTop = 0;
+    pop.classList.add('is-open');
+    pop.setAttribute('aria-hidden', 'false');
+    // Defer focus so transition can begin
+    setTimeout(function() {
+      try { closeBtn.focus({ preventScroll: true }); } catch (e) { closeBtn.focus(); }
+    }, 20);
+  }
+
+  function closePopover() {
+    pop.classList.remove('is-open');
+    pop.setAttribute('aria-hidden', 'true');
+    if (lastTrigger && typeof lastTrigger.focus === 'function') {
+      try { lastTrigger.focus({ preventScroll: true }); } catch (e) { lastTrigger.focus(); }
+    }
+    lastTrigger = null;
+  }
+
+  // Click triggers (delegated so future stars work too)
+  document.addEventListener('click', function(e) {
+    var trigger = e.target.closest && e.target.closest('[data-star-action]');
+    if (!trigger) return;
+    e.preventDefault();
+    openPopover(trigger.getAttribute('data-star-action'), trigger);
+  });
+
+  // Keyboard activation for SVG role=button (Enter / Space)
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var trigger = e.target.closest && e.target.closest('[data-star-action]');
+    if (!trigger) return;
+    // Native <button> already handles Enter/Space; skip those to avoid double-fire
+    if (trigger.tagName === 'BUTTON') return;
+    e.preventDefault();
+    openPopover(trigger.getAttribute('data-star-action'), trigger);
+  });
+
+  closeBtn.addEventListener('click', closePopover);
+  if (backdrop) backdrop.addEventListener('click', closePopover);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && pop.classList.contains('is-open')) {
+      e.stopPropagation();
+      closePopover();
+    }
+  });
+})();
 
 // ── Sun + Moon orb system (cinematic upgrade) ──
 var SUN_RADIUS = 100;

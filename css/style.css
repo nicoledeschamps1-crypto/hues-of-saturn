@@ -145,11 +145,191 @@ body {
 /* Placement — in clear sky areas away from the rings */
 .c-cancer       { top: 3%;  left: 30%;  width: 100px; animation-delay: 3s; }
 .c-capricorn    { top: 3%;  right: 10%; width: 110px; animation-delay: 5s; }
-.c-libra        { bottom: 8%; left: 10%; width: 85px; animation-delay: 7s; }
+.c-libra        { bottom: 8%; left: 10%; width: 95px; animation-delay: 7s; }
+.c-gemini       { top: 14%; left: 4%;  width: 90px; animation-delay: 4s; }
 
 @keyframes constellation-fade {
   0%   { opacity: 0; }
   100% { opacity: 1; }
+}
+
+/* ── Interactive constellations (Libra=About, Gemini=HOD) + lone Connect star ── */
+.constellation.is-interactive {
+  pointer-events: auto;
+  cursor: pointer;
+  outline: none;
+  transition: filter 0.35s ease;
+}
+
+.constellation.is-interactive:hover,
+.constellation.is-interactive:focus-visible {
+  filter: drop-shadow(0 0 6px rgba(255, 240, 210, 0.45));
+}
+
+.constellation.is-interactive:focus-visible {
+  outline: none;
+}
+
+/* Hover halo — subtle cream bloom behind the "active" star(s) */
+.constellation .star-halo {
+  fill: rgba(255, 240, 210, 0);
+  transition: fill 0.35s ease;
+}
+
+.constellation.is-interactive:hover .star-halo,
+.constellation.is-interactive:focus-visible .star-halo {
+  fill: rgba(255, 240, 210, 0.18);
+}
+
+/* Moon star in Libra — baseline slightly brighter than neighbors, pulses on hover */
+.constellation .moon-star {
+  fill: rgba(255, 248, 232, 0.95);
+  transition: r 0.4s ease, fill 0.4s ease;
+}
+
+.constellation.c-libra.is-interactive:hover .moon-star,
+.constellation.c-libra.is-interactive:focus-visible .moon-star {
+  fill: #fff2dc;
+  r: 2.6;
+}
+
+/* Gemini constellation — ordinary stars in cream, planet stars in gold */
+.constellation .gemini-star {
+  fill: rgba(255, 248, 232, 0.9);
+  transition: fill 0.35s ease;
+}
+
+.constellation .gemini-edge {
+  stroke: rgba(255, 240, 210, 0.3);
+  stroke-width: 0.6;
+  transition: stroke 0.35s ease, stroke-width 0.35s ease;
+}
+
+.constellation .planet-star {
+  fill: rgba(255, 214, 150, 0.95);  /* warm gold — these are her planets */
+  transition: r 0.35s ease, fill 0.35s ease;
+}
+
+.constellation.c-gemini.is-interactive:hover .gemini-star,
+.constellation.c-gemini.is-interactive:focus-visible .gemini-star {
+  fill: #fff2dc;
+}
+
+.constellation.c-gemini.is-interactive:hover .gemini-edge,
+.constellation.c-gemini.is-interactive:focus-visible .gemini-edge {
+  stroke: rgba(255, 240, 210, 0.6);
+  stroke-width: 0.8;
+}
+
+.constellation.c-gemini.is-interactive:hover .planet-star,
+.constellation.c-gemini.is-interactive:focus-visible .planet-star {
+  fill: #ffd89a;
+  r: 2.6;
+}
+
+.constellation.c-gemini .gemini-halo {
+  fill: rgba(255, 220, 180, 0);
+  transition: fill 0.4s ease;
+}
+
+.constellation.c-gemini.is-interactive:hover .gemini-halo,
+.constellation.c-gemini.is-interactive:focus-visible .gemini-halo {
+  fill: rgba(255, 220, 180, 0.08);
+}
+
+.constellation-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 6.5px;
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  fill: rgba(255, 250, 240, 0);
+  transition: fill 0.35s ease;
+  pointer-events: none;
+}
+
+.constellation.is-interactive:hover .constellation-label,
+.constellation.is-interactive:focus-visible .constellation-label {
+  fill: rgba(255, 250, 240, 0.78);
+}
+
+/* Lone Connect star — floats in the upper-right sky opposite Gemini */
+.lone-star.c-connect {
+  position: absolute;
+  top: 22%;
+  right: 6%;
+  width: 52px;
+  height: 62px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  animation: constellation-fade 4s ease-in forwards;
+  animation-delay: 6s;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+  transition: filter 0.35s ease;
+}
+
+.lone-star.c-connect svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.lone-star.c-connect .lone-star-core {
+  fill: rgba(255, 248, 232, 0.95);
+  transition: r 0.35s ease, fill 0.35s ease;
+}
+
+.lone-star.c-connect .lone-star-rays line {
+  stroke: rgba(255, 240, 210, 0.45);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  transition: stroke 0.35s ease;
+}
+
+.lone-star.c-connect .star-halo {
+  fill: rgba(255, 240, 210, 0);
+  transition: fill 0.35s ease;
+}
+
+.lone-star.c-connect .constellation-label {
+  display: block;
+  margin-top: 2px;
+  font-size: 9px;
+  color: rgba(255, 250, 240, 0);
+  transition: color 0.35s ease;
+}
+
+.lone-star.c-connect:hover,
+.lone-star.c-connect:focus-visible {
+  filter: drop-shadow(0 0 6px rgba(255, 240, 210, 0.45));
+  outline: none;
+}
+
+.lone-star.c-connect:hover .lone-star-core,
+.lone-star.c-connect:focus-visible .lone-star-core {
+  fill: #fff2dc;
+  r: 2.8;
+}
+
+.lone-star.c-connect:hover .star-halo,
+.lone-star.c-connect:focus-visible .star-halo {
+  fill: rgba(255, 240, 210, 0.2);
+}
+
+.lone-star.c-connect:hover .lone-star-rays line,
+.lone-star.c-connect:focus-visible .lone-star-rays line {
+  stroke: rgba(255, 240, 210, 0.85);
+}
+
+.lone-star.c-connect:hover .constellation-label,
+.lone-star.c-connect:focus-visible .constellation-label {
+  color: rgba(255, 250, 240, 0.78);
 }
 
 .sparkle {
@@ -247,7 +427,7 @@ body {
 }
 
 .ring-image {
-  pointer-events: all;
+  pointer-events: auto;
 }
 
 /* Back halves sit behind the face (z-index 2) */
@@ -2966,6 +3146,712 @@ body {
   }
 }
 
+/* ============================================ */
+/* TEMP: hide elevator section while iterating  */
+/* on the immersive orbit. Remove these rules   */
+/* to bring the elevator / floors back.         */
+/* ============================================ */
+#elevator-section,
+.scroll-hint,
+.mobile-floor-nav {
+  display: none !important;
+}
+
+/* ============================================ */
+/* IMMERSIVE ORBIT — portal star, modal, HUD    */
+/* ============================================ */
+
+/* Wraps "in my orbit" trigger + portal star in a horizontal row
+   inside .orbit-key (which is column-oriented). */
+.orbit-key-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Portal star — small stationary glyph next to the "in my orbit" trigger.
+   Invites users into the hand-tracked immersive mode. */
+.portal-star {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  padding: 4px 7px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 240, 210, 0.72);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+  text-shadow: 0 0 6px rgba(255, 220, 180, 0.35);
+  transition: color 0.25s ease, text-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.portal-star-glyph {
+  display: inline-block;
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.portal-star:hover,
+.portal-star:focus-visible {
+  color: #fff3dc;
+  text-shadow: 0 0 10px rgba(255, 220, 180, 0.75), 0 0 18px rgba(255, 180, 140, 0.35);
+  transform: scale(1.08);
+}
+
+.portal-star:focus-visible {
+  outline: 1px solid rgba(255, 220, 180, 0.6);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+/* Modal ───────────────────────────────────── */
+.orbit-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.orbit-modal.is-open {
+  display: flex;
+  opacity: 1;
+}
+
+.orbit-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(12, 6, 20, 0.88), rgba(0, 0, 0, 0.96));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.orbit-modal-card {
+  position: relative;
+  max-width: 460px;
+  width: calc(100% - 40px);
+  padding: 38px 36px 30px;
+  background: rgba(18, 12, 28, 0.72);
+  border: 1px solid rgba(255, 240, 210, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7), 0 0 80px rgba(255, 220, 180, 0.08);
+  color: rgba(255, 250, 240, 0.92);
+  font-family: 'Playfair Display', 'Palatino', serif;
+  text-align: center;
+  transform: translateY(8px) scale(0.98);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.orbit-modal.is-open .orbit-modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.orbit-modal-title {
+  margin: 0 0 14px;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  font-style: italic;
+}
+
+.orbit-modal-body {
+  margin: 0 0 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 250, 240, 0.74);
+  letter-spacing: 0.01em;
+}
+
+.orbit-modal-hint {
+  margin: 10px 0 0;
+  min-height: 1.4em;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  color: rgba(255, 180, 160, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.orbit-modal-hint:empty {
+  min-height: 0;
+  margin: 0;
+}
+
+.orbit-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 26px;
+}
+
+.orbit-modal-btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 240, 210, 0.25);
+  background: transparent;
+  color: rgba(255, 250, 240, 0.9);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.orbit-modal-btn:hover {
+  background: rgba(255, 240, 210, 0.08);
+  border-color: rgba(255, 240, 210, 0.45);
+}
+
+.orbit-modal-btn:active {
+  transform: scale(0.97);
+}
+
+.orbit-modal-btn--enter {
+  background: rgba(255, 220, 180, 0.12);
+  border-color: rgba(255, 220, 180, 0.55);
+  color: #fff2dc;
+}
+
+.orbit-modal-btn--enter:hover {
+  background: rgba(255, 220, 180, 0.22);
+}
+
+.orbit-modal-btn[disabled] {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* ── Star popover — opened by interactive constellations + lone Connect star ── */
+.star-popover {
+  position: fixed;
+  inset: 0;
+  z-index: 10080;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.star-popover.is-open {
+  display: flex;
+  opacity: 1;
+}
+
+.star-popover-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(12, 6, 20, 0.82), rgba(0, 0, 0, 0.94));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.star-popover-card {
+  position: relative;
+  max-width: 520px;
+  width: calc(100% - 40px);
+  max-height: calc(100vh - 80px);
+  padding: 46px 42px 36px;
+  background: rgba(18, 12, 28, 0.74);
+  border: 1px solid rgba(255, 240, 210, 0.18);
+  border-radius: 14px;
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7), 0 0 80px rgba(255, 220, 180, 0.08);
+  color: rgba(255, 250, 240, 0.92);
+  font-family: 'Playfair Display', 'Palatino', serif;
+  transform: translateY(10px) scale(0.98);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.star-popover.is-open .star-popover-card {
+  transform: translateY(0) scale(1);
+}
+
+.star-popover-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: rgba(255, 250, 240, 0.55);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.star-popover-close:hover,
+.star-popover-close:focus-visible {
+  background: rgba(255, 240, 210, 0.08);
+  color: rgba(255, 250, 240, 0.95);
+  outline: none;
+}
+
+.star-popover-title {
+  margin: 0 0 18px;
+  font-size: 26px;
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: rgba(255, 250, 240, 0.95);
+}
+
+.star-popover-body {
+  font-family: 'Playfair Display', 'Palatino', serif;
+  font-size: 15.5px;
+  line-height: 1.75;
+  color: rgba(255, 250, 240, 0.82);
+  letter-spacing: 0.005em;
+}
+
+.star-popover-body p {
+  margin: 0 0 14px;
+}
+
+.star-popover-body p:last-child {
+  margin-bottom: 0;
+}
+
+.star-popover-body p.closing {
+  font-style: italic;
+  color: rgba(255, 240, 210, 0.88);
+  text-align: center;
+  margin-top: 24px;
+}
+
+.star-popover-body .connect-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  text-align: center;
+}
+
+.star-popover-body .connect-links a {
+  color: rgba(255, 240, 210, 0.9);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 240, 210, 0.22);
+  padding-bottom: 2px;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  align-self: center;
+}
+
+.star-popover-body .connect-links a:hover,
+.star-popover-body .connect-links a:focus-visible {
+  color: #fff2dc;
+  border-color: rgba(255, 240, 210, 0.6);
+  outline: none;
+}
+
+.star-popover-body .connect-links .connect-platform {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 240, 210, 0.5);
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+
+.star-popover-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 26px;
+}
+
+.star-popover-actions:empty {
+  margin: 0;
+}
+
+.star-popover-enter {
+  padding: 10px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 220, 180, 0.55);
+  background: rgba(255, 220, 180, 0.12);
+  color: #fff2dc;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.star-popover-enter:hover,
+.star-popover-enter:focus-visible {
+  background: rgba(255, 220, 180, 0.22);
+  border-color: rgba(255, 220, 180, 0.8);
+  outline: none;
+}
+
+.star-popover-enter:active {
+  transform: scale(0.97);
+}
+
+.star-popover-enter-arrow {
+  transition: transform 0.2s ease;
+}
+
+.star-popover-enter:hover .star-popover-enter-arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 640px) {
+  .star-popover-card {
+    padding: 40px 24px 28px;
+    max-height: calc(100vh - 40px);
+  }
+  .star-popover-title { font-size: 22px; }
+  .star-popover-body  { font-size: 14.5px; line-height: 1.7; }
+}
+
+/* HUD — webcam thumbnail + hint when immersive ── */
+.orbit-hud {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 10040;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+body.immersive-active .orbit-hud {
+  display: flex;
+}
+
+.orbit-hud-hint {
+  padding: 6px 14px;
+  background: rgba(14, 8, 22, 0.72);
+  border: 1px solid rgba(255, 240, 210, 0.18);
+  border-radius: 999px;
+  color: rgba(255, 245, 225, 0.88);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.orbit-hud-hint.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.orbit-hud-thumb {
+  position: relative;
+  width: 150px;
+  height: 112px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 240, 210, 0.22);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+  opacity: 0.82;
+  transition: opacity 0.2s ease;
+}
+
+.orbit-hud-thumb:hover {
+  opacity: 1;
+}
+
+.orbit-hud-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);  /* mirror like a real mirror */
+  display: block;
+}
+
+/* Hand skeleton overlay — draws 21 landmarks + connections on the HUD preview */
+.orbit-hud-skeleton {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform: scaleX(-1);  /* mirror to match the video */
+  display: block;
+}
+
+.orbit-hud-exit,
+.orbit-hud-help {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: rgba(255, 250, 240, 0.94);
+  border: 1px solid rgba(255, 240, 210, 0.35);
+  border-radius: 50%;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.orbit-hud-exit { top: 6px; right: 6px; }
+.orbit-hud-help { top: 6px; right: 38px; font-family: 'Playfair Display', serif; font-style: italic; }
+
+.orbit-hud-exit:hover,
+.orbit-hud-help:hover {
+  background: rgba(40, 20, 50, 0.85);
+  transform: scale(1.05);
+}
+
+/* Onboarding gesture cards ─────────────────────── */
+.orbit-onboarding {
+  position: fixed;
+  left: 50%;
+  bottom: 22%;
+  transform: translateX(-50%);
+  z-index: 10045;
+  display: flex;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(14, 8, 22, 0.58);
+  border: 1px solid rgba(255, 240, 210, 0.16);
+  border-radius: 16px;
+  box-shadow: 0 14px 52px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.orbit-onboarding.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.orbit-gesture-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 88px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.orbit-gesture-card.is-pulse {
+  animation: orbit-gesture-pulse 0.7s ease-out;
+  background: rgba(255, 220, 180, 0.12);
+}
+
+@keyframes orbit-gesture-pulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(255, 220, 180, 0.55); }
+  40%  { transform: scale(1.14); box-shadow: 0 0 0 8px rgba(255, 220, 180, 0); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(255, 220, 180, 0); }
+}
+
+.orbit-gesture-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 6px;
+  color: rgba(255, 240, 210, 0.88);
+  filter: drop-shadow(0 0 6px rgba(255, 220, 180, 0.4));
+}
+
+.orbit-gesture-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.orbit-gesture-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: rgba(255, 250, 240, 0.8);
+  letter-spacing: 0.04em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Ring image highlight while being pinched open */
+.ring-image.pinch-selected {
+  outline: 2px solid rgba(255, 220, 180, 0.85);
+  outline-offset: 4px;
+  transition: outline-color 0.2s ease;
+}
+
+/* Subtle highlight while cursor is over a ring image (pre-pinch preview) */
+.ring-image.cursor-over {
+  outline: 1px solid rgba(255, 240, 210, 0.55);
+  outline-offset: 3px;
+  transition: outline 0.18s ease;
+}
+
+/* Fingertip cursor — follows user's index finger on the main screen.
+   Core dot sits on top of a circular SVG pinch-strength meter. */
+.orbit-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  margin-left: -24px;
+  margin-top: -24px;
+  pointer-events: none;           /* critical — don't block elementFromPoint */
+  opacity: 0;
+  z-index: 10048;
+  transition: opacity 0.3s ease, transform 0.08s ease-out;
+  will-change: transform, opacity;
+}
+
+.orbit-cursor.is-visible { opacity: 1; }
+
+.orbit-cursor-core {
+  position: absolute;
+  inset: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: rgba(255, 245, 220, 0.95);
+  box-shadow: 0 0 10px 2px rgba(255, 220, 180, 0.6);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Pinch strength meter — dim track ring + illuminated fill arc.
+   strokeDashoffset is written by JS per detection (pathLength=100). */
+.orbit-cursor-meter {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* -90deg so the fill starts at 12 o'clock and rotates clockwise as it grows */
+  transform: rotate(-90deg);
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.orbit-cursor.is-meter-visible .orbit-cursor-meter { opacity: 1; }
+
+.orbit-cursor-meter-track {
+  stroke: rgba(255, 240, 210, 0.18);
+  stroke-width: 1.2;
+}
+
+.orbit-cursor-meter-fill {
+  stroke: rgba(255, 220, 170, 0.75);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-dasharray: 100 100;
+  stroke-dashoffset: 100;
+  transition: stroke 0.2s ease, stroke-width 0.2s ease;
+  filter: drop-shadow(0 0 3px rgba(255, 220, 180, 0.45));
+}
+
+/* Meter ready to fire (score > ~0.55) — glow brighter */
+.orbit-cursor.is-meter-ready .orbit-cursor-meter-fill {
+  stroke: #fff3dc;
+  stroke-width: 2.2;
+  filter: drop-shadow(0 0 6px rgba(255, 245, 220, 0.9));
+}
+
+/* While actually pinching — hold that bright state + pulse core */
+.orbit-cursor.is-pinching .orbit-cursor-core {
+  transform: scale(1.35);
+  background: #fff3dc;
+  box-shadow: 0 0 16px 4px rgba(255, 220, 180, 0.85);
+}
+
+/* Sparkle — a 4-point star that fades out after firing */
+.orbit-cursor-sparkle {
+  position: absolute;
+  inset: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(255, 250, 240, 0.95) 0%,
+      rgba(255, 220, 180, 0.0) 40%),
+    conic-gradient(from 0deg,
+      rgba(255, 250, 240, 0.9) 0deg,  transparent 10deg,
+      transparent 80deg,  rgba(255, 250, 240, 0.9) 90deg,
+      transparent 100deg, transparent 170deg,
+      rgba(255, 250, 240, 0.9) 180deg,transparent 190deg,
+      transparent 260deg, rgba(255, 250, 240, 0.9) 270deg,
+      transparent 280deg, transparent 360deg);
+  -webkit-mask-image: radial-gradient(circle at center, black 0%, black 28%, transparent 60%);
+  mask-image:         radial-gradient(circle at center, black 0%, black 28%, transparent 60%);
+}
+
+.orbit-cursor.is-sparkling .orbit-cursor-sparkle {
+  animation: orbit-cursor-sparkle 0.6s ease-out;
+}
+
+@keyframes orbit-cursor-sparkle {
+  0%   { opacity: 0;   transform: scale(0.6) rotate(0deg); }
+  30%  { opacity: 0.95; transform: scale(1.0) rotate(25deg); }
+  100% { opacity: 0;   transform: scale(1.8) rotate(60deg); }
+}
+
+/* Hidden camera feed — offscreen but still valid for MediaPipe */
+.orbit-cam {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  top: -9999px;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Immersive state on <body> — pulls UI out of the way */
+body.immersive-active .scroll-hint,
+body.immersive-active .orbit-key {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+body.immersive-active .saturn-container {
+  animation: none;
+  /* Scale animated via GSAP in immersive-orbit.js — it cooperates with GSAP's
+     inline transform left over from the page-load animation. */
+}
+
+body.immersive-active .portal-star {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
 /* ── Reduced Motion ─────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .star, .sparkle, .void-star { animation: none; opacity: 0.5; }
@@ -2975,5 +3861,14 @@ body {
   .about-grain { animation: none; }
   .orb-sun .orb-core { animation: none; }
   .alarm-btn { animation: none; }
+  .portal-star { transition: none; }
+  .orbit-modal, .orbit-modal-card { transition: none; }
+  .star-popover, .star-popover-card { transition: none; }
+  .constellation.is-interactive,
+  .lone-star.c-connect { transition: none; }
+  .orbit-hud-hint { transition: none; }
+  .orbit-onboarding { transition: none; }
+  .orbit-gesture-card.is-pulse { animation: none; }
+  body.immersive-active .saturn-container { transition: none; }
   /* (old gallery avatar/marker reduced-motion rules removed — Three.js handles this now) */
 }
