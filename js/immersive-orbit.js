@@ -33,12 +33,13 @@ const KEYBOARD_SPIN_DEG    = 220;
 
 // ── Swipe detection ────────────────────────────────────────────────
 const SWIPE_HISTORY_SIZE    = 12;
-const SWIPE_WINDOW_MS       = 350;   // total time window considered
-const SWIPE_MIN_WINDOW_MS   = 80;    // too fast = not a swipe
-const SWIPE_MIN_DX          = 0.18;  // normalized frame-width displacement
-const SWIPE_DIR_RATIO       = 0.65;  // min |dx| / (|dx| + |dy|) — mostly horizontal
+const SWIPE_WINDOW_MS       = 500;   // total time window considered
+const SWIPE_MIN_WINDOW_MS   = 60;    // too fast = not a swipe
+const SWIPE_MIN_DX          = 0.12;  // normalized frame-width displacement
+const SWIPE_DIR_RATIO       = 0.55;  // min |dx| / (|dx| + |dy|) — mostly horizontal
+const SWIPE_MIN_SAMPLES     = 3;     // MP runs ~20Hz; 3 samples catches fast swipes
 const SWIPE_BURST_DEG       = 360;   // spin burst applied on a swipe
-const SWIPE_COOLDOWN_MS     = 350;
+const SWIPE_COOLDOWN_MS     = 300;
 
 // ── Pinch meter (display) ──────────────────────────────────────────
 const PINCH_METER_FADE_IN   = 0.08;  // score below this → arc hidden
@@ -391,7 +392,7 @@ function recordPalmSample(landmarks, nowMs) {
 
 function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
-  if (state.palmHistory.length < 4) return 0;
+  if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
   const newest = state.palmHistory[state.palmHistory.length - 1];
