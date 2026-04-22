@@ -3580,6 +3580,26 @@ body.immersive-active .orbit-hud {
   opacity: 1;
 }
 
+/* Swipe-fired feedback — brief border pulse + directional glow */
+.orbit-hud-thumb.is-swipe-flash {
+  animation: swipe-flash 0.45s ease-out;
+}
+
+.orbit-hud-thumb.is-swipe-flash.swipe-right {
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55),
+              inset -12px 0 24px rgba(255, 220, 180, 0.55);
+}
+
+.orbit-hud-thumb.is-swipe-flash.swipe-left {
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.55),
+              inset 12px 0 24px rgba(255, 220, 180, 0.55);
+}
+
+@keyframes swipe-flash {
+  0%   { border-color: rgba(255, 220, 150, 0.95); opacity: 1; }
+  100% { border-color: rgba(255, 240, 210, 0.22); opacity: 0.82; }
+}
+
 .orbit-hud-video {
   width: 100%;
   height: 100%;

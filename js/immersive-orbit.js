@@ -380,12 +380,16 @@ function computeFistScore(landmarks, handSpan) {
 // ══════════════════════════════════════════════════════════════════
 
 function recordPalmSample(landmarks, nowMs) {
+  // During cooldown, don't record — prevents return-to-neutral motion
+  // from polluting the next swipe's history buffer.
+  if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return;
+
   const palm = landmarks[9];
   state.palmHistory.push({ x: palm.x, y: palm.y, t: nowMs });
   while (state.palmHistory.length > SWIPE_HISTORY_SIZE) state.palmHistory.shift();
   // Drop stale samples outside the window
   while (state.palmHistory.length > 0 &&
-         nowMs - state.palmHistory[0].t > SWIPE_WINDOW_MS * 1.5) {
+         nowMs - state.palmHistory[0].t > SWIPE_WINDOW_MS) {
     state.palmHistory.shift();
   }
 }
@@ -414,8 +418,24 @@ function detectSwipe(nowMs) {
   // So dx > 0 → negative burst, dx < 0 → positive burst.
   const direction = dx > 0 ? -1 : 1;
   markFirstGesture('swipe');
+  flashSwipeIndicator(direction);
   dispatch('orbit:gesture-fired', { gesture: 'swipe', direction });
   return direction * SWIPE_BURST_DEG;
+}
+
+let _swipeFlashTimer = null;
+function flashSwipeIndicator(direction) {
+  if (!$hud) return;
+  const thumb = $hud.querySelector('.orbit-hud-thumb');
+  if (!thumb) return;
+  thumb.classList.remove('is-swipe-flash', 'swipe-left', 'swipe-right');
+  void thumb.offsetWidth;  // restart animation
+  thumb.classList.add('is-swipe-flash', direction > 0 ? 'swipe-right' : 'swipe-left');
+  if (_swipeFlashTimer) clearTimeout(_swipeFlashTimer);
+  _swipeFlashTimer = setTimeout(() => {
+    thumb.classList.remove('is-swipe-flash', 'swipe-left', 'swipe-right');
+    _swipeFlashTimer = null;
+  }, 450);
 }
 
 // ══════════════════════════════════════════════════════════════════
