@@ -140,19 +140,24 @@ var ringLightbox = document.createElement('div');
 ringLightbox.className = 'ring-lightbox';
 ringLightbox.innerHTML =
   '<div class="ring-lightbox-wrap">' +
+    '<button class="ring-lightbox-close" type="button" aria-label="Close image">×</button>' +
     '<div class="ring-lightbox-inner"><img /><video muted loop playsinline style="display:none"></video></div>' +
     '<a class="ring-lightbox-board" href="#" target="_blank" rel="noopener">view board →</a>' +
   '</div>';
 document.body.appendChild(ringLightbox);
 
 var boardLink = ringLightbox.querySelector('.ring-lightbox-board');
+var lightboxCloseBtn = ringLightbox.querySelector('.ring-lightbox-close');
 
 ringLightbox.addEventListener('click', function(e) {
   // Don't close if clicking the board link
   if (e.target === boardLink || boardLink.contains(e.target)) return;
-  ringLightbox.classList.remove('visible');
-  var vid = ringLightbox.querySelector('video');
-  vid.pause();
+  closeRingLightbox();
+});
+
+lightboxCloseBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  closeRingLightbox();
 });
 
 function openRingLightbox(src, isVideo, source, boardUrl) {
@@ -183,6 +188,7 @@ function closeRingLightbox() {
   ringLightbox.classList.remove('visible');
   var vid = ringLightbox.querySelector('video');
   if (vid) vid.pause();
+  try { window.dispatchEvent(new CustomEvent('ring-lightbox:close')); } catch (e) {}
 }
 
 // Expose for other modules (e.g., immersive-orbit.js pinch-to-open)
@@ -903,15 +909,15 @@ var connectActive = false;
 var ABOUT_COPY = [
   'I make things because the alternative is just watching.',
   '',
-  'my work lives in the ether.. between what i feel and what i can touch.. paint, clay, wood, trash, code, sound, whatever\'s in reach. every medium is fair game. every emotion is material.',
+  'my work lives in the ether — between what i feel and what i can touch — paint, clay, wood, trash, code, sound, whatever\'s in reach. every medium is fair game. every emotion is material.',
   '',
   'i don\'t believe art owes anyone an explanation. it\'s subjective, it\'s supposed to be. i\'d rather you feel something than understand something.',
   '',
   'hues of saturn is the universe i build from. the art, the tools, the experiments, all of it comes from the same place: curiosity about the tangible world, filtered through every feeling i can\'t name.',
   '',
-  'curiosity killed the cat.. yet satisfaction brought it back',
+  'curiosity killed the cat — yet satisfaction brought it back.',
   '',
-  'so i welcome you to my universe',
+  'so i welcome you to my universe.',
   '',
   'if you must think of me, think of me as the moon, constantly changing yet always remaining the same.',
 ];
@@ -965,12 +971,12 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
 
   var HOD_URL = 'https://nicoledeschamps1-crypto.github.io/hues-of-dispositions/';
 
-  var HOD_COPY = [
-    'a tool i built to play with the world around me.',
-    '',
-    '68 real time effects. audio reactive visuals that move to sound. motion tracking that follows what you follow. layers, blend modes, a timeline to shape it all. everything runs live, right in your browser.',
-    '',
-    'this is how i see... now you can too. just upload or open your camera and let curiosity drive you.',
+  var HOD_LINES = [
+    '68 REAL-TIME EFFECTS',
+    'AUDIO-REACTIVE VISUALS',
+    'MOTION TRACKING',
+    'LAYERS, BLEND MODES, TIMELINE',
+    'LIVE IN THE BROWSER',
   ];
 
   // Connect — three intentional contact rows. Labels/captions picked to
@@ -979,7 +985,7 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
     {
       label: 'studio',
       handle: '@huesofsaturn',
-      caption: 'the art. day to day from the studio.',
+      caption: 'personal, everyday, from the studio. art appears when it appears.',
       href: 'https://instagram.com/huesofsaturn',
       platform: 'instagram',
       external: true,
@@ -1034,6 +1040,8 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
   }
 
   function buildAbout() {
+    titleEl.classList.remove('star-popover-title--hod');
+    titleEl.hidden = false;
     titleEl.textContent = 'moon in libra';
     bodyEl.innerHTML = '';
     bodyEl.appendChild(paragraphize(ABOUT_COPY, ABOUT_PARA_CLASSES));
@@ -1041,9 +1049,34 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
   }
 
   function buildHod() {
-    titleEl.textContent = 'hues of dispositions';
+    titleEl.classList.add('star-popover-title--hod');
+    titleEl.hidden = false;
+    titleEl.textContent = 'HUES OF DISPOSITIONS';
     bodyEl.innerHTML = '';
-    bodyEl.appendChild(paragraphize(HOD_COPY));
+    var wrap = document.createElement('div');
+    wrap.className = 'hod-popover';
+
+    var kicker = document.createElement('p');
+    kicker.className = 'hod-popover-kicker';
+    kicker.textContent = 'A TOOL I BUILT TO PLAY WITH THE WORLD AROUND ME.';
+    wrap.appendChild(kicker);
+
+    var list = document.createElement('div');
+    list.className = 'hod-popover-list';
+    HOD_LINES.forEach(function(line) {
+      var item = document.createElement('div');
+      item.className = 'hod-popover-line';
+      item.textContent = line;
+      list.appendChild(item);
+    });
+    wrap.appendChild(list);
+
+    var note = document.createElement('p');
+    note.className = 'hod-popover-note';
+    note.textContent = 'THIS IS HOW I SEE. NOW YOU CAN TOO.';
+    wrap.appendChild(note);
+
+    bodyEl.appendChild(wrap);
     actionsEl.innerHTML = '';
     var a = document.createElement('a');
     a.className = 'star-popover-enter';
@@ -1055,7 +1088,9 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
   }
 
   function buildConnect() {
-    titleEl.textContent = 'connect';
+    titleEl.classList.remove('star-popover-title--hod');
+    titleEl.hidden = false;
+    titleEl.textContent = 'CONNECT';
     bodyEl.innerHTML = '';
 
     // Intro — keep current one-line invitation at the top of the card

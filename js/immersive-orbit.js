@@ -3,16 +3,13 @@
 //
 // Gestures (one-hand):
 //   • swipe (L/R)    → ring-spin burst, decays naturally
-//   • open palm      → brake the spin
-//   • point + hold   → dwell on a ring image to open the lightbox
-//   • fist           → close the opened image (never exits immersive)
+//   • hover + hold   → dwell on a ring image to open the lightbox
+//   • swipe down     → dismiss an opened image
 //
 // Onboarding:
 //   • "you're seen" flash on first hand detection (one shot)
-//   • 3 progressive cards (swipe → palm → point + hold), advancing
-//     on first successful fire of each gesture
-//   • fist lives in the persistent guide rail only, not the
-//     first-impression cards
+//   • progressive cards for the first two actions, then the guide rail
+//     keeps close visible
 //
 // Exit: ✕ button in the HUD, or the Escape key.
 // ══════════════════════════════════════════════════════════════════
@@ -31,8 +28,8 @@ const IDLE_AUTO_SPIN_DEG   = 16;    // deg/sec drift when nothing else is drivin
 const SPIN_EASE            = 0.08;  // ease rate near idle
 const RING_MULT            = { art: 1.0, arena: 0.7, cosmos: 0.5 };
 const KEYBOARD_SPIN_DEG    = 220;
-const MAX_SPIN_DEG         = 1440;  // cap on accumulated swipe momentum (4 rot/sec)
-const SPIN_FRICTION_RATE   = 0.45;  // per-sec multiplicative decay while coasting
+const MAX_SPIN_DEG         = 720;   // cap on accumulated swipe momentum (2 rot/sec)
+const SPIN_FRICTION_RATE   = 1.05;  // per-sec multiplicative decay while coasting
 const BRAKE_DECAY_RATE     = 6.0;   // per-sec decay when palm-open is braking (fast)
 
 // ── Swipe detection ────────────────────────────────────────────────
@@ -43,12 +40,14 @@ const SWIPE_MIN_DX          = 0.12;  // normalized frame-width displacement
 const SWIPE_DIR_RATIO       = 0.55;  // min |dx| / (|dx| + |dy|) — mostly horizontal
 const SWIPE_MIN_SAMPLES     = 3;     // MP runs ~20Hz; 3 samples catches fast swipes
 const SWIPE_MIN_AVG_VEL     = 0.00025; // normalized units / ms — avg per-frame speed
-const SWIPE_BURST_DEG       = 320;   // deg/sec added per swipe (stacks up to MAX_SPIN_DEG)
-const SWIPE_COOLDOWN_MS     = 180;   // short cooldown — chained same-direction swipes stack fast
+const SWIPE_BURST_DEG       = 220;   // deg/sec added per swipe
+const SWIPE_COOLDOWN_MS     = 260;   // keep swipes intentional, not jittery
 const SWIPE_REBOUND_BLOCK_MS = 350;  // after a swipe, ignore opposite-direction swipes for this long
+const DISMISS_MIN_DY        = 0.12;  // normalized frame-height downward displacement
+const DISMISS_DIR_RATIO     = 0.62;  // min |dy| / (|dx| + |dy|) — mostly vertical
 
 // ── Point-hold dwell (open image) ──────────────────────────────────
-const DWELL_OPEN_MS         = 600;   // hold point on a ring for this long to open it
+const DWELL_OPEN_MS         = 450;   // hold cursor on a ring for this long to open it
 const DWELL_METER_FADE_IN   = 0.04;  // progress below this → arc hidden
 const DWELL_METER_SMOOTH    = 0.35;  // EMA on displayed progress for smoothness
 
@@ -77,13 +76,14 @@ const state = {
   palmHistory: [],             // [{x, y, t}, ...]
   lastSwipeTime: 0,
   lastSwipeDirection: 0,       // ±1 direction of the last successful swipe
+  lastDismissTime: 0,
 
   // Spin
   currentVelocity: 0,
   lastTick: 0,
   keyboardSpin: 0,
 
-  // Point-hold dwell timer (opens images after sustained pointing)
+  // Hover-hold dwell timer (opens images after sustained cursor hover)
   dwellRing: null,             // ring-image currently being dwelled on
   dwellStartTs: 0,             // ms timestamp when dwell started
   displayedDwellProgress: 0,   // smoothed 0..1 for the cursor meter ring
@@ -96,9 +96,9 @@ const state = {
   firstGestureFired: false,
   handSeenOnce: false,         // "you're seen" flash shown once per session
   onboardingStarted: false,    // cards visible (after seen-flash → fade-in)
-  onboardingComplete: false,   // all 3 gesture cards marked is-done
+  onboardingComplete: false,   // all onboarding cards marked is-done
 
-  // Pose flags (driven by GESTURE_DEFS.palm / .point onFire/onRelease)
+  // Pose flags (kept for compatibility while the active UX stays simple)
   palmBraking: false,          // true while open-palm pose holds — decays spin fast
   pointActive: false,          // true while index-point pose holds — cursor/hover mode
 };
@@ -209,45 +209,7 @@ const GESTURE_ICONS = {
 //    onFire / onHold / onRelease / onReady (ready = rearmed after fire)
 // ══════════════════════════════════════════════════════════════════
 
-const GESTURE_DEFS = {
-  palm: {
-    compute: computePalmOpenScore,
-    threshold: 0.55,        // all 4 fingers extension ≥ ~1.74
-    releaseThreshold: 0.25, // release when any finger dips below ~1.64
-    fireHoldMs: 180,
-    releaseHoldMs: 160,
-    cooldown: 250,
-    priority: 8,
-    continuous: true,
-    onFire: onPalmStart,
-    onRelease: onPalmEnd,
-  },
-  point: {
-    compute: computePointScore,
-    threshold: 0.45,        // product of two sub-scores — 0.45 = both ≥ ~0.67
-    releaseThreshold: 0.20,
-    fireHoldMs: 100,        // short — point should feel immediate
-    releaseHoldMs: 140,
-    cooldown: 160,
-    priority: 6,
-    mutualExclusion: ['palm', 'fist'],
-    continuous: true,
-    onFire: onPointStart,
-    onRelease: onPointEnd,
-  },
-  fist: {
-    compute: computeFistScore,
-    threshold: 0.70,        // all 4 fingers extension ≤ ~0.91 (clearly curled)
-    releaseThreshold: 0.40, // release when max extension climbs back above ~1.01
-    fireHoldMs: 350,
-    releaseHoldMs: 150,
-    cooldown: 800,
-    priority: 5,
-    mutualExclusion: ['palm', 'point'],
-    continuous: false,
-    onFire: onFistFire,
-  },
-};
+const GESTURE_DEFS = {};
 
 const gestureState = {};
 for (const key of Object.keys(GESTURE_DEFS)) {
@@ -396,10 +358,8 @@ function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
  * counters but does NOT fire onRelease for continuous gestures (that would
  * flash-close the lightbox on every brief tracking drop).
  *
- * EXCEPTION: palm-brake and point-mode are purely visual/motion flags — if
- * the hand is gone we should stop applying them immediately. Otherwise the
- * spin freezes and the cursor keeps "is-pointing" styling until the hand
- * returns and the user manually releases the pose.
+ * EXCEPTION: any visual/motion pose flags should clear immediately if the
+ * hand is gone, so the cursor and spin loop recover cleanly.
  */
 function onHandLost() {
   for (const key of Object.keys(gestureState)) {
@@ -410,15 +370,10 @@ function onHandLost() {
     // a real gesture release. Pinch/fist latches stay safe this way.
   }
   // Release pose flags so the spin loop and cursor recover cleanly.
-  if (state.palmBraking) {
-    state.palmBraking = false;
-    if (gestureState.palm) gestureState.palm.active = false;
-  }
-  if (state.pointActive) {
-    state.pointActive = false;
-    if (gestureState.point) gestureState.point.active = false;
-    if ($cursor) $cursor.classList.remove('is-pointing');
-  }
+  state.palmBraking = false;
+  state.pointActive = false;
+  if ($cursor) $cursor.classList.remove('is-pointing');
+  state.palmHistory = [];
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -470,20 +425,22 @@ function computeFistScore(landmarks /*, handSpan */) {
 // one curled finger drops the score to zero.
 function computePalmOpenScore(landmarks /*, handSpan */) {
   const ext = fourFingerExtensions(landmarks);
+  const avgExtended = (ext[0] + ext[1] + ext[2] + ext[3]) / 4;
   const leastExtended = Math.min(ext[0], ext[1], ext[2], ext[3]);
-  return clamp((leastExtended - 1.55) / 0.35, 0, 1);
+  const avgScore = clamp((avgExtended - 1.45) / 0.35, 0, 1);
+  const minScore = clamp((leastExtended - 1.20) / 0.45, 0, 1);
+  return avgScore * minScore;
 }
 
-// Point: index clearly extended AND middle/ring/pinky clearly curled.
-// Product of sub-scores so both must hold strongly. Uses MAX across the
-// three "should-be-curled" fingers so one stray extended finger kills it.
+// Point: index is clearly extended and leads the other fingers. Do not require
+// a perfect finger-gun; webcam hands are messy, especially while aiming.
 function computePointScore(landmarks /*, handSpan */) {
   const ext = fourFingerExtensions(landmarks);
   const indexExt = ext[0];
-  const worstOtherExt = Math.max(ext[1], ext[2], ext[3]);
-  const sIndex  = clamp((indexExt - 1.55) / 0.35, 0, 1);
-  const sCurled = clamp((1.15 - worstOtherExt) / 0.35, 0, 1);
-  return sIndex * sCurled;
+  const nextMostExtended = Math.max(ext[1], ext[2], ext[3]);
+  const indexScore = clamp((indexExt - 1.35) / 0.40, 0, 1);
+  const leadScore = clamp((indexExt - nextMostExtended + 0.18) / 0.45, 0, 1);
+  return Math.max(indexScore * leadScore, indexScore * 0.55);
 }
 
 // ── Fist handler — closes an open photo. Never exits immersive mode;
@@ -503,30 +460,6 @@ function _isLightboxOpen() {
   return !!(lb && lb.classList.contains('visible'));
 }
 
-// ── Palm-open brake handlers ───────────────────────────────────────
-function onPalmStart() {
-  state.palmBraking = true;
-  markFirstGesture('palm');
-  pulseOnboardingIcon('palm');
-}
-function onPalmEnd() {
-  state.palmBraking = false;
-}
-
-// ── Point handlers — enable cursor-driven hover semantics ──────────
-function onPointStart() {
-  state.pointActive = true;
-  // Pulse the guide/onboarding icon as feedback, but don't advance the
-  // "point + hold to open" card yet — that waits for an actual open.
-  pulseOnboardingIcon('point');
-  if ($cursor) $cursor.classList.add('is-pointing');
-}
-function onPointEnd() {
-  state.pointActive = false;
-  if (gestureState.point) gestureState.point.lastReleaseTs = performance.now();
-  if ($cursor) $cursor.classList.remove('is-pointing');
-}
-
 // ══════════════════════════════════════════════════════════════════
 //  SWIPE DETECTION
 //  Palm position history → directional burst. Replaces continuous
@@ -537,11 +470,9 @@ function recordPalmSample(landmarks, nowMs) {
   // During cooldown, don't record — prevents return-to-neutral motion
   // from polluting the next swipe's history buffer.
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return;
-  // While palm-brake is actually active, skip — the user's confirmed a stop.
-  // (Pre-fire palm score is NOT blocked here; swipe and palm compete fairly
-  // via the gesture arbiter. If palm fires, onPalmStart sets palmBraking.)
-  if (state.palmBraking) { state.palmHistory = []; return; }
-
+  // Opening should be quiet. Otherwise the palm center drifts while the user
+  // holds over an image, which reads as a swipe and throws the target away.
+  if (state.dwellRing) { state.palmHistory = []; return; }
   const palm = landmarks[9];
   // Per-sample velocity magnitude so detectSwipe can check average speed.
   let v = 0;
@@ -564,7 +495,8 @@ function recordPalmSample(landmarks, nowMs) {
 
 function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
-  if (state.palmBraking) return 0;  // open-palm pose suppresses swipe
+  if (state.openedRing) return 0;
+  if (state.dwellRing) return 0;
   if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
@@ -616,6 +548,39 @@ function detectSwipe(nowMs) {
   flashSwipeIndicator(direction);
   dispatch('orbit:gesture-fired', { gesture: 'swipe', direction });
   return direction * SWIPE_BURST_DEG;
+}
+
+function detectDismissSwipe(nowMs) {
+  if (!state.openedRing) return false;
+  if (nowMs - state.lastDismissTime < 450) return false;
+  if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return false;
+
+  const oldest = state.palmHistory[0];
+  const newest = state.palmHistory[state.palmHistory.length - 1];
+  const elapsed = newest.t - oldest.t;
+  if (elapsed < SWIPE_MIN_WINDOW_MS || elapsed > SWIPE_WINDOW_MS) return false;
+
+  const dx = newest.x - oldest.x;
+  const dy = newest.y - oldest.y;
+  const adx = Math.abs(dx);
+  const ady = Math.abs(dy);
+  if (dy < DISMISS_MIN_DY) return false;
+  if (ady / (adx + ady + 1e-6) < DISMISS_DIR_RATIO) return false;
+
+  let avgV = 0, vSamples = 0;
+  for (let i = 1; i < state.palmHistory.length; i++) {
+    avgV += state.palmHistory[i].v || 0;
+    vSamples++;
+  }
+  if (vSamples > 0) avgV /= vSamples;
+  if (avgV < SWIPE_MIN_AVG_VEL) return false;
+
+  state.lastDismissTime = nowMs;
+  state.palmHistory = [];
+  pulseOnboardingIcon('dismiss');
+  closeLightboxIfOpen();
+  dispatch('orbit:gesture-fired', { gesture: 'dismiss' });
+  return true;
 }
 
 let _swipeFlashTimer = null;
@@ -691,7 +656,7 @@ function attemptOpenAt(x, y) {
   }
   ringImage.classList.add('pinch-selected'); // CSS class name kept for style reuse
   pulseOnboardingIcon('point');
-  markFirstGesture('point'); // advance the point-and-hold card only on real open
+  markFirstGesture('point'); // advance the hold-to-open card only on real open
   fireCursorSparkle();
   return true;
 }
@@ -700,6 +665,10 @@ function closeLightboxIfOpen() {
   if (typeof window.closeRingLightbox === 'function') {
     try { window.closeRingLightbox(); } catch (e) {}
   }
+  clearOpenedRingState();
+}
+
+function clearOpenedRingState() {
   if (state.openedRing) {
     state.openedRing.classList.remove('pinch-selected');
     state.openedRing = null;
@@ -707,6 +676,7 @@ function closeLightboxIfOpen() {
   // Reset dwell so re-pointing at the same ring starts fresh.
   state.dwellRing = null;
   state.dwellStartTs = 0;
+  updateDwellProgress(0);
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -753,11 +723,11 @@ function updateDwellProgress(rawProgress) {
   }
 }
 
-// Point-hold dwell: while the user is in point pose and their fingertip
-// hovers a ring image, count up to DWELL_OPEN_MS. Hit that → open the ring.
-// Any target change, release of point pose, or lightbox-open cancels.
+// Hover-hold dwell: while the tracked cursor hovers a ring image, count up to
+// DWELL_OPEN_MS. Hit that → open the ring. Any target change, hand loss, or
+// lightbox-open cancels.
 function updatePointDwell(nowMs) {
-  if (!state.pointActive || state.openedRing) {
+  if (state.openedRing) {
     state.dwellRing = null;
     state.dwellStartTs = 0;
     updateDwellProgress(0);
@@ -877,21 +847,18 @@ function fireCursorSparkle() {
 //  ONBOARDING HUD
 // ══════════════════════════════════════════════════════════════════
 
-// First-impression cards. Fist is intentionally omitted — it lives in the
-// persistent guide rail only, so the initial lesson stays focused on the
-// three gestures that actually drive the space.
+// First-impression cards. Keep the initial lesson tiny: move the orbit, then
+// open something. Close stays visible in the persistent guide rail.
 const ONBOARDING_CARDS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'palm',  icon: GESTURE_ICONS.palm,  label: 'palm to stop' },
-  { key: 'point', icon: GESTURE_ICONS.point, label: 'point + hold to open' },
+  { key: 'point', icon: GESTURE_ICONS.point, label: 'hold over image' },
 ];
 
-// Persistent guide rail — all four gestures, always visible for reference.
+// Persistent guide rail — only the reliable actions, always visible.
 const GUIDE_RAIL_ITEMS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'palm',  icon: GESTURE_ICONS.palm,  label: 'palm to stop' },
-  { key: 'point', icon: GESTURE_ICONS.point, label: 'point + hold to open' },
-  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
+  { key: 'point', icon: GESTURE_ICONS.point, label: 'hold over image' },
+  { key: 'dismiss', icon: GESTURE_ICONS.swipe, label: 'swipe down close' },
 ];
 
 function buildOnboardingCards() {
@@ -1077,6 +1044,7 @@ function init() {
 
   document.addEventListener('keydown', onGlobalKeydown);
   document.addEventListener('keyup', onGlobalKeyup);
+  window.addEventListener('ring-lightbox:close', clearOpenedRingState);
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('pagehide', () => stopStreamOnly());
   document.addEventListener('visibilitychange', () => {
@@ -1235,6 +1203,7 @@ async function onEnterConfirmed() {
   state.palmHistory = [];
   state.lastSwipeTime = 0;
   state.lastSwipeDirection = 0;
+  state.lastDismissTime = 0;
   state.displayedDwellProgress = 0;
   state.dwellRing = null;
   state.dwellStartTs = 0;
@@ -1331,7 +1300,10 @@ function detectLoop(now) {
     state.dwellStartTs = 0;
   }
 
-  // Ring spin: swipes accumulate momentum, palm-open brakes, idle drift otherwise
+  // Ring spin: swipes accumulate momentum, hover-open dismisses downward.
+  if (haveHand && isFreshDetection && detectDismissSwipe(now)) {
+    state.currentVelocity = 0;
+  }
   const swipeBurst = haveHand && isFreshDetection ? detectSwipe(now) : 0;
   if (swipeBurst !== 0) {
     // Add into current velocity so repeated swipes stack. Cap to prevent runaway.
@@ -1400,6 +1372,7 @@ function exitImmersive(reason) {
   state.palmBraking = false;
   state.pointActive = false;
   state.lastSwipeDirection = 0;
+  state.lastDismissTime = 0;
 
   // Reset gesture states completely on exit
   for (const key of Object.keys(gestureState)) {
