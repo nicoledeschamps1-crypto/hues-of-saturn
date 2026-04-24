@@ -1336,37 +1336,39 @@ body {
 }
 
 .hod-title {
-  font-family: 'Climate Crisis', cursive;
+  font-family: 'Climate Crisis', 'Impact', 'Inter', sans-serif;
   font-size: clamp(1.2rem, 3.5vw, 2.2rem);
   font-weight: 400;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 12px;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.92);
+  margin-bottom: 14px;
   text-shadow: 0 0 30px rgba(139, 69, 232, 0.3);
 }
 
 .hod-tagline {
   font-family: 'Inter', sans-serif;
-  font-weight: 300;
-  font-size: clamp(0.7rem, 1.2vw, 0.9rem);
-  letter-spacing: 0.15em;
-  text-transform: lowercase;
-  color: rgba(255, 255, 255, 0.35);
-  font-style: italic;
-  margin-bottom: 20px;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(0.75rem, 1.25vw, 0.95rem);
+  line-height: 1.65;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 auto 18px;
   max-width: 560px;
 }
 
 .hod-description {
   font-family: 'Inter', sans-serif;
-  font-weight: 300;
-  font-size: clamp(0.75rem, 1.1vw, 0.95rem);
-  line-height: 1.8;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
-  color: rgba(255, 255, 255, 0.5);
-  max-width: 520px;
-  margin: 16px auto 20px;
+  font-weight: 400;
+  font-style: normal;
+  font-size: clamp(0.8rem, 1.15vw, 1rem);
+  line-height: 1.7;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.68);
+  max-width: 540px;
+  margin: 16px auto 22px;
 }
 
 .hod-enter {
@@ -2336,10 +2338,11 @@ body {
 }
 
 .about-text {
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
-  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  font-family: 'Climate Crisis', cursive;
+  font-size: clamp(0.85rem, 1.4vw, 1rem);
   font-weight: 400;
-  line-height: 1.9;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
   color: #e8e4dc;
   max-width: 640px;
   width: 100%;
@@ -2358,9 +2361,10 @@ body {
 
 /* Connect page */
 .connect-text {
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
-  font-size: clamp(1.3rem, 2.8vw, 1.8rem);
-  line-height: 1.8;
+  font-family: 'Climate Crisis', cursive;
+  font-size: clamp(1.05rem, 2.2vw, 1.45rem);
+  line-height: 1.65;
+  letter-spacing: 0.02em;
   color: rgba(255, 255, 255, 0.75);
   max-width: 680px;
   width: 100%;
@@ -2387,12 +2391,12 @@ body {
 }
 
 .connect-links a {
-  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, 'Iowan Old Style', Georgia, serif;
-  font-size: clamp(1rem, 2vw, 1.3rem);
+  font-family: 'Climate Crisis', cursive;
+  font-size: clamp(0.85rem, 1.7vw, 1.1rem);
   color: rgba(255, 255, 255, 0.35);
   text-decoration: none;
   transition: color 0.3s, letter-spacing 0.3s;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
 }
 
 .connect-links a:hover {
@@ -2401,10 +2405,9 @@ body {
 }
 
 .connect-platform {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.6em;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-family: 'Climate Crisis', cursive;
+  font-size: 0.55em;
+  letter-spacing: 0.08em;
   opacity: 0.4;
   margin-left: 8px;
   vertical-align: middle;
@@ -3562,6 +3565,73 @@ body.immersive-active .orbit-hud {
   transform: translateY(0);
 }
 
+/* Persistent gesture guide — sits above the camera thumb, always visible
+   during immersive mode. Each row: tiny icon + label, right-aligned. */
+.orbit-hud-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  width: 150px;
+  background: rgba(14, 8, 22, 0.62);
+  border: 1px solid rgba(255, 240, 210, 0.16);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
+  opacity: 0.78;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+}
+
+.orbit-hud-guide:hover {
+  opacity: 1;
+}
+
+.orbit-hud-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px;
+  border-radius: 6px;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.orbit-hud-guide-row.is-pulse {
+  background: rgba(255, 220, 180, 0.18);
+  animation: orbit-guide-pulse 0.65s ease-out;
+}
+
+@keyframes orbit-guide-pulse {
+  0%   { transform: scale(1);    box-shadow: inset 0 0 0 1px rgba(255, 220, 180, 0.55); }
+  40%  { transform: scale(1.03); box-shadow: inset 0 0 0 1px rgba(255, 220, 180, 0); }
+  100% { transform: scale(1);    box-shadow: inset 0 0 0 1px rgba(255, 220, 180, 0); }
+}
+
+.orbit-hud-guide-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  color: rgba(255, 240, 210, 0.88);
+  filter: drop-shadow(0 0 4px rgba(255, 220, 180, 0.3));
+}
+
+.orbit-hud-guide-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.orbit-hud-guide-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: rgba(255, 250, 240, 0.82);
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
 .orbit-hud-thumb {
   position: relative;
   width: 150px;
@@ -3872,6 +3942,291 @@ body.immersive-active .portal-star {
   transition: opacity 0.4s ease;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Interactive star affordance — idle breath
+   Libra, Gemini, lone Connect star carry a faint always-on halo
+   that breathes slowly, so first-time visitors sense the menu
+   lives in the stars without any literal labels.
+   ══════════════════════════════════════════════════════════════ */
+.constellation.c-libra.is-interactive .star-halo {
+  fill: rgba(255, 240, 210, 0.10);
+  animation: star-halo-breathe 5.8s ease-in-out infinite;
+}
+.constellation.c-gemini.is-interactive .gemini-halo {
+  fill: rgba(255, 220, 180, 0.06);
+  animation: star-halo-breathe 6.5s ease-in-out infinite;
+  animation-delay: 1.2s;
+}
+.lone-star.c-connect .star-halo {
+  fill: rgba(255, 240, 210, 0.10);
+  animation: star-halo-breathe 6.1s ease-in-out infinite;
+  animation-delay: 2.4s;
+}
+
+@keyframes star-halo-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1;    }
+}
+
+/* Moon star in Libra — gentle shimmer, hover still brightens */
+.constellation.c-libra .moon-star {
+  animation: moon-star-shimmer 4.2s ease-in-out infinite;
+}
+@keyframes moon-star-shimmer {
+  0%, 100% { opacity: 0.82; }
+  50%      { opacity: 1;    }
+}
+
+/* Gemini's three planet stars — warm gold, staggered pulses */
+.constellation.c-gemini .planet-star {
+  animation: planet-star-shimmer 5.4s ease-in-out infinite;
+}
+.constellation.c-gemini .planet-star[data-planet="mars"]    { animation-delay: 1.1s; }
+.constellation.c-gemini .planet-star[data-planet="mercury"] { animation-delay: 2.3s; }
+@keyframes planet-star-shimmer {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1;   }
+}
+
+/* Connect's lone-star rays — breathe stroke opacity */
+.lone-star.c-connect .lone-star-rays {
+  animation: lone-rays-breathe 5.6s ease-in-out infinite;
+}
+@keyframes lone-rays-breathe {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1;   }
+}
+
+/* Stronger hover halos — override the breathing fill */
+.constellation.c-libra.is-interactive:hover .star-halo,
+.constellation.c-libra.is-interactive:focus-visible .star-halo {
+  fill: rgba(255, 240, 210, 0.28);
+}
+.constellation.c-gemini.is-interactive:hover .gemini-halo,
+.constellation.c-gemini.is-interactive:focus-visible .gemini-halo {
+  fill: rgba(255, 220, 180, 0.14);
+}
+.lone-star.c-connect:hover .star-halo,
+.lone-star.c-connect:focus-visible .star-halo {
+  fill: rgba(255, 240, 210, 0.28);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   About popover — paragraph rhythm
+   Keeps Nicole's copy verbatim; just adds breathing room and
+   gives aphorisms / welcome / closing their own sit.
+   ══════════════════════════════════════════════════════════════ */
+.star-popover-body p.about-opener {
+  font-size: 1.05em;
+  color: rgba(255, 245, 220, 0.96);
+  letter-spacing: 0.01em;
+  margin-bottom: 22px;
+  font-style: italic;
+}
+.star-popover-body p.about-aphorism {
+  text-align: center;
+  font-style: italic;
+  color: rgba(255, 235, 200, 0.78);
+  margin: 22px 0;
+  letter-spacing: 0.04em;
+  font-size: 0.96em;
+}
+.star-popover-body p.about-welcome {
+  text-align: center;
+  font-style: italic;
+  color: rgba(255, 240, 210, 0.88);
+  margin: 22px 0 24px;
+  letter-spacing: 0.03em;
+}
+.star-popover-body p.about-closing {
+  font-style: italic;
+  text-align: center;
+  color: rgba(255, 240, 210, 0.9);
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 240, 210, 0.12);
+  letter-spacing: 0.005em;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Connect popover — intentional contact rows
+   ══════════════════════════════════════════════════════════════ */
+.star-popover-body .connect-intro {
+  text-align: center;
+  font-style: italic;
+  color: rgba(255, 240, 210, 0.82);
+  margin-bottom: 26px;
+}
+
+.star-popover-body .connect-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.star-popover-body .connect-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto auto;
+  column-gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 240, 210, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 240, 210, 0.025);
+  color: rgba(255, 245, 225, 0.92);
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.3s ease, background 0.3s ease, transform 0.2s ease;
+}
+
+.star-popover-body .connect-row:hover,
+.star-popover-body .connect-row:focus-visible {
+  border-color: rgba(255, 220, 180, 0.45);
+  background: rgba(255, 220, 180, 0.06);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.star-popover-body .connect-row-label {
+  grid-column: 1;
+  grid-row: 1;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 220, 180, 0.65);
+  font-weight: 500;
+}
+
+.star-popover-body .connect-row-handle {
+  grid-column: 1;
+  grid-row: 2;
+  margin-top: 2px;
+  font-size: 15.5px;
+  color: rgba(255, 250, 240, 0.95);
+  letter-spacing: 0.01em;
+  font-family: 'Playfair Display', 'Palatino', serif;
+  font-style: italic;
+  word-break: break-word;
+}
+
+.star-popover-body .connect-row-caption {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  font-size: 12.5px;
+  color: rgba(255, 240, 210, 0.58);
+  margin-top: 6px;
+  letter-spacing: 0.01em;
+  line-height: 1.55;
+}
+
+.star-popover-body .connect-row-platform {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 240, 210, 0.5);
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 240, 210, 0.18);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .star-popover-body .connect-row { padding: 12px 14px; }
+  .star-popover-body .connect-row-handle { font-size: 14px; }
+  .star-popover-body .connect-row-platform { font-size: 9.5px; padding: 3px 8px; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Orbit modal — three-beat body
+   ══════════════════════════════════════════════════════════════ */
+.orbit-modal-body {
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.orbit-modal-beat {
+  margin: 0 0 11px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 250, 240, 0.8);
+  letter-spacing: 0.01em;
+  opacity: 0;
+  animation: orbit-beat-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.orbit-modal-beat:last-child { margin-bottom: 0; }
+
+.orbit-modal.is-open .orbit-modal-beat:nth-child(1) { animation-delay: 0.18s; }
+.orbit-modal.is-open .orbit-modal-beat:nth-child(2) {
+  animation-delay: 0.48s;
+  color: rgba(255, 240, 210, 0.92);
+}
+.orbit-modal.is-open .orbit-modal-beat:nth-child(3) {
+  animation-delay: 0.78s;
+  font-style: italic;
+  color: rgba(255, 230, 200, 0.72);
+}
+
+@keyframes orbit-beat-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Orbit — "you're seen" flash on first hand detection
+   ══════════════════════════════════════════════════════════════ */
+.orbit-seen-flash {
+  position: fixed;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  z-index: 10046;
+  font-family: 'Playfair Display', 'Palatino', serif;
+  font-style: italic;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 245, 220, 0.92);
+  text-shadow: 0 0 24px rgba(255, 220, 180, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease, transform 0.9s ease;
+}
+
+.orbit-seen-flash.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) translateY(-10px);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Progressive onboarding — is-current (active) + is-done (faded)
+   ══════════════════════════════════════════════════════════════ */
+.orbit-gesture-card {
+  opacity: 0.55;
+  transition: opacity 0.5s ease, background 0.4s ease;
+}
+
+.orbit-gesture-card.is-current {
+  opacity: 1;
+  background: rgba(255, 220, 180, 0.05);
+  animation: orbit-card-attention 2.4s ease-in-out infinite;
+}
+
+.orbit-gesture-card.is-done {
+  opacity: 0.32;
+  background: transparent;
+  animation: none;
+}
+
+@keyframes orbit-card-attention {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 220, 180, 0.0); }
+  50%      { box-shadow: 0 0 0 2px rgba(255, 220, 180, 0.22); }
+}
+
 /* ── Reduced Motion ─────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .star, .sparkle, .void-star { animation: none; opacity: 0.5; }
@@ -3890,5 +4245,16 @@ body.immersive-active .portal-star {
   .orbit-onboarding { transition: none; }
   .orbit-gesture-card.is-pulse { animation: none; }
   body.immersive-active .saturn-container { transition: none; }
+
+  /* New animations — quiet them under reduced motion */
+  .constellation.c-libra.is-interactive .star-halo,
+  .constellation.c-gemini.is-interactive .gemini-halo,
+  .lone-star.c-connect .star-halo,
+  .constellation.c-libra .moon-star,
+  .constellation.c-gemini .planet-star,
+  .lone-star.c-connect .lone-star-rays { animation: none; }
+  .orbit-modal-beat { animation: none; opacity: 1; }
+  .orbit-seen-flash { transition: none; }
+  .orbit-gesture-card.is-current { animation: none; }
   /* (old gallery avatar/marker reduced-motion rules removed — Three.js handles this now) */
 }

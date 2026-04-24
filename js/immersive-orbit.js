@@ -1,19 +1,20 @@
 // ══════════════════════════════════════════════════════════════════
-// IMMERSIVE ORBIT v3 — hand-tracked Saturn
+// IMMERSIVE ORBIT v4 — hand-tracked Saturn
 //
 // Gestures (one-hand):
-//   • swipe (L/R)  → ring-spin burst, decays naturally
-//   • pinch        → open image under cursor (one-shot, rearm-latched)
-//   • fist         → exit immersive mode + close lightbox
+//   • swipe (L/R)    → ring-spin burst, decays naturally
+//   • open palm      → brake the spin
+//   • point + hold   → dwell on a ring image to open the lightbox
+//   • fist           → close the opened image (never exits immersive)
 //
-// v3 fixes:
-//   - Discrete swipe bursts (replaces continuous palm-velocity mapping)
-//   - Pinch strength meter on cursor (SVG arc driven by smoothed display score)
-//   - One-shot pinch with rearm latch that survives hand-loss
-//   - Time-based gesture gates (not RAF-frame counters)
-//   - Two-pass arbitration: scores → intents → conflict resolution → callbacks
-//   - Midpoint + expanded-rect hit-test (raw landmarks) for pinch target
-//   - Celestial line-art onboarding icons (no emoji)
+// Onboarding:
+//   • "you're seen" flash on first hand detection (one shot)
+//   • 3 progressive cards (swipe → palm → point + hold), advancing
+//     on first successful fire of each gesture
+//   • fist lives in the persistent guide rail only, not the
+//     first-impression cards
+//
+// Exit: ✕ button in the HUD, or the Escape key.
 // ══════════════════════════════════════════════════════════════════
 
 const MP_VERSION  = '0.10.18';
@@ -26,10 +27,13 @@ const HAND_DETECT_INTERVAL = 3;     // MediaPipe runs every Nth RAF tick
 const LANDMARK_SMOOTH      = 0.35;  // EMA for cursor + palm velocity
 
 // ── Ring spin ──────────────────────────────────────────────────────
-const IDLE_AUTO_SPIN_DEG   = 16;    // deg/sec when no swipe active
-const SPIN_EASE            = 0.08;  // how fast currentVelocity relaxes to target
+const IDLE_AUTO_SPIN_DEG   = 16;    // deg/sec drift when nothing else is driving
+const SPIN_EASE            = 0.08;  // ease rate near idle
 const RING_MULT            = { art: 1.0, arena: 0.7, cosmos: 0.5 };
 const KEYBOARD_SPIN_DEG    = 220;
+const MAX_SPIN_DEG         = 1440;  // cap on accumulated swipe momentum (4 rot/sec)
+const SPIN_FRICTION_RATE   = 0.45;  // per-sec multiplicative decay while coasting
+const BRAKE_DECAY_RATE     = 6.0;   // per-sec decay when palm-open is braking (fast)
 
 // ── Swipe detection ────────────────────────────────────────────────
 const SWIPE_HISTORY_SIZE    = 12;
@@ -38,12 +42,15 @@ const SWIPE_MIN_WINDOW_MS   = 60;    // too fast = not a swipe
 const SWIPE_MIN_DX          = 0.12;  // normalized frame-width displacement
 const SWIPE_DIR_RATIO       = 0.55;  // min |dx| / (|dx| + |dy|) — mostly horizontal
 const SWIPE_MIN_SAMPLES     = 3;     // MP runs ~20Hz; 3 samples catches fast swipes
-const SWIPE_BURST_DEG       = 360;   // spin burst applied on a swipe
-const SWIPE_COOLDOWN_MS     = 300;
+const SWIPE_MIN_AVG_VEL     = 0.00025; // normalized units / ms — avg per-frame speed
+const SWIPE_BURST_DEG       = 320;   // deg/sec added per swipe (stacks up to MAX_SPIN_DEG)
+const SWIPE_COOLDOWN_MS     = 180;   // short cooldown — chained same-direction swipes stack fast
+const SWIPE_REBOUND_BLOCK_MS = 350;  // after a swipe, ignore opposite-direction swipes for this long
 
-// ── Pinch meter (display) ──────────────────────────────────────────
-const PINCH_METER_FADE_IN   = 0.08;  // score below this → arc hidden
-const PINCH_METER_SMOOTH    = 0.30;  // EMA on displayed score for smoothness
+// ── Point-hold dwell (open image) ──────────────────────────────────
+const DWELL_OPEN_MS         = 600;   // hold point on a ring for this long to open it
+const DWELL_METER_FADE_IN   = 0.04;  // progress below this → arc hidden
+const DWELL_METER_SMOOTH    = 0.35;  // EMA on displayed progress for smoothness
 
 // ── Shared state buildRing reads from ──────────────────────────────
 window.ImmersiveOrbit = window.ImmersiveOrbit || {
@@ -63,34 +70,43 @@ const state = {
   detectTick: 0,
 
   // Landmarks
-  smoothedLandmarks: null,   // EMA-smoothed — for cursor, palm velocity
-  rawLandmarks: null,         // raw from the last fresh detection — for pinch score
+  smoothedLandmarks: null,   // EMA-smoothed — for cursor, hover targeting
+  rawLandmarks: null,         // raw from the last fresh detection — for pose scoring
 
   // Palm history for swipe detection
   palmHistory: [],             // [{x, y, t}, ...]
   lastSwipeTime: 0,
+  lastSwipeDirection: 0,       // ±1 direction of the last successful swipe
 
   // Spin
   currentVelocity: 0,
   lastTick: 0,
   keyboardSpin: 0,
 
-  // Pinch display meter
-  displayedPinchScore: 0,
+  // Point-hold dwell timer (opens images after sustained pointing)
+  dwellRing: null,             // ring-image currently being dwelled on
+  dwellStartTs: 0,             // ms timestamp when dwell started
+  displayedDwellProgress: 0,   // smoothed 0..1 for the cursor meter ring
 
   // Misc
   permissionDenied: false,
-  pinchTarget: null,           // ring-image element currently opened
-  pendingPinchTargetUntil: 0,  // retry hit-test until this timestamp
+  openedRing: null,            // ring-image currently displayed in the lightbox
   lastCursoredRing: null,      // ring-image under cursor (for cursor-over class)
   onboardingShown: false,
   firstGestureFired: false,
+  handSeenOnce: false,         // "you're seen" flash shown once per session
+  onboardingStarted: false,    // cards visible (after seen-flash → fade-in)
+  onboardingComplete: false,   // all 3 gesture cards marked is-done
+
+  // Pose flags (driven by GESTURE_DEFS.palm / .point onFire/onRelease)
+  palmBraking: false,          // true while open-palm pose holds — decays spin fast
+  pointActive: false,          // true while index-point pose holds — cursor/hover mode
 };
 
 // ── DOM handles (resolved on init) ─────────────────────────────────
-let $portalStar, $modal, $modalHint, $modalEnter, $modalCancel;
-let $hud, $hudHint, $hudVideo, $hudExit, $hudHelp, $cam, $onboarding;
-let $cursor, $cursorMeterFill;
+let $portalStar, $modal, $modalHint, $modalEnter, $modalCancel, $modalBody;
+let $hud, $hudHint, $hudVideo, $hudExit, $hudHelp, $cam, $onboarding, $guide;
+let $cursor, $cursorMeterFill, $seenFlash;
 let $hudSkeleton, _hudSkelCtx = null, _hudSkelSized = false;
 
 // MediaPipe hand topology (21 landmarks)
@@ -108,42 +124,73 @@ const FINGERTIP_INDICES = [4, 8, 12, 16, 20];
 //  32px viewBox, cream stroke, round caps. Match Cancer/Libra hero stars.
 // ══════════════════════════════════════════════════════════════════
 
+// All icons: 24x24 viewBox, 1.8 stroke, constellation-leaning silhouettes that
+// still read at ~18px in the persistent guide rail.
 const GESTURE_ICONS = {
+  // Horizontal motion: star trail + arrow tip. Reads as "sweep right".
   swipe: `
-    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"
-         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
          aria-hidden="true">
-      <!-- Four stars along a gentle arc sweeping right -->
-      <circle cx="6"  cy="19" r="1.3" fill="currentColor" stroke="none"/>
-      <circle cx="13" cy="15" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="20" cy="15" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="27" cy="19" r="1.3" fill="currentColor" stroke="none"/>
-      <!-- Connecting arc + leading tick indicating direction -->
-      <path d="M6 19 Q13 13 20 13 Q26 13 27 19"/>
-      <path d="M24 16 L27 19 L24 22"/>
+      <circle cx="4"  cy="12" r="0.9" fill="currentColor" stroke="none" opacity="0.55"/>
+      <circle cx="8"  cy="12" r="1.1" fill="currentColor" stroke="none" opacity="0.8"/>
+      <circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/>
+      <path d="M14.5 12 L20 12"/>
+      <path d="M17.5 9 L20 12 L17.5 15"/>
     </svg>`,
 
+  // Open palm: 5 fingertip stars in a fan + palm arc. Reads as "stop / hand".
+  palm: `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <!-- Palm base arc -->
+      <path d="M4.5 14 Q12 19 19.5 14" opacity="0.6"/>
+      <!-- Five fingertip stars, middle finger tallest -->
+      <circle cx="12"   cy="3.5" r="1.2" fill="currentColor" stroke="none"/>
+      <circle cx="7.5"  cy="5.5" r="1.1" fill="currentColor" stroke="none"/>
+      <circle cx="16.5" cy="5.5" r="1.1" fill="currentColor" stroke="none"/>
+      <circle cx="4.5"  cy="9.5" r="1.0" fill="currentColor" stroke="none"/>
+      <circle cx="19.5" cy="9.5" r="1.0" fill="currentColor" stroke="none"/>
+      <!-- Finger lines up to tips (subtle) -->
+      <path d="M12 12 L12 5 M9.5 12 L7.5 6.5 M14.5 12 L16.5 6.5 M7 13 L4.8 10 M17 13 L19.2 10" opacity="0.35"/>
+    </svg>`,
+
+  // Pointing: diagonal line ending in a 4-point spark. Reads as "aim".
+  point: `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+         aria-hidden="true">
+      <!-- Hand base + pointing finger line -->
+      <circle cx="6" cy="19" r="1.5" fill="currentColor" stroke="none"/>
+      <path d="M6.8 18.2 L17 8"/>
+      <!-- Spark at tip — 4-point star -->
+      <circle cx="17.5" cy="7.5" r="1.4" fill="currentColor" stroke="none"/>
+      <path d="M17.5 3.5 L17.5 5 M17.5 10 L17.5 11.5 M13.5 7.5 L15 7.5 M20 7.5 L21.5 7.5" stroke-width="1.4"/>
+    </svg>`,
+
+  // Pinch: two rings touching with a spark. Reads as "precision grab".
   pinch: `
-    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"
-         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
          aria-hidden="true">
-      <!-- Two rings meeting — thumb + index -->
-      <circle cx="12" cy="16" r="3.4"/>
-      <circle cx="20" cy="16" r="3.4"/>
-      <!-- Four-point spark between them -->
-      <path d="M16 11 L16 14  M16 18 L16 21  M13 16 L14 16  M18 16 L19 16" stroke-width="1.3"/>
-      <circle cx="16" cy="16" r="0.9" fill="currentColor" stroke="none"/>
+      <circle cx="8"  cy="12" r="3.2"/>
+      <circle cx="16" cy="12" r="3.2"/>
+      <!-- Spark where they meet -->
+      <circle cx="12" cy="12" r="0.9" fill="currentColor" stroke="none"/>
+      <path d="M12 8 L12 9.5 M12 14.5 L12 16 M8.5 12 L9.5 12 M14.5 12 L15.5 12" stroke-width="1.4"/>
     </svg>`,
 
+  // Fist: tight rounded shape + four knuckle dots. Reads as "closed hand".
   fist: `
-    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"
-         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
          aria-hidden="true">
-      <!-- Rounded tight shape + three knuckle lines -->
-      <path d="M9 12 Q9 8 13 8 L19 8 Q23 8 23 12 L23 19 Q23 24 18 24 L14 24 Q9 24 9 19 Z"/>
-      <path d="M12 12 L20 12"/>
-      <path d="M12 15 L20 15"/>
-      <path d="M13 18 L19 18"/>
+      <path d="M6 8 Q6 5 9 5 L15 5 Q18 5 18 8 L18 16 Q18 19 15 19 L9 19 Q6 19 6 16 Z"/>
+      <circle cx="9"  cy="9"  r="0.85" fill="currentColor" stroke="none"/>
+      <circle cx="12" cy="9"  r="0.85" fill="currentColor" stroke="none"/>
+      <circle cx="15" cy="9"  r="0.85" fill="currentColor" stroke="none"/>
+      <circle cx="12" cy="15.5" r="0.85" fill="currentColor" stroke="none"/>
     </svg>`,
 };
 
@@ -163,30 +210,42 @@ const GESTURE_ICONS = {
 // ══════════════════════════════════════════════════════════════════
 
 const GESTURE_DEFS = {
-  pinch: {
-    compute: computePinchScore,
-    threshold: 0.55,
-    releaseThreshold: 0.35,
-    fireHoldMs: 150,
-    releaseHoldMs: 200,     // must stay released for this long before rearm
-    cooldown: 350,
-    priority: 10,           // pinch wins conflicts
+  palm: {
+    compute: computePalmOpenScore,
+    threshold: 0.55,        // all 4 fingers extension ≥ ~1.74
+    releaseThreshold: 0.25, // release when any finger dips below ~1.64
+    fireHoldMs: 180,
+    releaseHoldMs: 160,
+    cooldown: 250,
+    priority: 8,
     continuous: true,
-    onFire: onPinchStart,
-    onHold: onPinchHold,
-    onRelease: onPinchEnd,
+    onFire: onPalmStart,
+    onRelease: onPalmEnd,
+  },
+  point: {
+    compute: computePointScore,
+    threshold: 0.45,        // product of two sub-scores — 0.45 = both ≥ ~0.67
+    releaseThreshold: 0.20,
+    fireHoldMs: 100,        // short — point should feel immediate
+    releaseHoldMs: 140,
+    cooldown: 160,
+    priority: 6,
+    mutualExclusion: ['palm', 'fist'],
+    continuous: true,
+    onFire: onPointStart,
+    onRelease: onPointEnd,
   },
   fist: {
     compute: computeFistScore,
-    threshold: 0.72,
-    releaseThreshold: 0.55,
-    fireHoldMs: 220,
+    threshold: 0.70,        // all 4 fingers extension ≤ ~0.91 (clearly curled)
+    releaseThreshold: 0.40, // release when max extension climbs back above ~1.01
+    fireHoldMs: 350,
     releaseHoldMs: 150,
-    cooldown: 1500,
+    cooldown: 800,
     priority: 5,
-    mutualExclusion: ['pinch'],
+    mutualExclusion: ['palm', 'point'],
     continuous: false,
-    onFire: () => exitImmersive('fist'),
+    onFire: onFistFire,
   },
 };
 
@@ -314,7 +373,9 @@ function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
       try {
         if (def.onFire) def.onFire(smoothed, raw);
       } catch (e) { console.warn('[ImmersiveOrbit] onFire threw:', e); }
-      markFirstGesture(key);
+      // NB: card advancement is driven by each gesture's specific handler
+      // (onPalmStart, detectSwipe, attemptOpenAt) — not by generic pose entry.
+      // Point, in particular, advances only when an image actually opens.
       dispatch('orbit:gesture-fired', { gesture: key, score: scores[key] });
     } else if (outcome === 'wantStayActive') {
       if (def.continuous && def.onHold) {
@@ -332,8 +393,13 @@ function evaluateGestures(smoothed, raw, handSpan, nowMs, isFreshDetection) {
 
 /**
  * Called when the hand is lost (no landmarks this frame). Resets time-based
- * counters but does NOT fire onRelease for continuous gestures and does NOT
- * flip the rearm latch. This protects against flash-close on tracking drops.
+ * counters but does NOT fire onRelease for continuous gestures (that would
+ * flash-close the lightbox on every brief tracking drop).
+ *
+ * EXCEPTION: palm-brake and point-mode are purely visual/motion flags — if
+ * the hand is gone we should stop applying them immediately. Otherwise the
+ * spin freezes and the cursor keeps "is-pointing" styling until the hand
+ * returns and the user manually releases the pose.
  */
 function onHandLost() {
   for (const key of Object.keys(gestureState)) {
@@ -341,7 +407,17 @@ function onHandLost() {
     st.aboveSinceTs = 0;
     st.belowSinceTs = 0;
     // Keep st.active and st.rearmed as-is; tracking loss isn't the same as
-    // a real gesture release.
+    // a real gesture release. Pinch/fist latches stay safe this way.
+  }
+  // Release pose flags so the spin loop and cursor recover cleanly.
+  if (state.palmBraking) {
+    state.palmBraking = false;
+    if (gestureState.palm) gestureState.palm.active = false;
+  }
+  if (state.pointActive) {
+    state.pointActive = false;
+    if (gestureState.point) gestureState.point.active = false;
+    if ($cursor) $cursor.classList.remove('is-pointing');
   }
 }
 
@@ -360,17 +436,95 @@ function handSpanOf(landmarks) {
   return Math.max(0.05, dist2D(landmarks[0], landmarks[9]));
 }
 
-function computePinchScore(landmarks, handSpan) {
-  const d = dist2D(landmarks[4], landmarks[8]) / handSpan;
-  return clamp((0.55 - d) / 0.40, 0, 1);
+
+// ── Joint-geometry helper ──────────────────────────────────────────
+// A finger's extension ratio: (tip-to-MCP) / (PIP-to-MCP). Independent of
+// hand size, depth, rotation. Typical values:
+//   fully curled → ~0.55    loose/relaxed → ~1.1–1.3    fully extended → ~1.9
+// Joint indices per finger: MCP / PIP / TIP
+//   index 5 / 6 / 8    middle 9 / 10 / 12    ring 13 / 14 / 16    pinky 17 / 18 / 20
+function fingerExtension(lm, mcpIdx, pipIdx, tipIdx) {
+  const tipMcp = dist2D(lm[tipIdx], lm[mcpIdx]);
+  const pipMcp = dist2D(lm[pipIdx], lm[mcpIdx]);
+  return tipMcp / Math.max(pipMcp, 1e-4);
 }
 
-function computeFistScore(landmarks, handSpan) {
-  const tips = [8, 12, 16, 20];
-  let sum = 0;
-  for (const t of tips) sum += dist2D(landmarks[t], landmarks[0]) / handSpan;
-  const avg = sum / 4;
-  return clamp((1.8 - avg) / 0.90, 0, 1);
+function fourFingerExtensions(lm) {
+  return [
+    fingerExtension(lm, 5, 6, 8),     // index
+    fingerExtension(lm, 9, 10, 12),   // middle
+    fingerExtension(lm, 13, 14, 16),  // ring
+    fingerExtension(lm, 17, 18, 20),  // pinky
+  ];
+}
+
+// Fist: every non-thumb finger must be curled. Uses MAX extension — as
+// soon as any one finger sticks out, the score collapses.
+function computeFistScore(landmarks /*, handSpan */) {
+  const ext = fourFingerExtensions(landmarks);
+  const mostExtended = Math.max(ext[0], ext[1], ext[2], ext[3]);
+  return clamp((1.15 - mostExtended) / 0.35, 0, 1);
+}
+
+// Open palm: every non-thumb finger must be extended. Uses MIN extension —
+// one curled finger drops the score to zero.
+function computePalmOpenScore(landmarks /*, handSpan */) {
+  const ext = fourFingerExtensions(landmarks);
+  const leastExtended = Math.min(ext[0], ext[1], ext[2], ext[3]);
+  return clamp((leastExtended - 1.55) / 0.35, 0, 1);
+}
+
+// Point: index clearly extended AND middle/ring/pinky clearly curled.
+// Product of sub-scores so both must hold strongly. Uses MAX across the
+// three "should-be-curled" fingers so one stray extended finger kills it.
+function computePointScore(landmarks /*, handSpan */) {
+  const ext = fourFingerExtensions(landmarks);
+  const indexExt = ext[0];
+  const worstOtherExt = Math.max(ext[1], ext[2], ext[3]);
+  const sIndex  = clamp((indexExt - 1.55) / 0.35, 0, 1);
+  const sCurled = clamp((1.15 - worstOtherExt) / 0.35, 0, 1);
+  return sIndex * sCurled;
+}
+
+// ── Fist handler — closes an open photo. Never exits immersive mode;
+// that's reserved for the ✕ button and Escape.
+function onFistFire() {
+  pulseOnboardingIcon('fist');
+  if (state.openedRing || _isLightboxOpen()) {
+    closeLightboxIfOpen();
+  }
+  // If no photo is open, fist is a no-op — the pulse still fires so the user
+  // sees their gesture was recognised.
+}
+
+// The ring lightbox (main.js) toggles `.visible` on a `.ring-lightbox` node.
+function _isLightboxOpen() {
+  const lb = document.querySelector('.ring-lightbox');
+  return !!(lb && lb.classList.contains('visible'));
+}
+
+// ── Palm-open brake handlers ───────────────────────────────────────
+function onPalmStart() {
+  state.palmBraking = true;
+  markFirstGesture('palm');
+  pulseOnboardingIcon('palm');
+}
+function onPalmEnd() {
+  state.palmBraking = false;
+}
+
+// ── Point handlers — enable cursor-driven hover semantics ──────────
+function onPointStart() {
+  state.pointActive = true;
+  // Pulse the guide/onboarding icon as feedback, but don't advance the
+  // "point + hold to open" card yet — that waits for an actual open.
+  pulseOnboardingIcon('point');
+  if ($cursor) $cursor.classList.add('is-pointing');
+}
+function onPointEnd() {
+  state.pointActive = false;
+  if (gestureState.point) gestureState.point.lastReleaseTs = performance.now();
+  if ($cursor) $cursor.classList.remove('is-pointing');
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -383,9 +537,23 @@ function recordPalmSample(landmarks, nowMs) {
   // During cooldown, don't record — prevents return-to-neutral motion
   // from polluting the next swipe's history buffer.
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return;
+  // While palm-brake is actually active, skip — the user's confirmed a stop.
+  // (Pre-fire palm score is NOT blocked here; swipe and palm compete fairly
+  // via the gesture arbiter. If palm fires, onPalmStart sets palmBraking.)
+  if (state.palmBraking) { state.palmHistory = []; return; }
 
   const palm = landmarks[9];
-  state.palmHistory.push({ x: palm.x, y: palm.y, t: nowMs });
+  // Per-sample velocity magnitude so detectSwipe can check average speed.
+  let v = 0;
+  if (state.palmHistory.length > 0) {
+    const prev = state.palmHistory[state.palmHistory.length - 1];
+    const dt = Math.max(1, nowMs - prev.t);
+    const vx = (palm.x - prev.x) / dt;
+    const vy = (palm.y - prev.y) / dt;
+    v = Math.sqrt(vx * vx + vy * vy);
+  }
+
+  state.palmHistory.push({ x: palm.x, y: palm.y, t: nowMs, v });
   while (state.palmHistory.length > SWIPE_HISTORY_SIZE) state.palmHistory.shift();
   // Drop stale samples outside the window
   while (state.palmHistory.length > 0 &&
@@ -396,6 +564,7 @@ function recordPalmSample(landmarks, nowMs) {
 
 function detectSwipe(nowMs) {
   if (nowMs - state.lastSwipeTime < SWIPE_COOLDOWN_MS) return 0;
+  if (state.palmBraking) return 0;  // open-palm pose suppresses swipe
   if (state.palmHistory.length < SWIPE_MIN_SAMPLES) return 0;
 
   const oldest = state.palmHistory[0];
@@ -410,14 +579,40 @@ function detectSwipe(nowMs) {
   if (adx < SWIPE_MIN_DX) return 0;
   if (adx / (adx + ady + 1e-6) < SWIPE_DIR_RATIO) return 0;
 
-  state.lastSwipeTime = nowMs;
-  state.palmHistory = [];  // reset so the same motion doesn't re-fire
+  // Average velocity check — rejects slow drifts and hesitant arcs.
+  // Every sample's per-frame velMag must average above the minimum.
+  let avgV = 0, vSamples = 0;
+  for (let i = 1; i < state.palmHistory.length; i++) {
+    avgV += state.palmHistory[i].v || 0;
+    vSamples++;
+  }
+  if (vSamples > 0) avgV /= vSamples;
+  if (avgV < SWIPE_MIN_AVG_VEL) return 0;
 
   // Unmirrored camera: dx > 0 means user's hand moved to user's LEFT.
   // User-intuitive: right-swipe = spin clockwise (positive deg).
   // So dx > 0 → negative burst, dx < 0 → positive burst.
   const direction = dx > 0 ? -1 : 1;
+
+  // Directional rebound block: after a swipe, ignore opposite-direction
+  // swipes for SWIPE_REBOUND_BLOCK_MS. Same-direction swipes stack freely.
+  // This replaces the old settle-velocity gate which blocked chained swipes.
+  const sinceLastSwipe = nowMs - state.lastSwipeTime;
+  if (state.lastSwipeDirection !== 0 &&
+      direction !== state.lastSwipeDirection &&
+      sinceLastSwipe < SWIPE_REBOUND_BLOCK_MS) {
+    // Likely a rebound — drop history so it doesn't re-fire, but do NOT
+    // emit a swipe burst.
+    state.palmHistory = [];
+    return 0;
+  }
+
+  state.lastSwipeTime = nowMs;
+  state.lastSwipeDirection = direction;
+  state.palmHistory = [];
+
   markFirstGesture('swipe');
+  pulseOnboardingIcon('swipe');
   flashSwipeIndicator(direction);
   dispatch('orbit:gesture-fired', { gesture: 'swipe', direction });
   return direction * SWIPE_BURST_DEG;
@@ -439,14 +634,12 @@ function flashSwipeIndicator(direction) {
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  PINCH HIT-TEST + BEHAVIOR
-//  Midpoint of thumb+index → elementsFromPoint → ring-image.
-//  If nothing hits, fall back to expanded-rect nearest-match.
-//  Target acquisition window retries for 200ms after initial fire.
+//  RING HIT-TEST + OPEN
+//  Index-fingertip (landmark 8) → elementsFromPoint → ring-image.
+//  If nothing hits directly, fall back to expanded-rect nearest match.
 // ══════════════════════════════════════════════════════════════════
 
-const TARGET_ACQUIRE_MS = 200;
-const RECT_PADDING_PX   = 12;
+const RECT_PADDING_PX = 12;
 
 function landmarkToScreen(lm) {
   // Detection runs on the unmirrored #orbitCam stream; user sees mirrored HUD.
@@ -457,17 +650,7 @@ function landmarkToScreen(lm) {
   };
 }
 
-function pinchMidpointScreen(landmarks) {
-  const thumb = landmarkToScreen(landmarks[4]);
-  const index = landmarkToScreen(landmarks[8]);
-  return {
-    x: (thumb.x + index.x) / 2,
-    y: (thumb.y + index.y) / 2,
-  };
-}
-
 function findRingImageAt(x, y) {
-  // 1) Try exact hit via document hit stack
   const stack = document.elementsFromPoint(x, y);
   for (const el of stack) {
     const match = el.classList && el.classList.contains('ring-image')
@@ -475,8 +658,6 @@ function findRingImageAt(x, y) {
       : (el.closest ? el.closest('.ring-image') : null);
     if (match) return match;
   }
-  // 2) Fallback: scan visible ring images, take the nearest whose expanded
-  //    bounding rect contains (x, y).
   const imgs = document.querySelectorAll('.ring-image');
   let best = null, bestDist = Infinity;
   for (const img of imgs) {
@@ -499,7 +680,7 @@ function attemptOpenAt(x, y) {
   const src = media ? (media.src || media.currentSrc) : null;
   if (!src) return false;
 
-  state.pinchTarget = ringImage;
+  state.openedRing = ringImage;
   if (typeof window.openRingLightbox === 'function') {
     window.openRingLightbox(
       src,
@@ -508,52 +689,24 @@ function attemptOpenAt(x, y) {
       ringImage._boardUrl || ''
     );
   }
-  ringImage.classList.add('pinch-selected');
-  pulseOnboardingIcon('pinch');
+  ringImage.classList.add('pinch-selected'); // CSS class name kept for style reuse
+  pulseOnboardingIcon('point');
+  markFirstGesture('point'); // advance the point-and-hold card only on real open
   fireCursorSparkle();
   return true;
-}
-
-function onPinchStart(/* smoothed */ _s, raw) {
-  if ($cursor) $cursor.classList.add('is-pinching');
-  if (!raw) return;
-  const pt = pinchMidpointScreen(raw);
-  const opened = attemptOpenAt(pt.x, pt.y);
-  if (!opened) {
-    // Keep retrying for target-acquire window — user may still be closing
-    // the pinch onto an image.
-    state.pendingPinchTargetUntil = performance.now() + TARGET_ACQUIRE_MS;
-  }
-}
-
-function onPinchHold(_s, raw, nowMs) {
-  // Retry hit-test while in the target-acquisition window
-  if (!raw) return;
-  if (state.pinchTarget) return;
-  if (nowMs > state.pendingPinchTargetUntil) return;
-  const pt = pinchMidpointScreen(raw);
-  attemptOpenAt(pt.x, pt.y);
-}
-
-function onPinchEnd() {
-  if ($cursor) $cursor.classList.remove('is-pinching');
-  if (state.pinchTarget) {
-    state.pinchTarget.classList.remove('pinch-selected');
-    state.pinchTarget = null;
-  }
-  state.pendingPinchTargetUntil = 0;
-  // v3: do NOT close the lightbox here. Lightbox closes via backdrop, Esc,
-  // or fist-to-exit. Tracking drops won't flash the lightbox away.
 }
 
 function closeLightboxIfOpen() {
   if (typeof window.closeRingLightbox === 'function') {
     try { window.closeRingLightbox(); } catch (e) {}
   }
-  if (state.pinchTarget) {
-    state.pinchTarget.classList.remove('pinch-selected');
-    state.pinchTarget = null;
+  if (state.openedRing) {
+    state.openedRing.classList.remove('pinch-selected');
+    state.openedRing = null;
   }
+  // Reset dwell so re-pointing at the same ring starts fresh.
+  state.dwellRing = null;
+  state.dwellStartTs = 0;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -587,16 +740,48 @@ function hideCursor() {
   }
 }
 
-function updatePinchMeter(rawScore) {
-  state.displayedPinchScore += (rawScore - state.displayedPinchScore) * PINCH_METER_SMOOTH;
-  const s = state.displayedPinchScore;
+function updateDwellProgress(rawProgress) {
+  state.displayedDwellProgress += (rawProgress - state.displayedDwellProgress) * DWELL_METER_SMOOTH;
+  const s = state.displayedDwellProgress;
   if ($cursorMeterFill) {
     // pathLength=100 → dashoffset in [0 (full) ... 100 (empty)]
     $cursorMeterFill.style.strokeDashoffset = String(100 - Math.max(0, Math.min(100, s * 100)));
   }
   if ($cursor) {
-    $cursor.classList.toggle('is-meter-visible', s > PINCH_METER_FADE_IN);
-    $cursor.classList.toggle('is-meter-ready',   s > 0.55);
+    $cursor.classList.toggle('is-meter-visible', s > DWELL_METER_FADE_IN);
+    $cursor.classList.toggle('is-meter-ready',   s > 0.80);
+  }
+}
+
+// Point-hold dwell: while the user is in point pose and their fingertip
+// hovers a ring image, count up to DWELL_OPEN_MS. Hit that → open the ring.
+// Any target change, release of point pose, or lightbox-open cancels.
+function updatePointDwell(nowMs) {
+  if (!state.pointActive || state.openedRing) {
+    state.dwellRing = null;
+    state.dwellStartTs = 0;
+    updateDwellProgress(0);
+    return;
+  }
+  const ring = state.lastCursoredRing;
+  if (!ring) {
+    state.dwellRing = null;
+    state.dwellStartTs = 0;
+    updateDwellProgress(0);
+    return;
+  }
+  if (state.dwellRing !== ring) {
+    state.dwellRing = ring;
+    state.dwellStartTs = nowMs;
+  }
+  const elapsed = nowMs - state.dwellStartTs;
+  const progress = clamp(elapsed / DWELL_OPEN_MS, 0, 1);
+  updateDwellProgress(progress);
+  if (progress >= 1) {
+    const r = ring.getBoundingClientRect();
+    attemptOpenAt(r.left + r.width / 2, r.top + r.height / 2);
+    state.dwellRing = null;
+    state.dwellStartTs = 0;
   }
 }
 
@@ -692,17 +877,26 @@ function fireCursorSparkle() {
 //  ONBOARDING HUD
 // ══════════════════════════════════════════════════════════════════
 
-const ONBOARDING_ITEMS = [
+// First-impression cards. Fist is intentionally omitted — it lives in the
+// persistent guide rail only, so the initial lesson stays focused on the
+// three gestures that actually drive the space.
+const ONBOARDING_CARDS = [
   { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
-  { key: 'pinch', icon: GESTURE_ICONS.pinch, label: 'pinch to open' },
-  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to exit' },
+  { key: 'palm',  icon: GESTURE_ICONS.palm,  label: 'palm to stop' },
+  { key: 'point', icon: GESTURE_ICONS.point, label: 'point + hold to open' },
 ];
 
-let _onboardingTimer = null;
+// Persistent guide rail — all four gestures, always visible for reference.
+const GUIDE_RAIL_ITEMS = [
+  { key: 'swipe', icon: GESTURE_ICONS.swipe, label: 'swipe to spin' },
+  { key: 'palm',  icon: GESTURE_ICONS.palm,  label: 'palm to stop' },
+  { key: 'point', icon: GESTURE_ICONS.point, label: 'point + hold to open' },
+  { key: 'fist',  icon: GESTURE_ICONS.fist,  label: 'fist to close' },
+];
 
 function buildOnboardingCards() {
   if (!$onboarding || $onboarding.childElementCount > 0) return;
-  for (const item of ONBOARDING_ITEMS) {
+  for (const item of ONBOARDING_CARDS) {
     const card = document.createElement('div');
     card.className = 'orbit-gesture-card';
     card.dataset.gestureKey = item.key;
@@ -714,34 +908,115 @@ function buildOnboardingCards() {
   }
 }
 
-function showOnboarding(manual) {
+function buildGuideRail() {
+  if (!$guide || $guide.childElementCount > 0) return;
+  for (const item of GUIDE_RAIL_ITEMS) {
+    const row = document.createElement('div');
+    row.className = 'orbit-hud-guide-row';
+    row.dataset.gestureKey = item.key;
+    row.innerHTML = `
+      <div class="orbit-hud-guide-icon">${item.icon}</div>
+      <div class="orbit-hud-guide-label">${item.label}</div>
+    `;
+    $guide.appendChild(row);
+  }
+}
+
+// Reset card progression — called on each new immersive session so the
+// user starts fresh each time.
+function resetOnboardingCards() {
   if (!$onboarding) return;
-  if (_onboardingTimer) { clearTimeout(_onboardingTimer); _onboardingTimer = null; }
+  const cards = $onboarding.querySelectorAll('.orbit-gesture-card');
+  cards.forEach(c => c.classList.remove('is-current', 'is-done', 'is-pulse'));
+}
+
+// Promote the first not-yet-done card to `is-current`. Called when the
+// cards first appear and after each successful gesture.
+function promoteCurrentCard() {
+  if (!$onboarding) return false;
+  const cards = Array.from($onboarding.querySelectorAll('.orbit-gesture-card'));
+  let promoted = false;
+  for (const c of cards) {
+    c.classList.remove('is-current');
+    if (!c.classList.contains('is-done') && !promoted) {
+      c.classList.add('is-current');
+      promoted = true;
+    }
+  }
+  return promoted; // false = every card already done
+}
+
+function showOnboarding(/* manual */) {
+  if (!$onboarding) return;
+  // Restart progression if the user hit Help after completing it
+  if (state.onboardingComplete) {
+    state.onboardingComplete = false;
+    resetOnboardingCards();
+  }
+  promoteCurrentCard();
   $onboarding.classList.add('is-visible');
-  _onboardingTimer = setTimeout(hideOnboarding, manual ? 5000 : 7000);
+  state.onboardingStarted = true;
   state.onboardingShown = true;
 }
 
 function hideOnboarding() {
   if (!$onboarding) return;
   $onboarding.classList.remove('is-visible');
-  if (_onboardingTimer) { clearTimeout(_onboardingTimer); _onboardingTimer = null; }
 }
 
-function markFirstGesture(/* key */) {
-  if (state.firstGestureFired) return;
+// One-shot "you're seen" flash on first hand detection of the session.
+// Then, after the text fades, the onboarding cards reveal themselves.
+function showSeenFlash() {
+  if (!$seenFlash || state.handSeenOnce) return;
+  state.handSeenOnce = true;
+  $seenFlash.textContent = "you're seen";
+  $seenFlash.classList.add('is-visible');
+  setTimeout(() => {
+    if ($seenFlash) $seenFlash.classList.remove('is-visible');
+    // Brief beat after the text fades before the cards appear —
+    // skip if the user has already left immersive mode.
+    setTimeout(() => {
+      if (state.active) showOnboarding(false);
+    }, 500);
+  }, 1600);
+}
+
+// Called by every gesture-fire site. Marks the matching card done,
+// promotes the next one to current, and ends the lesson once all
+// three core gestures have been performed.
+function markFirstGesture(key) {
   state.firstGestureFired = true;
-  setTimeout(hideOnboarding, 1200);
+  if (!state.onboardingStarted || state.onboardingComplete) return;
+  if (!$onboarding) return;
+  const card = $onboarding.querySelector(
+    `.orbit-gesture-card[data-gesture-key="${key}"]`
+  );
+  if (!card || card.classList.contains('is-done')) return;
+  card.classList.remove('is-current');
+  card.classList.add('is-done');
+  const stillPending = promoteCurrentCard();
+  if (!stillPending) {
+    state.onboardingComplete = true;
+    setTimeout(hideOnboarding, 1400);
+  }
 }
 
 function pulseOnboardingIcon(key) {
-  if (!$onboarding) return;
-  const card = $onboarding.querySelector(`.orbit-gesture-card[data-gesture-key="${key}"]`);
-  if (!card) return;
-  card.classList.remove('is-pulse');
-  void card.offsetWidth;
-  card.classList.add('is-pulse');
-  setTimeout(() => card.classList.remove('is-pulse'), 700);
+  const targets = [];
+  if ($onboarding) {
+    const card = $onboarding.querySelector(`.orbit-gesture-card[data-gesture-key="${key}"]`);
+    if (card) targets.push(card);
+  }
+  if ($guide) {
+    const row = $guide.querySelector(`.orbit-hud-guide-row[data-gesture-key="${key}"]`);
+    if (row) targets.push(row);
+  }
+  for (const el of targets) {
+    el.classList.remove('is-pulse');
+    void el.offsetWidth;
+    el.classList.add('is-pulse');
+    setTimeout(() => el.classList.remove('is-pulse'), 700);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -751,6 +1026,7 @@ function pulseOnboardingIcon(key) {
 function init() {
   $portalStar   = document.querySelector('.portal-star');
   $modal        = document.getElementById('orbitModal');
+  $modalBody    = document.getElementById('orbitModalBody');
   $modalHint    = document.getElementById('orbitModalHint');
   $modalEnter   = document.getElementById('orbitEnterBtn');
   $modalCancel  = document.getElementById('orbitCancelBtn');
@@ -761,8 +1037,10 @@ function init() {
   $hudHelp      = document.getElementById('orbitHudHelpBtn');
   $cam          = document.getElementById('orbitCam');
   $onboarding   = document.getElementById('orbitOnboarding');
+  $guide        = document.getElementById('orbitGuide');
   $cursor       = document.getElementById('orbitCursor');
   $cursorMeterFill = $cursor ? $cursor.querySelector('.orbit-cursor-meter-fill') : null;
+  $seenFlash    = document.getElementById('orbitSeenFlash');
   $hudSkeleton  = document.getElementById('orbitHudSkeleton');
   if ($hudSkeleton) {
     try { _hudSkelCtx = $hudSkeleton.getContext('2d'); } catch (e) { _hudSkelCtx = null; }
@@ -779,6 +1057,7 @@ function init() {
   }
 
   buildOnboardingCards();
+  buildGuideRail();
 
   $portalStar.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -841,11 +1120,30 @@ function isCoarsePointerOrMobile() {
 function openModal(opts) {
   opts = opts || {};
   const titleEl = $modal.querySelector('.orbit-modal-title');
-  const bodyEl  = $modal.querySelector('.orbit-modal-body');
+  const bodyEl  = $modalBody || $modal.querySelector('.orbit-modal-body');
   titleEl.textContent = opts.title || 'enter my orbit?';
-  bodyEl.textContent  = opts.body  ||
-    'your webcam powers the spin. nothing is recorded, nothing leaves your browser. ' +
-    'swipe, pinch, or make a fist.';
+
+  // Reset the body each time so staggered beat animations replay. Custom
+  // messages (e.g. "no camera available") collapse to a single paragraph.
+  bodyEl.innerHTML = '';
+  if (opts.body) {
+    const p = document.createElement('p');
+    p.className = 'orbit-modal-beat';
+    p.textContent = opts.body;
+    bodyEl.appendChild(p);
+  } else {
+    const beats = [
+      'your camera becomes a quiet controller.',
+      'nothing is recorded. nothing leaves your browser.',
+      "once you're inside, the first move will show itself.",
+    ];
+    for (const text of beats) {
+      const p = document.createElement('p');
+      p.className = 'orbit-modal-beat';
+      p.textContent = text;
+      bodyEl.appendChild(p);
+    }
+  }
   $modalHint.textContent = '';
 
   if (opts.enter === null) {
@@ -903,6 +1201,13 @@ async function onEnterConfirmed() {
   try { await $cam.play(); } catch (e) {}
   try { await $hudVideo.play(); } catch (e) {}
 
+  // Reuse landmarker across sessions — skip the slow import+createFromOptions
+  // on re-entry. Saves ~1-2s per re-entry.
+  if (state.landmarker) {
+    onReady();
+    return;
+  }
+
   try {
     $modalHint.textContent = 'waking up the sky…';
     const mp = await import(/* @vite-ignore */ MP_BUNDLE_URL);
@@ -929,7 +1234,18 @@ async function onEnterConfirmed() {
   state.firstGestureFired = false;
   state.palmHistory = [];
   state.lastSwipeTime = 0;
-  state.displayedPinchScore = 0;
+  state.lastSwipeDirection = 0;
+  state.displayedDwellProgress = 0;
+  state.dwellRing = null;
+  state.dwellStartTs = 0;
+  state.palmBraking = false;
+  state.pointActive = false;
+  state.handSeenOnce = false;
+  state.onboardingStarted = false;
+  state.onboardingComplete = false;
+  resetOnboardingCards();
+  if ($onboarding) $onboarding.classList.remove('is-visible');
+  if ($seenFlash) $seenFlash.classList.remove('is-visible');
   $modal.classList.remove('is-open');
   $modal.setAttribute('aria-hidden', 'true');
   document.body.classList.add('immersive-active');
@@ -939,7 +1255,7 @@ async function onEnterConfirmed() {
     window.gsap.to('.saturn-container', { scale: 1.06, duration: 0.9, ease: 'power3.out' });
   }
 
-  showOnboarding(false);
+  // Onboarding reveals itself after the user is detected — see detectLoop.
 
   state.lastTick = performance.now();
   state.detectTick = 0;
@@ -980,6 +1296,9 @@ function detectLoop(now) {
         }
         haveHand = true;
         isFreshDetection = true;
+        // First-ever fresh detection of this session → "you're seen" flash,
+        // then the onboarding cards reveal themselves.
+        if (!state.handSeenOnce) showSeenFlash();
       } else {
         state.smoothedLandmarks = null;
         state.rawLandmarks = null;
@@ -992,37 +1311,56 @@ function detectLoop(now) {
     haveHand = true;  // Reuse last smoothed landmarks between detections
   }
 
-  // Cursor + meter + gesture evaluation
+  // Cursor + gesture evaluation + dwell progress
   if (haveHand && state.smoothedLandmarks) {
     updateCursorPosition(state.smoothedLandmarks);
     drawHandSkeleton(state.smoothedLandmarks);
     const handSpan = handSpanOf(state.rawLandmarks || state.smoothedLandmarks);
-    const pinchRaw = computePinchScore(state.rawLandmarks || state.smoothedLandmarks, handSpan);
-    updatePinchMeter(pinchRaw);
     if (isFreshDetection) {
-      recordPalmSample(state.smoothedLandmarks, now);
+      // Raw landmarks for swipe — smoothing lags the fast motion and
+      // inflates the displacement/velocity thresholds in practice.
+      recordPalmSample(state.rawLandmarks || state.smoothedLandmarks, now);
     }
     evaluateGestures(state.smoothedLandmarks, state.rawLandmarks, handSpan, now, isFreshDetection);
+    updatePointDwell(now);
   } else {
     hideCursor();
     clearHandSkeleton();
-    updatePinchMeter(0);
+    updateDwellProgress(0);
+    state.dwellRing = null;
+    state.dwellStartTs = 0;
   }
 
-  // Ring spin: idle drift + swipe bursts + keyboard
-  let targetDeg = IDLE_AUTO_SPIN_DEG;
+  // Ring spin: swipes accumulate momentum, palm-open brakes, idle drift otherwise
   const swipeBurst = haveHand && isFreshDetection ? detectSwipe(now) : 0;
   if (swipeBurst !== 0) {
-    // Inject burst directly into currentVelocity so it decays gracefully
-    state.currentVelocity = swipeBurst;
+    // Add into current velocity so repeated swipes stack. Cap to prevent runaway.
+    // Same direction → accelerate; opposite direction → decelerate/reverse.
+    state.currentVelocity = clamp(
+      state.currentVelocity + swipeBurst,
+      -MAX_SPIN_DEG,
+      MAX_SPIN_DEG
+    );
   }
-  // Suppress spin while pinching so the opened image isn't flung away
-  const pinching = gestureState.pinch.active;
-  if (pinching) {
-    state.currentVelocity *= 0.85;
+
+  // Brake only applies while we actually see the hand — tracking drops should
+  // not freeze the spin.
+  if (haveHand && state.palmBraking) {
+    // Strong exponential decay toward 0 while palm-open held.
+    state.currentVelocity *= Math.exp(-BRAKE_DECAY_RATE * dt);
+    if (Math.abs(state.currentVelocity) < 1) state.currentVelocity = 0;
+  } else if (haveHand && state.openedRing) {
+    // Freeze the image the user has opened — bleed off spin quickly.
+    state.currentVelocity *= Math.exp(-3.0 * dt);
+  } else if (Math.abs(state.currentVelocity) > IDLE_AUTO_SPIN_DEG * 1.2) {
+    // Coasting above idle — gentle multiplicative friction (~45%/sec) keeps
+    // momentum without decaying instantly. No pull toward idle here.
+    state.currentVelocity *= Math.exp(-SPIN_FRICTION_RATE * dt);
   } else {
-    targetDeg += state.keyboardSpin;
-    state.currentVelocity += (targetDeg - state.currentVelocity) * SPIN_EASE;
+    // Near-idle — exponential approach to idle drift (plus keyboard nudge).
+    const targetDeg = IDLE_AUTO_SPIN_DEG + state.keyboardSpin;
+    const k = 4.5; // rate constant: ~63% of the way there per 0.22s
+    state.currentVelocity += (targetDeg - state.currentVelocity) * (1 - Math.exp(-k * dt));
   }
 
   const rings = window.ImmersiveOrbit.ringSpinDeg;
@@ -1055,7 +1393,13 @@ function exitImmersive(reason) {
   state.smoothedLandmarks = null;
   state.rawLandmarks = null;
   state.palmHistory = [];
-  state.displayedPinchScore = 0;
+  state.displayedDwellProgress = 0;
+  state.dwellRing = null;
+  state.dwellStartTs = 0;
+  state.openedRing = null;
+  state.palmBraking = false;
+  state.pointActive = false;
+  state.lastSwipeDirection = 0;
 
   // Reset gesture states completely on exit
   for (const key of Object.keys(gestureState)) {
@@ -1121,7 +1465,7 @@ function stopStreamOnly() {
 function onGlobalKeydown(e) {
   if (e.key === 'Escape') {
     // Two-step Escape: close lightbox first (if open), then exit immersive
-    if (state.active && state.pinchTarget) {
+    if (state.active && state.openedRing) {
       closeLightboxIfOpen();
       e.preventDefault();
       return;

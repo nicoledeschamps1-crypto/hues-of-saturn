@@ -973,21 +973,57 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
     'this is how i see... now you can too. just upload or open your camera and let curiosity drive you.',
   ];
 
-  var CONNECT_LINKS = [
-    { href: 'https://instagram.com/huesofsaturn',          label: '@huesofsaturn',          platform: 'ig' },
-    { href: 'https://instagram.com/planetarydispositions', label: '@planetarydispositions', platform: 'ig' },
-    { href: 'mailto:nicole.deschamps1@gmail.com',          label: 'nicole.deschamps1@gmail.com' },
+  // Connect — three intentional contact rows. Labels/captions picked to
+  // make each destination feel distinct without over-explaining.
+  var CONNECT_ROWS = [
+    {
+      label: 'studio',
+      handle: '@huesofsaturn',
+      caption: 'the art. day to day from the studio.',
+      href: 'https://instagram.com/huesofsaturn',
+      platform: 'instagram',
+      external: true,
+    },
+    {
+      label: 'experiments',
+      handle: '@planetarydispositions',
+      caption: 'video, motion, things still in flux.',
+      href: 'https://instagram.com/planetarydispositions',
+      platform: 'instagram',
+      external: true,
+    },
+    {
+      label: 'letters',
+      handle: 'nicole.deschamps1@gmail.com',
+      caption: 'commissions, collaborations, or a quiet hello.',
+      href: 'mailto:nicole.deschamps1@gmail.com',
+      platform: 'email',
+      external: false,
+    },
   ];
 
-  function paragraphize(copy) {
+  // About paragraph → class map. Index counts paragraphs in ABOUT_COPY
+  // (blank lines separate them). Drives rhythm/emphasis in the popover
+  // without editing Nicole's copy.
+  var ABOUT_PARA_CLASSES = {
+    0: 'about-opener',    // "I make things because the alternative is just watching."
+    4: 'about-aphorism',  // "curiosity killed the cat.."
+    5: 'about-welcome',   // "so i welcome you to my universe"
+    6: 'about-closing',   // "if you must think of me, think of me as the moon.."
+  };
+
+  function paragraphize(copy, classMap) {
     var frag = document.createDocumentFragment();
     var buffer = [];
+    var paraIndex = 0;
     function flush() {
       if (!buffer.length) return;
       var p = document.createElement('p');
       p.textContent = buffer.join(' ');
+      if (classMap && classMap[paraIndex]) p.className = classMap[paraIndex];
       frag.appendChild(p);
       buffer = [];
+      paraIndex++;
     }
     copy.forEach(function(line) {
       if (line === '') flush();
@@ -1000,7 +1036,7 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
   function buildAbout() {
     titleEl.textContent = 'moon in libra';
     bodyEl.innerHTML = '';
-    bodyEl.appendChild(paragraphize(ABOUT_COPY));
+    bodyEl.appendChild(paragraphize(ABOUT_COPY, ABOUT_PARA_CLASSES));
     actionsEl.innerHTML = '';
   }
 
@@ -1021,26 +1057,49 @@ connectWords = buildFloorWords(connectText, CONNECT_COPY);
   function buildConnect() {
     titleEl.textContent = 'connect';
     bodyEl.innerHTML = '';
-    bodyEl.appendChild(paragraphize(CONNECT_COPY));
-    var links = document.createElement('div');
-    links.className = 'connect-links';
-    CONNECT_LINKS.forEach(function(l) {
+
+    // Intro — keep current one-line invitation at the top of the card
+    var intro = document.createElement('p');
+    intro.className = 'connect-intro';
+    intro.textContent = CONNECT_COPY[0];
+    bodyEl.appendChild(intro);
+
+    // Three contact rows — each with small label + handle + context caption
+    var rows = document.createElement('div');
+    rows.className = 'connect-rows';
+    CONNECT_ROWS.forEach(function(row) {
       var a = document.createElement('a');
-      a.href = l.href;
-      if (l.href.indexOf('mailto:') !== 0) {
+      a.className = 'connect-row';
+      a.href = row.href;
+      if (row.external) {
         a.target = '_blank';
         a.rel = 'noopener';
       }
-      a.textContent = l.label;
-      if (l.platform) {
-        var plat = document.createElement('span');
-        plat.className = 'connect-platform';
-        plat.textContent = l.platform;
-        a.appendChild(plat);
-      }
-      links.appendChild(a);
+
+      var label = document.createElement('span');
+      label.className = 'connect-row-label';
+      label.textContent = row.label;
+      a.appendChild(label);
+
+      var handle = document.createElement('span');
+      handle.className = 'connect-row-handle';
+      handle.textContent = row.handle;
+      a.appendChild(handle);
+
+      var platform = document.createElement('span');
+      platform.className = 'connect-row-platform';
+      platform.textContent = row.platform;
+      a.appendChild(platform);
+
+      var caption = document.createElement('span');
+      caption.className = 'connect-row-caption';
+      caption.textContent = row.caption;
+      a.appendChild(caption);
+
+      rows.appendChild(a);
     });
-    bodyEl.appendChild(links);
+    bodyEl.appendChild(rows);
+
     actionsEl.innerHTML = '';
   }
 

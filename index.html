@@ -11,7 +11,7 @@
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1FA90;</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20260421i">
+  <link rel="stylesheet" href="css/style.css?v=20260424a">
   <script type="importmap">
   {
     "imports": {
@@ -371,10 +371,11 @@
     <div class="orbit-modal-backdrop"></div>
     <div class="orbit-modal-card">
       <h2 class="orbit-modal-title" id="orbitModalTitle">enter my orbit?</h2>
-      <p class="orbit-modal-body">
-        your webcam powers the spin. nothing is recorded, nothing leaves your browser.
-        wave your hand to turn saturn.
-      </p>
+      <div class="orbit-modal-body" id="orbitModalBody">
+        <p class="orbit-modal-beat">your camera becomes a quiet controller.</p>
+        <p class="orbit-modal-beat">nothing is recorded. nothing leaves your browser.</p>
+        <p class="orbit-modal-beat">once you're inside, the first move will show itself.</p>
+      </div>
       <p class="orbit-modal-hint" id="orbitModalHint"></p>
       <div class="orbit-modal-actions">
         <button class="orbit-modal-btn orbit-modal-btn--ghost" id="orbitCancelBtn" type="button">not now</button>
@@ -383,7 +384,10 @@
     </div>
   </div>
 
-  <!-- Onboarding: 3 gesture cards that fade in on enter -->
+  <!-- "You're seen" — one-shot flash on first hand detection in immersive mode -->
+  <div class="orbit-seen-flash" id="orbitSeenFlash" aria-hidden="true"></div>
+
+  <!-- Onboarding: 3 progressive cards (swipe → palm → point). Fist lives in the persistent guide rail only. -->
   <div class="orbit-onboarding" id="orbitOnboarding" aria-hidden="true"></div>
 
   <!-- Fingertip cursor — follows user's index finger while immersive.
@@ -401,6 +405,7 @@
 
   <div class="orbit-hud" id="orbitHud" aria-hidden="true">
     <div class="orbit-hud-hint" id="orbitHudHint"></div>
+    <div class="orbit-hud-guide" id="orbitGuide" aria-label="Gesture guide"></div>
     <div class="orbit-hud-thumb">
       <video class="orbit-hud-video" id="orbitHudVideo" playsinline muted autoplay></video>
       <canvas class="orbit-hud-skeleton" id="orbitHudSkeleton" aria-hidden="true"></canvas>
@@ -433,7 +438,7 @@
   <script src="js/arena-loader.js?v=20260405b"></script>
   <script src="js/gallery-data.js?v=20260407"></script>
   <script type="module" src="js/gallery-3d.js?v=20260410"></script>
-  <script src="js/main.js?v=20260421h"></script>
-  <script type="module" src="js/immersive-orbit.js?v=20260421j"></script>
+  <script src="js/main.js?v=20260424a"></script>
+  <script type="module" src="js/immersive-orbit.js?v=20260424a"></script>
 </body>
 </html>
