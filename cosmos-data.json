@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-23T09:25:33Z",
+  "updated": "2026-04-24T09:29:06Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "fashion-ad",
     "febuary"
   ],
-  "total": 237,
+  "total": 238,
   "images": [
     {
       "src": "https://cdn.cosmos.so/b150759e-0986-4f1a-8901-0c205c5c2d47?format=webp&w=400",
@@ -890,6 +890,10 @@
     {
       "src": "https://cdn.cosmos.so/38beebb9-6484-4937-a298-205183ddeb8f?format=webp&w=400",
       "collection": "earthbending"
+    },
+    {
+      "src": "https://cdn.cosmos.so/9e295169-80be-47d3-a562-a49c6143f7f6?format=webp&w=400",
+      "collection": "egg"
     },
     {
       "src": "https://cdn.cosmos.so/a1521c9a-9186-469a-9aab-317e53541c28?format=webp&w=400",
