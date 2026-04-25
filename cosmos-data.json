@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-24T09:29:06Z",
+  "updated": "2026-04-25T08:50:14Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,8 +25,12 @@
     "fashion-ad",
     "febuary"
   ],
-  "total": 238,
+  "total": 240,
   "images": [
+    {
+      "src": "https://cdn.cosmos.so/1a915151-7ba3-49b2-89ca-9e87695766cd?format=webp&w=400",
+      "collection": "art-that-caught-me"
+    },
     {
       "src": "https://cdn.cosmos.so/b150759e-0986-4f1a-8901-0c205c5c2d47?format=webp&w=400",
       "collection": "art-that-caught-me"
@@ -240,6 +244,10 @@
       "collection": "cancer-sun"
     },
     {
+      "src": "https://cdn.cosmos.so/e6c26eb6-12f8-4c59-95e4-a8c47c283c08?format=webp&w=400",
+      "collection": "candle-operas"
+    },
+    {
       "src": "https://cdn.cosmos.so/31b26783-5520-44b8-b6d8-520688bc7a79?format=webp&w=400",
       "collection": "candle-operas"
     },
@@ -250,6 +258,10 @@
     {
       "src": "https://cdn.cosmos.so/99ed179e-2061-4cbd-b1bc-0f8e3bfb454a?format=webp&w=400",
       "collection": "candle-operas"
+    },
+    {
+      "src": "https://cdn.cosmos.so/22cc38f6-81ca-480f-bbf5-9b99d020a13b?format=webp&w=400",
+      "collection": "cherry-bomb"
     },
     {
       "src": "https://cdn.cosmos.so/1e037ba4-7e1a-495f-8726-414671e1357e?format=webp&w=400",
@@ -890,10 +902,6 @@
     {
       "src": "https://cdn.cosmos.so/38beebb9-6484-4937-a298-205183ddeb8f?format=webp&w=400",
       "collection": "earthbending"
-    },
-    {
-      "src": "https://cdn.cosmos.so/9e295169-80be-47d3-a562-a49c6143f7f6?format=webp&w=400",
-      "collection": "egg"
     },
     {
       "src": "https://cdn.cosmos.so/a1521c9a-9186-469a-9aab-317e53541c28?format=webp&w=400",
