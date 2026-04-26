@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-04-25T08:50:14Z",
+  "updated": "2026-04-26T08:58:06Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "fashion-ad",
     "febuary"
   ],
-  "total": 240,
+  "total": 248,
   "images": [
     {
       "src": "https://cdn.cosmos.so/1a915151-7ba3-49b2-89ca-9e87695766cd?format=webp&w=400",
@@ -244,10 +244,6 @@
       "collection": "cancer-sun"
     },
     {
-      "src": "https://cdn.cosmos.so/e6c26eb6-12f8-4c59-95e4-a8c47c283c08?format=webp&w=400",
-      "collection": "candle-operas"
-    },
-    {
       "src": "https://cdn.cosmos.so/31b26783-5520-44b8-b6d8-520688bc7a79?format=webp&w=400",
       "collection": "candle-operas"
     },
@@ -258,10 +254,6 @@
     {
       "src": "https://cdn.cosmos.so/99ed179e-2061-4cbd-b1bc-0f8e3bfb454a?format=webp&w=400",
       "collection": "candle-operas"
-    },
-    {
-      "src": "https://cdn.cosmos.so/22cc38f6-81ca-480f-bbf5-9b99d020a13b?format=webp&w=400",
-      "collection": "cherry-bomb"
     },
     {
       "src": "https://cdn.cosmos.so/1e037ba4-7e1a-495f-8726-414671e1357e?format=webp&w=400",
@@ -730,6 +722,46 @@
     {
       "src": "https://cdn.cosmos.so/a66f1df7-b131-48e1-9d35-64d4865237da?format=webp&w=400",
       "collection": "creative-direction"
+    },
+    {
+      "src": "https://cdn.cosmos.so/fd488c48-5354-463c-8ffa-ac331be22789?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/d3397fcc-629f-47f9-afa7-ce3871b07e8d?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/70881be8-2bf3-4cff-aef7-852b8f91baa3?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/d0a5d5bb-2dc5-44e1-8b5a-54b741808a49?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/697e251d-38e2-4a19-933a-71007c93379a?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/cd8bc842-a670-43e3-8c1c-40e10641d339?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/ede24194-bf60-4ecf-a438-3ffc6b12cff8?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/1d54a1af-329b-4ae4-8f5d-6c7bcac660a3?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/f4a0c2df-2ec5-4011-848f-b6609d12f891?format=webp&w=400",
+      "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/7e6d1b47-6aff-40ad-85b4-082502401168?format=webp&w=400",
+      "collection": "cyber"
     },
     {
       "src": "https://cdn.cosmos.so/eb038591-68d9-4577-9cfb-6d1e54be997d?format=webp&w=400",
