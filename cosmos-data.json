@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-05-01T09:43:58Z",
+  "updated": "2026-05-02T09:03:39Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "fashion-ad",
     "febuary"
   ],
-  "total": 252,
+  "total": 249,
   "images": [
     {
       "src": "https://cdn.cosmos.so/1a915151-7ba3-49b2-89ca-9e87695766cd?format=webp&w=400",
@@ -134,10 +134,6 @@
     {
       "src": "https://cdn.cosmos.so/06433dfe-e822-47dd-8123-235819fee49c?format=webp&w=400",
       "collection": "blue-dreams"
-    },
-    {
-      "src": "https://cdn.cosmos.so/c60a0f52-ad2c-49cc-9ba4-ed26b1ed5c3f?format=webp&w=400",
-      "collection": "cancer-sun"
     },
     {
       "src": "https://cdn.cosmos.so/2aec42a9-66d1-4554-8ef4-8c04cc3ca5f3?format=webp&w=400",
@@ -258,10 +254,6 @@
     {
       "src": "https://cdn.cosmos.so/99ed179e-2061-4cbd-b1bc-0f8e3bfb454a?format=webp&w=400",
       "collection": "candle-operas"
-    },
-    {
-      "src": "https://cdn.cosmos.so/22cc38f6-81ca-480f-bbf5-9b99d020a13b?format=webp&w=400",
-      "collection": "cherry-bomb"
     },
     {
       "src": "https://cdn.cosmos.so/1e037ba4-7e1a-495f-8726-414671e1357e?format=webp&w=400",
@@ -392,6 +384,10 @@
       "collection": "circles"
     },
     {
+      "src": "https://cdn.cosmos.so/3c47f9e3-0dab-45ba-a0dd-7b1ffa76d1b2?format=webp&w=400",
+      "collection": "clotbes-that-catch-me"
+    },
+    {
       "src": "https://cdn.cosmos.so/bff16996-9981-44f9-b366-464087983a6d?format=webp&w=400",
       "collection": "clotbes-that-catch-me"
     },
@@ -422,10 +418,6 @@
     {
       "src": "https://cdn.cosmos.so/f40f8530-cddb-4ae3-8c17-3d84d136b000?format=webp&w=400",
       "collection": "clotbes-that-catch-me"
-    },
-    {
-      "src": "https://cdn.cosmos.so/10bf4aec-7e52-4979-80ad-f3e986f72f69?format=webp&w=400",
-      "collection": "codecore"
     },
     {
       "src": "https://cdn.cosmos.so/0bef8da9-c955-4520-92b2-b77db3683ce2?format=webp&w=400",
@@ -530,10 +522,6 @@
     {
       "src": "https://cdn.cosmos.so/657d1183-98c3-4eb8-a0cc-a2263f7f3467?format=webp&w=400",
       "collection": "cold"
-    },
-    {
-      "src": "https://cdn.cosmos.so/5bc56ed8-bcf5-426b-960d-653b884ef076?format=webp&w=400",
-      "collection": "creative-direction"
     },
     {
       "src": "https://cdn.cosmos.so/f4520639-0b36-452a-81bc-bfd56b9f3109?format=webp&w=400",
