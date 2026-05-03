@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-05-02T09:03:39Z",
+  "updated": "2026-05-03T09:20:30Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -382,10 +382,6 @@
     {
       "src": "https://cdn.cosmos.so/baacad6b-7c1b-4a22-9e90-56bc52df0443?format=webp&w=400",
       "collection": "circles"
-    },
-    {
-      "src": "https://cdn.cosmos.so/3c47f9e3-0dab-45ba-a0dd-7b1ffa76d1b2?format=webp&w=400",
-      "collection": "clotbes-that-catch-me"
     },
     {
       "src": "https://cdn.cosmos.so/bff16996-9981-44f9-b366-464087983a6d?format=webp&w=400",
@@ -786,6 +782,10 @@
     {
       "src": "https://cdn.cosmos.so/e4a72c5f-95f0-4889-bc5b-408d821881b1?format=webp&w=400",
       "collection": "cyber"
+    },
+    {
+      "src": "https://cdn.cosmos.so/d49148a1-fda2-4599-b844-92a5d8f2aa06?format=webp&w=400",
+      "collection": "destruction-in-all-forms"
     },
     {
       "src": "https://cdn.cosmos.so/a686f6e8-279e-4661-95a9-e9a1018cf749?format=webp&w=400",
