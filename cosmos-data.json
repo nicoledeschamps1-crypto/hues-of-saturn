@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-05-04T10:11:35Z",
+  "updated": "2026-05-05T10:00:06Z",
   "collections": [
     "elements",
     "a-long-way-from-home",
@@ -25,7 +25,7 @@
     "fashion-ad",
     "febuary"
   ],
-  "total": 250,
+  "total": 252,
   "images": [
     {
       "src": "https://cdn.cosmos.so/1a915151-7ba3-49b2-89ca-9e87695766cd?format=webp&w=400",
@@ -254,10 +254,6 @@
     {
       "src": "https://cdn.cosmos.so/99ed179e-2061-4cbd-b1bc-0f8e3bfb454a?format=webp&w=400",
       "collection": "candle-operas"
-    },
-    {
-      "src": "https://cdn.cosmos.so/22cc38f6-81ca-480f-bbf5-9b99d020a13b?format=webp&w=400",
-      "collection": "cherry-bomb"
     },
     {
       "src": "https://cdn.cosmos.so/1e037ba4-7e1a-495f-8726-414671e1357e?format=webp&w=400",
@@ -884,6 +880,10 @@
       "collection": "destruction-in-all-forms"
     },
     {
+      "src": "https://cdn.cosmos.so/77ca5f53-b7c5-41d4-b158-0bba42055339?format=webp&w=400",
+      "collection": "earthbending"
+    },
+    {
       "src": "https://cdn.cosmos.so/e367495f-cd6c-4561-9325-9fa3eeff774b?format=webp&w=400",
       "collection": "earthbending"
     },
@@ -940,6 +940,10 @@
       "collection": "earthbending"
     },
     {
+      "src": "https://cdn.cosmos.so/77754030-2e76-4513-859f-290fc83bb032?format=webp&w=400",
+      "collection": "eye-see-u"
+    },
+    {
       "src": "https://cdn.cosmos.so/4bff89dd-5bd2-4f59-9c73-481af1601f5d?format=webp&w=400",
       "collection": "fashion-ad"
     },
@@ -950,6 +954,10 @@
     {
       "src": "https://cdn.cosmos.so/e0698c8e-65d5-40ea-97eb-8b0e4ce2462f?format=webp&w=400",
       "collection": "fashion-ad"
+    },
+    {
+      "src": "https://cdn.cosmos.so/45beeb01-6482-426d-86ab-b8fece27a37d?format=webp&w=400",
+      "collection": "febuary"
     },
     {
       "src": "https://cdn.cosmos.so/4e631863-f137-417c-805e-948c040b3a4c?format=webp&w=400",
