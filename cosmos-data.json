@@ -1,7 +1,7 @@
 {
   "username": "huesofsaturn",
   "profile": "https://www.cosmos.so/huesofsaturn",
-  "updated": "2026-05-14T10:13:01Z",
+  "updated": "2026-05-15T10:20:38Z",
   "collections": [
     "elements",
     "cyber",
@@ -25,7 +25,7 @@
     "no-more-work",
     "cold"
   ],
-  "total": 414,
+  "total": 425,
   "images": [
     {
       "src": "https://cdn.cosmos.so/fd488c48-5354-463c-8ffa-ac331be22789?format=webp&w=400",
@@ -1156,6 +1156,54 @@
       "collection": "food"
     },
     {
+      "src": "https://cdn.cosmos.so/53f56765-6422-4b12-b074-3599a5cbd75b?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/0401f37c-8f58-4873-8075-ae3d7c4144de?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/98eac60a-dcba-495a-96c3-2e94a422e680?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/cba3d635-c70f-4684-9d80-46043105869b?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/cfeae356-cf3b-489f-be59-0899e377895d?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/3e590e84-5298-47e7-81df-c48d500c7699?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/0a432e1a-2353-4b19-bcdb-81aae57f4fce?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/08bc6b62-9493-4128-a83f-90e29cf3542a?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/4a45680d-a0c3-45e5-be7f-4f8ce22fc721?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/576dadf8-0842-404c-8321-1e66f9ccaf32?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/a3ad9f10-d6ae-43a2-a52b-afd5f64c98e3?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
+      "src": "https://cdn.cosmos.so/7dee1777-710f-4c3b-8617-ea4f3bd6e604?format=webp&w=400",
+      "collection": "feels"
+    },
+    {
       "src": "https://cdn.cosmos.so/2aec42a9-66d1-4554-8ef4-8c04cc3ca5f3?format=webp&w=400",
       "collection": "cancer-sun"
     },
@@ -1169,10 +1217,6 @@
     },
     {
       "src": "https://cdn.cosmos.so/437d5362-a34e-4fd2-8abc-db5a3641acc8?format=webp&w=400",
-      "collection": "cancer-sun"
-    },
-    {
-      "src": "https://cdn.cosmos.so/7dee1777-710f-4c3b-8617-ea4f3bd6e604?format=webp&w=400",
       "collection": "cancer-sun"
     },
     {
